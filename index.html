@@ -673,6 +673,70 @@ function Dashboard() {
 }
 
 // ─── VISITAS ───────────────────────────────────────────────────────────────
+function VisitaDetalheModal({ visita, onClose, onDelete }) {
+  const fmt = (val) => val || "—";
+  const fmtDate = (d) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
+  const fmtMoney = (v) => v ? `$${Number(v).toLocaleString("pt-BR")}` : "—";
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="modal" style={{maxWidth:600}}>
+        <div className="modal-title">
+          <div>
+            <div style={{fontSize:15,fontWeight:700}}>{visita.medico_nome}</div>
+            <div style={{fontSize:12,color:"var(--muted)",fontWeight:400}}>{fmtDate(visita.data_contato)} · {visita.responsavel}</div>
+          </div>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
+          {[
+            ["Canal", visita.canal],
+            ["Último TP", visita.ultimo_tp],
+            ["Probabilidade", visita.probabilidade],
+            ["Mês", visita.mes],
+            ["Referidor?", visita.referidor ? "Sim" : "Não"],
+            ["Especialidade", visita.especialidade],
+            ["Suporte MKT?", visita.suporte_marketing ? "Sim" : "Não"],
+            ["Ação MKT", visita.acao_mkt],
+            ["$ Esperado", fmtMoney(visita.valor_esperado)],
+            ["Fios ESG Estoque", visita.fios_esg_estoque],
+            ["Proc. Marcados (ESG)", visita.proc_marcados_esg],
+            ["Balões Estoque", visita.baloes_estoque],
+            ["Proc. Marcados (Balão)", visita.proc_marcados_balao],
+          ].map(([label, val]) => (
+            <div key={label} style={{background:"var(--surface2)",borderRadius:8,padding:"8px 10px",border:"1px solid var(--border)"}}>
+              <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
+              <div style={{fontSize:13,fontWeight:500}}>{fmt(val)}</div>
+            </div>
+          ))}
+        </div>
+
+        {visita.acao_prevista && (
+          <div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"10px 12px"}}>
+            <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:4}}>AÇÃO PREVISTA</div>
+            <div style={{fontSize:13}}>{visita.acao_prevista}</div>
+          </div>
+        )}
+
+        {visita.obs && (
+          <div style={{marginBottom:12,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
+            <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:4}}>OBSERVAÇÕES</div>
+            <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{visita.obs}</div>
+          </div>
+        )}
+
+        <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
+          <button className="btn btn-danger btn-sm" onClick={() => {
+            if (confirm("Excluir esta visita? Esta ação não pode ser desfeita.")) onDelete(visita.id);
+          }}>🗑 Excluir Visita</button>
+          <button className="btn btn-ghost btn-sm" onClick={onClose}>Fechar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function Visitas() {
   const { data: visitas, loading, refresh } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
@@ -680,6 +744,7 @@ function Visitas() {
   const [search, setSearch] = useState("");
   const [filterResp, setFilterResp] = useState("");
   const [toast, setToast] = useState(null);
+  const [selectedVisita, setSelectedVisita] = useState(null);
 
   const sorted = [...visitas]
     .sort((a,b) => new Date(b.data_contato) - new Date(a.data_contato))
@@ -718,12 +783,20 @@ function Visitas() {
     refresh();
   };
 
+  const handleDelete = async (id) => {
+    const { error } = await supabaseClient.from("visitas").delete().eq("id", id);
+    if (error) { alert("Erro ao excluir: " + error.message); return; }
+    setToast("Visita excluída!");
+    setSelectedVisita(null);
+    refresh();
+  };
+
   return (
     <div>
       <div className="section-header">
         <div>
           <div className="section-title">Registro de Visitas</div>
-          <div className="section-sub">{visitas.length} visitas registradas</div>
+          <div className="section-sub">{visitas.length} visitas · clique na linha para ver detalhes</div>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Nova Visita</button>
       </div>
@@ -758,9 +831,9 @@ function Visitas() {
                 {sorted.length === 0 ? (
                   <tr><td colSpan={8}><div className="empty">Nenhuma visita registrada.</div></td></tr>
                 ) : sorted.map(v => (
-                  <tr key={v.id}>
+                  <tr key={v.id} style={{cursor:"pointer"}} onClick={() => setSelectedVisita(v)}>
                     <td className="td-muted" style={{fontFamily:"DM Mono",fontSize:12}}>
-                      {v.data_contato ? new Date(v.data_contato + 'T00:00:00').toLocaleDateString('pt-BR') : "—"}
+                      {v.data_contato ? new Date(v.data_contato + "T00:00:00").toLocaleDateString("pt-BR") : "—"}
                     </td>
                     <td>{v.responsavel || "—"}</td>
                     <td style={{fontWeight:500}}>{v.medico_nome}</td>
@@ -786,6 +859,13 @@ function Visitas() {
           medicos={medicos}
           onSave={handleSave}
           onClose={() => setShowForm(false)}
+        />
+      )}
+      {selectedVisita && (
+        <VisitaDetalheModal
+          visita={selectedVisita}
+          onClose={() => setSelectedVisita(null)}
+          onDelete={handleDelete}
         />
       )}
       {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
@@ -932,11 +1012,13 @@ function VisitaModal({ medicos, onSave, onClose }) {
 
 // ─── MÉDICOS ────────────────────────────────────────────────────────────────
 function Medicos() {
-  const { data: medicos, loading } = useSupabase("perfil_medico");
-  const { data: tps } = useSupabase("medico_tps");
+  const { data: medicos, loading, refresh } = useSupabase("perfil_medico");
   const [search, setSearch] = useState("");
   const [filterTier, setFilterTier] = useState("");
   const [selected, setSelected] = useState(null);
+  const [editingAccount, setEditingAccount] = useState(null);
+  const [accountVal, setAccountVal] = useState("");
+  const [toast, setToast] = useState(null);
 
   const filtered = medicos.filter(m => {
     const q = search.toLowerCase();
@@ -944,10 +1026,12 @@ function Medicos() {
       && (!filterTier || String(m.tier) === filterTier);
   }).sort((a,b) => (a.tier||99) - (b.tier||99));
 
-  const getMedicoProgress = (medicoId) => {
-    const mTps = tps.filter(t => t.medico_id === medicoId);
-    const done = mTps.filter(t => t.concluido).length;
-    return { done, total: mTps.length, pct: mTps.length ? Math.round(done/mTps.length*100) : 0 };
+  const saveAccount = async (medicoId, val) => {
+    const { error } = await supabaseClient.from("perfil_medico").update({account: val || null}).eq("id", medicoId);
+    if (error) { alert("Erro: " + error.message); return; }
+    setToast("Account salvo!");
+    setEditingAccount(null);
+    refresh();
   };
 
   return (
@@ -980,52 +1064,63 @@ function Medicos() {
                   <th>Estado</th>
                   <th>Clínica</th>
                   <th>Account</th>
-                  <th>Ativação TPs</th>
                 </tr>
               </thead>
               <tbody>
-                {filtered.map(m => {
-                  const prog = getMedicoProgress(m.id);
-                  return (
-                    <tr key={m.id} style={{cursor:"pointer"}} onClick={() => setSelected(m)}>
-                      <td>
-                        <div style={{display:"flex",alignItems:"center",gap:10}}>
-                          <div className="medico-avatar" style={{width:32,height:32,fontSize:12}}>
-                            {initials(m.nome)}
-                          </div>
-                          <span style={{fontWeight:500}}>{m.nome}</span>
+                {filtered.map(m => (
+                  <tr key={m.id}>
+                    <td style={{cursor:"pointer"}} onClick={() => setSelected(m)}>
+                      <div style={{display:"flex",alignItems:"center",gap:10}}>
+                        <div className="medico-avatar" style={{width:32,height:32,fontSize:12}}>
+                          {initials(m.nome)}
                         </div>
-                      </td>
-                      <td>
-                        <span className="badge badge-tier" style={{background:`${TIER_COLOR[m.tier] || "#888"}22`, color: TIER_COLOR[m.tier] || "#888"}}>
-                          {m.tier === "ST" ? "STAR" : m.tier ? `T${m.tier}` : "—"}
-                        </span>
-                      </td>
-                      <td className="td-muted">{m.estado || "—"}</td>
-                      <td className="td-muted" style={{maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.clinica || "—"}</td>
-                      <td className="td-muted">{m.account || "—"}</td>
-                      <td style={{minWidth:120}}>
-                        {prog.total > 0 ? (
-                          <div>
-                            <div style={{fontSize:11,color:"var(--muted)",marginBottom:4}}>{prog.done}/{prog.total} TPs ({prog.pct}%)</div>
-                            <div className="progress-wrap">
-                              <div className="progress-bar" style={{
-                                width:`${prog.pct}%`,
-                                background: prog.pct >= 70 ? "var(--success)" : prog.pct >= 40 ? "var(--warn)" : "var(--danger)"
-                              }} />
-                            </div>
-                          </div>
-                        ) : <span className="td-muted">—</span>}
-                      </td>
-                    </tr>
-                  );
-                })}
+                        <span style={{fontWeight:500}}>{m.nome}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <span className="badge badge-tier" style={{background:`${TIER_COLOR[m.tier] || "#888"}22`, color: TIER_COLOR[m.tier] || "#888"}}>
+                        {m.tier === "ST" ? "STAR" : m.tier ? `T${m.tier}` : "—"}
+                      </span>
+                    </td>
+                    <td className="td-muted">{m.estado || "—"}</td>
+                    <td className="td-muted" style={{maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.clinica || "—"}</td>
+                    <td onClick={e => e.stopPropagation()}>
+                      {editingAccount === m.id ? (
+                        <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                          <input
+                            className="form-input"
+                            style={{padding:"3px 6px",fontSize:12,width:130}}
+                            value={accountVal}
+                            autoFocus
+                            onChange={e => setAccountVal(e.target.value)}
+                            onKeyDown={e => {
+                              if(e.key==="Enter") saveAccount(m.id, accountVal);
+                              if(e.key==="Escape") setEditingAccount(null);
+                            }}
+                          />
+                          <button className="btn btn-primary btn-sm" style={{padding:"3px 8px"}} onClick={() => saveAccount(m.id, accountVal)}>✓</button>
+                          <button className="btn btn-ghost btn-sm" style={{padding:"3px 8px"}} onClick={() => setEditingAccount(null)}>✕</button>
+                        </div>
+                      ) : (
+                        <div
+                          style={{cursor:"pointer",fontSize:12,color:m.account?"var(--text)":"var(--muted)",display:"flex",alignItems:"center",gap:4}}
+                          onClick={() => { setEditingAccount(m.id); setAccountVal(m.account||""); }}
+                          title="Clique para editar"
+                        >
+                          {m.account || "—"}
+                          <span style={{fontSize:9,color:"var(--muted)"}}>✎</span>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
         </div>
       )}
       {selected && <MedicoModal medico={selected} onClose={() => setSelected(null)} />}
+      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -1231,7 +1326,7 @@ function Ativacao() {
                       <th>Cota Anual ($)</th>
                       <th>Vendas ($)</th>
                       <th>% Meta</th>
-                      <th>Alerta</th>
+                      <th>Progresso</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1241,15 +1336,15 @@ function Ativacao() {
                         prog.pct >= 40 ? { icon: "🟡", label: "Em progresso" } :
                         { icon: "🔴", label: "Baixa ativação" };
                       return (
-                        <tr key={m.id} style={{cursor:"pointer"}} onClick={() => setSelectedMedico(m)}>
-                          <td style={{fontWeight:500}}>{m.nome}</td>
+                        <tr key={m.id}>
+                          <td style={{fontWeight:500,cursor:"pointer"}} onClick={() => setSelectedMedico(m)}>{m.nome}</td>
                           <td>
                             <span className="badge badge-tier" style={{background:`${TIER_COLOR[m.tier]||"#888"}22`,color:TIER_COLOR[m.tier]||"#888"}}>
                               {m.tier === "ST" ? "STAR" : m.tier ? `T${m.tier}` : "—"}
                             </span>
                           </td>
                           <td className="td-muted">{m.estado || "—"}</td>
-                          <td style={{minWidth:160}}>
+                          <td style={{minWidth:140}}>
                             <div style={{fontSize:11,color:"var(--muted)",marginBottom:4}}>
                               {prog.done}/23 · {prog.pct}%
                             </div>
@@ -1260,77 +1355,45 @@ function Ativacao() {
                               }} />
                             </div>
                           </td>
-                          <td>
+                          <td onClick={e => e.stopPropagation()}>
                             <EditableCell
                               value={m.cota_anual}
                               placeholder="—"
                               prefix="$"
                               onSave={async (val) => {
-                                await supabaseClient.from("perfil_medico").update({cota_anual: val ? Number(val) : null}).eq("id", m.id);
-                                refreshMedicos();
+                                const { error } = await supabaseClient.from("perfil_medico").update({cota_anual: val ? Number(val) : null}).eq("id", m.id);
+                                if(error) alert("Erro: "+error.message);
+                                else refreshMedicos();
                               }}
                             />
                           </td>
-                          <td>
+                          <td onClick={e => e.stopPropagation()}>
                             <EditableCell
                               value={m.vendas_realizadas}
                               placeholder="—"
                               prefix="$"
                               onSave={async (val) => {
-                                await supabaseClient.from("perfil_medico").update({vendas_realizadas: val ? Number(val) : null}).eq("id", m.id);
-                                refreshMedicos();
+                                const { error } = await supabaseClient.from("perfil_medico").update({vendas_realizadas: val ? Number(val) : null}).eq("id", m.id);
+                                if(error) alert("Erro: "+error.message);
+                                else refreshMedicos();
                               }}
                             />
                           </td>
-                          <td>
+                          <td style={{fontFamily:"DM Mono",fontSize:12}}>
+                            {m.cota_anual && m.vendas_realizadas
+                              ? `${Math.round(m.vendas_realizadas/m.cota_anual*100)}%`
+                              : <span className="td-muted">—</span>}
+                          </td>
+                          <td style={{minWidth:100}}>
                             {m.cota_anual && m.vendas_realizadas ? (
-                              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                                <div className="progress-wrap" style={{flex:1,minWidth:60}}>
-                                  <div className="progress-bar" style={{
-                                    width:`${Math.min(Math.round(m.vendas_realizadas/m.cota_anual*100),100)}%`,
-                                    background: m.vendas_realizadas/m.cota_anual>=1 ? "var(--success)" : m.vendas_realizadas/m.cota_anual>=0.6 ? "var(--warn)" : "var(--danger)"
-                                  }}/>
-                                </div>
-                                <span style={{fontSize:11,fontFamily:"DM Mono",color:"var(--muted)"}}>{Math.round(m.vendas_realizadas/m.cota_anual*100)}%</span>
+                              <div className="progress-wrap" style={{minWidth:80}}>
+                                <div className="progress-bar" style={{
+                                  width:`${Math.min(Math.round(m.vendas_realizadas/m.cota_anual*100),100)}%`,
+                                  background: m.vendas_realizadas/m.cota_anual>=1 ? "var(--success)" : m.vendas_realizadas/m.cota_anual>=0.6 ? "var(--warn)" : "var(--danger)"
+                                }}/>
                               </div>
                             ) : <span className="td-muted">—</span>}
                           </td>
-                          <td>
-                            <EditableCell
-                              value={m.cota_anual}
-                              placeholder="—"
-                              prefix="$"
-                              onSave={async (val) => {
-                                await supabaseClient.from("perfil_medico").update({cota_anual: val ? Number(val) : null}).eq("id", m.id);
-                                refreshMedicos();
-                              }}
-                            />
-                          </td>
-                          <td>
-                            <EditableCell
-                              value={m.vendas_realizadas}
-                              placeholder="—"
-                              prefix="$"
-                              onSave={async (val) => {
-                                await supabaseClient.from("perfil_medico").update({vendas_realizadas: val ? Number(val) : null}).eq("id", m.id);
-                                refreshMedicos();
-                              }}
-                            />
-                          </td>
-                          <td>
-                            {m.cota_anual && m.vendas_realizadas ? (
-                              <div style={{display:"flex",alignItems:"center",gap:6}}>
-                                <div className="progress-wrap" style={{flex:1,minWidth:60}}>
-                                  <div className="progress-bar" style={{
-                                    width:`${Math.min(Math.round(m.vendas_realizadas/m.cota_anual*100),100)}%`,
-                                    background: m.vendas_realizadas/m.cota_anual>=1 ? "var(--success)" : m.vendas_realizadas/m.cota_anual>=0.6 ? "var(--warn)" : "var(--danger)"
-                                  }}/>
-                                </div>
-                                <span style={{fontSize:11,fontFamily:"DM Mono",color:"var(--muted)"}}>{Math.round(m.vendas_realizadas/m.cota_anual*100)}%</span>
-                              </div>
-                            ) : <span className="td-muted">—</span>}
-                          </td>
-                          <td style={{fontSize:12}}>{alerta.icon} {alerta.label}</td>
                         </tr>
                       );
                     })}
@@ -1815,7 +1878,7 @@ function Metas() {
   const getMeta = (resp) => metas.find(m => m.responsavel === resp) || {
     responsavel: resp, mes,
     meta_visitas: 0, meta_presenciais: 0,
-    meta_procedimentos: 0, meta_receita: 0, meta_tps: 0
+    meta_procedimentos: 0, meta_receita: 0
   };
 
   const getReal = (resp) => {
@@ -1914,7 +1977,6 @@ function Metas() {
                 <th>Presenciais</th>
                 <th>Procedimentos</th>
                 <th>Receita $</th>
-                <th>TPs</th>
                 <th></th>
               </tr>
             </thead>
@@ -1930,7 +1992,6 @@ function Metas() {
                       [real.presenciais, meta.meta_presenciais],
                       [real.procedimentos, meta.meta_procedimentos],
                       [real.receita, meta.meta_receita, true],
-                      [real.tps, meta.meta_tps],
                     ].map(([r, m, money], i) => {
                       const p = pct(r, m);
                       return (
@@ -1981,7 +2042,6 @@ function MetaModal({ meta, mes, onSave, onClose }) {
     meta_presenciais: meta.meta_presenciais || 0,
     meta_procedimentos: meta.meta_procedimentos || 0,
     meta_receita: meta.meta_receita || 0,
-    meta_tps: meta.meta_tps || 0,
   });
   const set = (k, v) => setForm(f => ({...f, [k]: Number(v)}));
 
@@ -1999,7 +2059,6 @@ function MetaModal({ meta, mes, onSave, onClose }) {
             ["meta_presenciais", "Meta Presenciais"],
             ["meta_procedimentos", "Meta Procedimentos (ESG)"],
             ["meta_receita", "Meta Receita ($)"],
-            ["meta_tps", "Meta TPs Concluídos"],
           ].map(([key, label]) => (
             <div className="form-group" key={key}>
               <label className="form-label">{label}</label>
@@ -2031,6 +2090,15 @@ function Historico() {
   const [filterSemana, setFilterSemana] = useState("");
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
+  const [selectedVisita, setSelectedVisita] = useState(null);
+
+  const handleDelete = async (id) => {
+    const { error } = await supabaseClient.from("visitas").delete().eq("id", id);
+    if (error) { alert("Erro ao excluir: " + error.message); return; }
+    setToast("Visita excluída!");
+    setSelectedVisita(null);
+    refresh();
+  };
 
   // Group by week
   const getSemana = (data) => {
@@ -2126,7 +2194,7 @@ function Historico() {
                 {filtered.length === 0 ? (
                   <tr><td colSpan={11}><div className="empty">Nenhuma visita encontrada.</div></td></tr>
                 ) : filtered.map(v => (
-                  <tr key={v.id}>
+                  <tr key={v.id} style={{cursor:"pointer"}} onClick={() => setSelectedVisita(v)}>
                     <td className="td-muted" style={{fontFamily:"DM Mono",fontSize:12,whiteSpace:"nowrap"}}>
                       {v.data_contato ? new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR") : "—"}
                     </td>
@@ -2146,6 +2214,13 @@ function Historico() {
             </table>
           </div>
         </div>
+      )}
+      {selectedVisita && (
+        <VisitaDetalheModal
+          visita={selectedVisita}
+          onClose={() => setSelectedVisita(null)}
+          onDelete={handleDelete}
+        />
       )}
       {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
