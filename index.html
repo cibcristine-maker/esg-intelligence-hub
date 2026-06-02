@@ -868,7 +868,7 @@ function Visitas() {
           onDelete={handleDelete}
         />
       )}
-      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -1119,7 +1119,7 @@ function Medicos() {
         </div>
       )}
       {selected && <MedicoModal medico={selected} onClose={() => setSelected(null)} />}
-      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -1402,7 +1402,7 @@ function Ativacao() {
           )}
         </div>
       )}
-      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2027,7 +2027,7 @@ function Metas() {
           onClose={() => setEditing(null)}
         />
       )}
-      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2220,7 +2220,7 @@ function Historico() {
           onDelete={handleDelete}
         />
       )}
-      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2327,7 +2327,7 @@ function BaseDados() {
           onClose={() => setShowNew(false)}
         />
       )}
-      {toast2 && <Toast msg={toast2} onHide={() => setToast2(null)} />}
+      {toast2 && <FupToast msg={toast2} onHide={() => setToast2(null)} />}
 
       {loadingM ? <div className="loading"><div className="spinner"/>Carregando...</div> : (
         <div className="card" style={{padding:0}}>
@@ -2382,7 +2382,7 @@ function BaseDados() {
           onClose={() => setSelected(null)}
         />
       )}
-      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2683,17 +2683,17 @@ function saveData(data) {
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-function KPICard({ label, value, sub, color = FUP_FUP_C.teal, icon }) {
+function KPICard({ label, value, sub, color = FUP_C.teal, icon }) {
   return (
     <div style={{
-      background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12,
+      background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12,
       padding: "20px 24px", flex: 1, minWidth: 140,
     }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
         <div>
-          <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
+          <div style={{ color: FUP_C.textMuted, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
           <div style={{ color, fontSize: 32, fontWeight: 800, lineHeight: 1 }}>{value}</div>
-          {sub && <div style={{ color: FUP_FUP_C.textDim, fontSize: 12, marginTop: 6 }}>{sub}</div>}
+          {sub && <div style={{ color: FUP_C.textDim, fontSize: 12, marginTop: 6 }}>{sub}</div>}
         </div>
         {icon && <div style={{ fontSize: 24, opacity: 0.4 }}>{icon}</div>}
       </div>
@@ -2701,23 +2701,23 @@ function KPICard({ label, value, sub, color = FUP_FUP_C.teal, icon }) {
   );
 }
 
-function SectionTitle({ children, accent = FUP_FUP_C.teal }) {
+function SectionTitle({ children, accent = FUP_C.teal }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
       <div style={{ width: 4, height: 24, background: accent, borderRadius: 2 }} />
-      <h3 style={{ color: FUP_FUP_C.text, fontSize: 16, fontWeight: 700, margin: 0 }}>{children}</h3>
+      <h3 style={{ color: FUP_C.text, fontSize: 16, fontWeight: 700, margin: 0 }}>{children}</h3>
     </div>
   );
 }
 
 function Pill({ label, color }) {
   const map = {
-    verde: { bg: "#052D1A", color: FUP_FUP_C.green, border: "#0D4A2A" },
-    amarelo: { bg: "#2D2200", color: FUP_FUP_C.yellow, border: "#4A3800" },
-    vermelho: { bg: "#2D0505", color: FUP_FUP_C.red, border: "#4A0D0D" },
-    azul: { bg: "#051A2D", color: FUP_FUP_C.blue, border: "#0D2D4A" },
-    roxo: { bg: "#1A0533", color: FUP_FUP_C.purple, border: "#2D0D4A" },
-    cinza: { bg: "#1A1F26", color: FUP_FUP_C.textMuted, border: FUP_FUP_C.border },
+    verde: { bg: "#052D1A", color: FUP_C.green, border: "#0D4A2A" },
+    amarelo: { bg: "#2D2200", color: FUP_C.yellow, border: "#4A3800" },
+    vermelho: { bg: "#2D0505", color: FUP_C.red, border: "#4A0D0D" },
+    azul: { bg: "#051A2D", color: FUP_C.blue, border: "#0D2D4A" },
+    roxo: { bg: "#1A0533", color: FUP_C.purple, border: "#2D0D4A" },
+    cinza: { bg: "#1A1F26", color: FUP_C.textMuted, border: FUP_C.border },
   };
   const s = map[color?.toLowerCase()] || map.cinza;
   return (
@@ -2731,19 +2731,19 @@ function Pill({ label, color }) {
 function Input({ label, value, onChange, type = "text", placeholder, required, style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
-      {label && <label style={{ color: FUP_FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}{required && <span style={{ color: FUP_FUP_C.red }}> *</span>}</label>}
+      {label && <label style={{ color: FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}{required && <span style={{ color: FUP_C.red }}> *</span>}</label>}
       <input
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         style={{
-          background: "#0D1620", border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8,
-          padding: "10px 14px", color: FUP_FUP_C.text, fontSize: 13, outline: "none",
+          background: "#0D1620", border: `1px solid ${FUP_C.border}`, borderRadius: 8,
+          padding: "10px 14px", color: FUP_C.text, fontSize: 13, outline: "none",
           transition: "border-color 0.2s",
         }}
-        onFocus={(e) => (e.target.style.borderColor = FUP_FUP_C.teal)}
-        onBlur={(e) => (e.target.style.borderColor = FUP_FUP_C.border)}
+        onFocus={(e) => (e.target.style.borderColor = FUP_C.teal)}
+        onBlur={(e) => (e.target.style.borderColor = FUP_C.border)}
       />
     </div>
   );
@@ -2752,13 +2752,13 @@ function Input({ label, value, onChange, type = "text", placeholder, required, s
 function Select({ label, value, onChange, options, style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
-      {label && <label style={{ color: FUP_FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}</label>}
+      {label && <label style={{ color: FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}</label>}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
         style={{
-          background: "#0D1620", border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8,
-          padding: "10px 14px", color: FUP_FUP_C.text, fontSize: 13, outline: "none",
+          background: "#0D1620", border: `1px solid ${FUP_C.border}`, borderRadius: 8,
+          padding: "10px 14px", color: FUP_C.text, fontSize: 13, outline: "none",
         }}
       >
         {options.map((o) => (
@@ -2771,9 +2771,9 @@ function Select({ label, value, onChange, options, style }) {
 
 function Btn({ children, onClick, variant = "primary", size = "md", style }) {
   const styles = {
-    primary: { background: FUP_FUP_C.teal, color: "#fff", border: "none" },
-    ghost: { background: "transparent", color: FUP_FUP_C.teal, border: `1px solid ${FUP_FUP_C.teal}` },
-    danger: { background: "transparent", color: FUP_FUP_C.red, border: `1px solid ${FUP_FUP_C.red}` },
+    primary: { background: FUP_C.teal, color: "#fff", border: "none" },
+    ghost: { background: "transparent", color: FUP_C.teal, border: `1px solid ${FUP_C.teal}` },
+    danger: { background: "transparent", color: FUP_C.red, border: `1px solid ${FUP_C.red}` },
   };
   const sizes = {
     sm: { padding: "6px 14px", fontSize: 12 },
@@ -2800,13 +2800,13 @@ function Modal({ open, onClose, title, children, width = 680 }) {
       display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
     }} onClick={onClose}>
       <div style={{
-        background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 16,
+        background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 16,
         width: "100%", maxWidth: width, maxHeight: "90vh", overflowY: "auto",
         padding: 28,
       }} onClick={(e) => e.stopPropagation()}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h2 style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 700, margin: 0 }}>{title}</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: FUP_FUP_C.textMuted, fontSize: 20, cursor: "pointer" }}>✕</button>
+          <h2 style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700, margin: 0 }}>{title}</h2>
+          <button onClick={onClose} style={{ background: "none", border: "none", color: FUP_C.textMuted, fontSize: 20, cursor: "pointer" }}>✕</button>
         </div>
         {children}
       </div>
@@ -2817,14 +2817,14 @@ function Modal({ open, onClose, title, children, width = 680 }) {
 const TOAST_DURATION = 2800;
 function Toast({ msg, type }) {
   const bg = type === "success" ? "#052D1A" : type === "error" ? "#2D0505" : "#051A2D";
-  const border = type === "success" ? FUP_FUP_C.green : type === "error" ? FUP_FUP_C.red : FUP_FUP_C.blue;
+  const border = type === "success" ? FUP_C.green : type === "error" ? FUP_C.red : FUP_C.blue;
   const icon = type === "success" ? "✓" : type === "error" ? "✗" : "ℹ";
   return (
     <div style={{
       position: "fixed", bottom: 28, right: 28, zIndex: 9999,
       background: bg, border: `1px solid ${border}`, borderRadius: 12,
       padding: "14px 20px", display: "flex", gap: 12, alignItems: "center",
-      color: FUP_FUP_C.text, fontSize: 14, boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
+      color: FUP_C.text, fontSize: 14, boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
       animation: "slideIn 0.3s ease",
     }}>
       <span style={{ color: border, fontWeight: 700, fontSize: 16 }}>{icon}</span>
@@ -2835,13 +2835,13 @@ function Toast({ msg, type }) {
 
 // ─── PROJECT CARDS (LANDING) ─────────────────────────────────────────────────
 const PROJECTS = [
-  { id: "esgDay", label: "ESG Day", icon: "🎯", desc: "Eventos em clínicas com pacientes elegíveis. Seguimento de comparecimento, fechamento e ROI.", color: FUP_FUP_C.teal },
-  { id: "aulasReferidores", label: "Aulas Referidores", icon: "📚", desc: "Capacitação de médicos referidores. KPIs de engajamento, indicações e conversão.", color: FUP_FUP_C.blue },
-  { id: "campanhaInterna", label: "Campanha Indicação Interna", icon: "🔗", desc: "Campanha Leap Plus — colaboradores indicando pacientes para procedimentos.", color: FUP_FUP_C.purple },
-  { id: "cursoBariatricos", label: "Curso IAS — Cirurgiões Bariátricos", icon: "🏥", desc: "10 cirurgiões capacitados. Seguimento pós-curso, ativação do CRM e geração de ESGs.", color: FUP_FUP_C.orange },
-  { id: "cursoEndoscopistas", label: "Curso IAS — Endoscopistas", icon: "🔬", desc: "3 médicos endoscopistas. Capacitação para execução. KPIs de ativação e produção.", color: FUP_FUP_C.green },
+  { id: "esgDay", label: "ESG Day", icon: "🎯", desc: "Eventos em clínicas com pacientes elegíveis. Seguimento de comparecimento, fechamento e ROI.", color: FUP_C.teal },
+  { id: "aulasReferidores", label: "Aulas Referidores", icon: "📚", desc: "Capacitação de médicos referidores. KPIs de engajamento, indicações e conversão.", color: FUP_C.blue },
+  { id: "campanhaInterna", label: "Campanha Indicação Interna", icon: "🔗", desc: "Campanha Leap Plus — colaboradores indicando pacientes para procedimentos.", color: FUP_C.purple },
+  { id: "cursoBariatricos", label: "Curso IAS — Cirurgiões Bariátricos", icon: "🏥", desc: "10 cirurgiões capacitados. Seguimento pós-curso, ativação do CRM e geração de ESGs.", color: FUP_C.orange },
+  { id: "cursoEndoscopistas", label: "Curso IAS — Endoscopistas", icon: "🔬", desc: "3 médicos endoscopistas. Capacitação para execução. KPIs de ativação e produção.", color: FUP_C.green },
   { id: "pacientesReferidores", label: "Pacientes Indicados — Referidores", icon: "👥", desc: "Funil de pacientes indicados por médicos referidores. SLA de contato e conversão.", color: "#F43F5E" },
-  { id: "imersaoMarketing", label: "Imersão Marketing", icon: "📡", desc: "Visibilidade digital dos médicos parceiros. KPIs de GEO, presença online e conversão.", color: FUP_FUP_C.yellow },
+  { id: "imersaoMarketing", label: "Imersão Marketing", icon: "📡", desc: "Visibilidade digital dos médicos parceiros. KPIs de GEO, presença online e conversão.", color: FUP_C.yellow },
 ];
 
 // ════════════════════════════════════════════════════════════════════════════
@@ -2903,10 +2903,10 @@ function EsgDayProject({ data, onChange }) {
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <KPICard label="Total Eventos" value={totals.eventos} icon="🎯" />
         <KPICard label="Compareceram" value={totals.compareceram} icon="👥" />
-        <KPICard label="Procedimentos 30d" value={totals.procedimentos} color={FUP_FUP_C.green} icon="✓" />
-        <KPICard label="Conversão Média" value={`${conversaoMedia}%`} color={conversaoMedia >= 40 ? FUP_FUP_C.green : conversaoMedia >= 25 ? FUP_FUP_C.yellow : FUP_FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
-        <KPICard label="Receita Total" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_FUP_C.teal} icon="💰" />
-        <KPICard label="ROI Médio" value={`${roi}%`} color={FUP_FUP_C.purple} sub="Custo vs Receita" icon="📈" />
+        <KPICard label="Procedimentos 30d" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <KPICard label="Conversão Média" value={`${conversaoMedia}%`} color={conversaoMedia >= 40 ? FUP_C.green : conversaoMedia >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
+        <KPICard label="Receita Total" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
+        <KPICard label="ROI Médio" value={`${roi}%`} color={FUP_C.purple} sub="Custo vs Receita" icon="📈" />
       </div>
 
       {/* Tabs */}
@@ -2914,9 +2914,9 @@ function EsgDayProject({ data, onChange }) {
         {["form", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
             padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_FUP_C.teal : "transparent",
-            color: activeTab === t ? "#fff" : FUP_FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_FUP_C.teal : FUP_FUP_C.border}`,
+            background: activeTab === t ? FUP_C.teal : "transparent",
+            color: activeTab === t ? "#fff" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? FUP_C.teal : FUP_C.border}`,
           }}>{t === "form" ? "📋 Registros" : "📊 Dashboard"}</button>
         ))}
         <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Evento</Btn>
@@ -2925,7 +2925,7 @@ function EsgDayProject({ data, onChange }) {
       {activeTab === "form" ? (
         <div>
           {records.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 48, color: FUP_FUP_C.textDim }}>
+            <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
               <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
               <div>Nenhum evento cadastrado ainda.</div>
               <div style={{ fontSize: 12, marginTop: 6 }}>Clique em "+ Novo Evento" para adicionar.</div>
@@ -2934,9 +2934,9 @@ function EsgDayProject({ data, onChange }) {
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
-                  <tr style={{ borderBottom: `1px solid ${FUP_FUP_C.border}` }}>
+                  <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                     {["Clínica", "Cidade", "Data", "Responsável", "Compareceram", "Fechados", "Receita", "ROI", ""].map((h) => (
-                      <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_FUP_C.textMuted, fontWeight: 600, fontSize: 11, letterSpacing: "0.06em" }}>{h}</th>
+                      <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11, letterSpacing: "0.06em" }}>{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -2946,16 +2946,16 @@ function EsgDayProject({ data, onChange }) {
                     const custo = +r.custoEvento || 0;
                     const roi = custo > 0 ? (((rec - custo) / custo) * 100).toFixed(0) + "%" : "—";
                     return (
-                      <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_FUP_C.border}`, transition: "background 0.15s" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = FUP_FUP_C.cardHover)}
+                      <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}`, transition: "background 0.15s" }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = FUP_C.cardHover)}
                         onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-                        <td style={{ padding: "12px 12px", color: FUP_FUP_C.text, fontWeight: 600 }}>{r.clinica || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_FUP_C.textMuted }}>{r.cidade || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_FUP_C.textMuted }}>{r.data || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_FUP_C.textMuted }}>{r.responsavel || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_FUP_C.text, textAlign: "center" }}>{r.compareceram || 0}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_FUP_C.green, textAlign: "center", fontWeight: 700 }}>{r.procedimentos30d || 0}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_FUP_C.teal }}>{rec > 0 ? `R$ ${(rec / 1000).toFixed(0)}k` : "—"}</td>
+                        <td style={{ padding: "12px 12px", color: FUP_C.text, fontWeight: 600 }}>{r.clinica || "—"}</td>
+                        <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.cidade || "—"}</td>
+                        <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.data || "—"}</td>
+                        <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.responsavel || "—"}</td>
+                        <td style={{ padding: "12px 12px", color: FUP_C.text, textAlign: "center" }}>{r.compareceram || 0}</td>
+                        <td style={{ padding: "12px 12px", color: FUP_C.green, textAlign: "center", fontWeight: 700 }}>{r.procedimentos30d || 0}</td>
+                        <td style={{ padding: "12px 12px", color: FUP_C.teal }}>{rec > 0 ? `R$ ${(rec / 1000).toFixed(0)}k` : "—"}</td>
                         <td style={{ padding: "12px 12px" }}>
                           <Pill label={roi} color={roi !== "—" && +roi >= 0 ? "verde" : "vermelho"} />
                         </td>
@@ -2972,37 +2972,37 @@ function EsgDayProject({ data, onChange }) {
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <SectionTitle>Funil por Clínica</SectionTitle>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_FUP_C.border} />
-                <XAxis dataKey="name" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                <YAxis tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
+                <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 <Legend />
-                <Bar dataKey="Convidados" fill={FUP_FUP_C.blue} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Compareceram" fill={FUP_FUP_C.teal} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Fechados" fill={FUP_FUP_C.green} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Convidados" fill={FUP_C.blue} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Compareceram" fill={FUP_C.teal} radius={[4, 4, 0, 0]} />
+                <Bar dataKey="Fechados" fill={FUP_C.green} radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <SectionTitle>ROI por Clínica (%)</SectionTitle>
             {roiData.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={roiData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={FUP_FUP_C.border} />
-                  <XAxis dataKey="name" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                  <YAxis tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8 }} />
-                  <Bar dataKey="ROI" fill={FUP_FUP_C.purple} radius={[4, 4, 0, 0]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
+                  <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                  <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                  <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                  <Bar dataKey="ROI" fill={FUP_C.purple} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
-            ) : <div style={{ color: FUP_FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Adicione eventos com custo para ver o ROI.</div>}
+            ) : <div style={{ color: FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Adicione eventos com custo para ver o ROI.</div>}
           </div>
           {/* SLAs */}
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
             <SectionTitle>📋 Rota de KPIs e SLAs — ESG Day</SectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
@@ -3013,11 +3013,11 @@ function EsgDayProject({ data, onChange }) {
                 { kpi: "Follow-up D+7", meta: "100% dos compareceram", freq: "Semanal pós-evento", alerta: "Não feito = lead perdido" },
                 { kpi: "Follow-up D+30", meta: "100% sem fechamento", freq: "D+30 do evento", alerta: "Relembrar proposta" },
               ].map((s, i) => (
-                <div key={i} style={{ background: FUP_FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_FUP_C.border}` }}>
-                  <div style={{ color: FUP_FUP_C.teal, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
+                  <div style={{ color: FUP_C.teal, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
                 </div>
               ))}
             </div>
@@ -3092,19 +3092,19 @@ function AulasReferidoresProject({ data, onChange }) {
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <KPICard label="Médicos Treinados" value={totals.medicos} icon="📚" />
-        <KPICard label="Com CRM Ativo" value={totals.comCRM} sub={`${totals.medicos > 0 ? ((totals.comCRM / totals.medicos) * 100).toFixed(0) : 0}%`} color={FUP_FUP_C.blue} icon="🗃️" />
+        <KPICard label="Com CRM Ativo" value={totals.comCRM} sub={`${totals.medicos > 0 ? ((totals.comCRM / totals.medicos) * 100).toFixed(0) : 0}%`} color={FUP_C.blue} icon="🗃️" />
         <KPICard label="Indicações Geradas" value={totals.indicacoes} icon="🔗" />
-        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_FUP_C.green} icon="✓" />
-        <KPICard label="Conv. Indicação→Proc" value={`${convRate}%`} color={convRate >= 30 ? FUP_FUP_C.green : FUP_FUP_C.yellow} sub="Meta: ≥ 30%" icon="📊" />
+        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <KPICard label="Conv. Indicação→Proc" value={`${convRate}%`} color={convRate >= 30 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 30%" icon="📊" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["form", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
             padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_FUP_C.blue : "transparent",
-            color: activeTab === t ? "#fff" : FUP_FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_FUP_C.blue : FUP_FUP_C.border}`,
+            background: activeTab === t ? FUP_C.blue : "transparent",
+            color: activeTab === t ? "#fff" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? FUP_C.blue : FUP_C.border}`,
           }}>{t === "form" ? "📋 Médicos" : "📊 Dashboard"}</button>
         ))}
         <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Referidor</Btn>
@@ -3112,7 +3112,7 @@ function AulasReferidoresProject({ data, onChange }) {
 
       {activeTab === "form" ? (
         records.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_FUP_C.textDim }}>
+          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
             <div>Nenhum referidor registrado. Clique em "+ Novo Referidor".</div>
           </div>
@@ -3120,23 +3120,23 @@ function AulasReferidoresProject({ data, onChange }) {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
-                <tr style={{ borderBottom: `1px solid ${FUP_FUP_C.border}` }}>
+                <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                   {["Médico", "Especialidade", "Cidade", "CRM?", "Ind. M1", "Ind. M2", "Ind. M3", "Proced.", ""].map((h) => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_FUP_C.border}` }}>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.text, fontWeight: 600 }}>{r.medico}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.textMuted }}>{r.especialidade || "—"}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.textMuted }}>{r.cidade || "—"}</td>
+                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
+                    <td style={{ padding: "12px", color: FUP_C.text, fontWeight: 600 }}>{r.medico}</td>
+                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.especialidade || "—"}</td>
+                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.cidade || "—"}</td>
                     <td style={{ padding: "12px" }}><Pill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.text, textAlign: "center" }}>{r.indicacoesM1 || 0}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.text, textAlign: "center" }}>{r.indicacoesM2 || 0}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.text, textAlign: "center" }}>{r.indicacoesM3 || 0}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.green, fontWeight: 700, textAlign: "center" }}>{r.procedimentosGerados || 0}</td>
+                    <td style={{ padding: "12px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM1 || 0}</td>
+                    <td style={{ padding: "12px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM2 || 0}</td>
+                    <td style={{ padding: "12px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM3 || 0}</td>
+                    <td style={{ padding: "12px", color: FUP_C.green, fontWeight: 700, textAlign: "center" }}>{r.procedimentosGerados || 0}</td>
                     <td style={{ padding: "12px" }}><Btn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</Btn></td>
                   </tr>
                 ))}
@@ -3146,24 +3146,24 @@ function AulasReferidoresProject({ data, onChange }) {
         )
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_FUP_C.blue}>Indicações vs Procedimentos por Médico</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+            <SectionTitle accent={FUP_C.blue}>Indicações vs Procedimentos por Médico</SectionTitle>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_FUP_C.border} />
-                <XAxis dataKey="name" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                <YAxis tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
+                <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 <Legend />
-                <Bar dataKey="M1" fill={FUP_FUP_C.blue} radius={[4, 4, 0, 0]} name="Mês 1" />
-                <Bar dataKey="M2" fill={FUP_FUP_C.purple} radius={[4, 4, 0, 0]} name="Mês 2" />
-                <Bar dataKey="M3" fill={FUP_FUP_C.teal} radius={[4, 4, 0, 0]} name="Mês 3" />
-                <Bar dataKey="Proced" fill={FUP_FUP_C.green} radius={[4, 4, 0, 0]} name="Proced." />
+                <Bar dataKey="M1" fill={FUP_C.blue} radius={[4, 4, 0, 0]} name="Mês 1" />
+                <Bar dataKey="M2" fill={FUP_C.purple} radius={[4, 4, 0, 0]} name="Mês 2" />
+                <Bar dataKey="M3" fill={FUP_C.teal} radius={[4, 4, 0, 0]} name="Mês 3" />
+                <Bar dataKey="Proced" fill={FUP_C.green} radius={[4, 4, 0, 0]} name="Proced." />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_FUP_C.blue}>📋 KPIs e SLAs — Aulas Referidores</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+            <SectionTitle accent={FUP_C.blue}>📋 KPIs e SLAs — Aulas Referidores</SectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "Indicações por Referidor/mês", meta: "≥ 2", freq: "Mensal", alerta: "< 1 = visita de reativação" },
@@ -3173,11 +3173,11 @@ function AulasReferidoresProject({ data, onChange }) {
                 { kpi: "Visita de follow-up", meta: "Mensal (M1, M2, M3)", freq: "Mensal", alerta: "Sem visita = engagement cai 60%" },
                 { kpi: "NPS do Referidor", meta: "≥ 8", freq: "Trimestral", alerta: "< 7 = risco de perder canal" },
               ].map((s, i) => (
-                <div key={i} style={{ background: FUP_FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_FUP_C.border}` }}>
-                  <div style={{ color: FUP_FUP_C.blue, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
+                  <div style={{ color: FUP_C.blue, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
                 </div>
               ))}
             </div>
@@ -3257,27 +3257,27 @@ function CampanhaInternaProject({ data, onChange }) {
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <KPICard label="Leads Totais" value={totals.total} icon="🔗" />
         <KPICard label="Contatados" value={totals.contatados} icon="📞" />
-        <KPICard label="Convertidos" value={totals.convertidos} color={FUP_FUP_C.green} icon="✓" />
-        <KPICard label="Taxa Conversão" value={`${txConv}%`} color={txConv >= 40 ? FUP_FUP_C.green : txConv >= 25 ? FUP_FUP_C.yellow : FUP_FUP_C.red} sub="Meta: ≥ 40%" />
-        <KPICard label="Perdidos" value={totals.perdidos} color={FUP_FUP_C.red} icon="✗" />
-        <KPICard label="Receita Gerada" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_FUP_C.teal} icon="💰" />
+        <KPICard label="Convertidos" value={totals.convertidos} color={FUP_C.green} icon="✓" />
+        <KPICard label="Taxa Conversão" value={`${txConv}%`} color={txConv >= 40 ? FUP_C.green : txConv >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" />
+        <KPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
+        <KPICard label="Receita Gerada" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["form", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
             padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_FUP_C.purple : "transparent",
-            color: activeTab === t ? "#fff" : FUP_FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_FUP_C.purple : FUP_FUP_C.border}`,
+            background: activeTab === t ? FUP_C.purple : "transparent",
+            color: activeTab === t ? "#fff" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? FUP_C.purple : FUP_C.border}`,
           }}>{t === "form" ? "📋 Leads" : "📊 Dashboard"}</button>
         ))}
-        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_FUP_C.purple }}>+ Novo Lead</Btn>
+        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.purple }}>+ Novo Lead</Btn>
       </div>
 
       {activeTab === "form" ? (
         records.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_FUP_C.textDim }}>
+          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>🔗</div>
             <div>Nenhum lead registrado.</div>
           </div>
@@ -3285,26 +3285,26 @@ function CampanhaInternaProject({ data, onChange }) {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
               <thead>
-                <tr style={{ borderBottom: `1px solid ${FUP_FUP_C.border}` }}>
+                <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                   {["Data", "Paciente", "Indicador", "Área", "Status", "Procedimento", "Conversão", ""].map((h) => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_FUP_C.border}` }}>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.textMuted }}>{r.dataLead || "—"}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.text, fontWeight: 600 }}>{r.nomePaciente || "—"}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.textMuted }}>{r.colaboradorIndicador || "—"}</td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.textMuted }}>{r.area || "—"}</td>
+                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
+                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.dataLead || "—"}</td>
+                    <td style={{ padding: "12px", color: FUP_C.text, fontWeight: 600 }}>{r.nomePaciente || "—"}</td>
+                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.colaboradorIndicador || "—"}</td>
+                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.area || "—"}</td>
                     <td style={{ padding: "12px" }}>
                       <select value={r.statusFunil} onChange={(e) => updateStatus(r.id, e.target.value)}
-                        style={{ background: FUP_FUP_C.bg, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 6, color: FUP_FUP_C.text, fontSize: 11, padding: "4px 8px" }}>
+                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 11, padding: "4px 8px" }}>
                         {funilOrder.map((s) => <option key={s}>{s}</option>)}
                       </select>
                     </td>
-                    <td style={{ padding: "12px", color: FUP_FUP_C.textMuted }}>{r.procedimento || "—"}</td>
+                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.procedimento || "—"}</td>
                     <td style={{ padding: "12px" }}><Pill label={r.conversao} color={r.conversao === "Sim" ? "verde" : "cinza"} /></td>
                     <td style={{ padding: "12px" }}><Btn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</Btn></td>
                   </tr>
@@ -3315,33 +3315,33 @@ function CampanhaInternaProject({ data, onChange }) {
         )
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <SectionTitle accent={FUP_FUP_C.purple}>Funil de Conversão</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+            <SectionTitle accent={FUP_C.purple}>Funil de Conversão</SectionTitle>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={funil.filter((f) => f.count > 0)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_FUP_C.border} />
-                <XAxis type="number" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                <YAxis dataKey="status" type="category" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 10 }} width={120} />
-                <Tooltip contentStyle={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8 }} />
-                <Bar dataKey="count" fill={FUP_FUP_C.purple} radius={[0, 4, 4, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
+                <XAxis type="number" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                <YAxis dataKey="status" type="category" tick={{ fill: FUP_C.textMuted, fontSize: 10 }} width={120} />
+                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                <Bar dataKey="count" fill={FUP_C.purple} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <SectionTitle accent={FUP_FUP_C.purple}>Leads por Área</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+            <SectionTitle accent={FUP_C.purple}>Leads por Área</SectionTitle>
             {areaData.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie data={areaData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                    {areaData.map((_, i) => <Cell key={i} fill={[FUP_FUP_C.teal, FUP_FUP_C.blue, FUP_FUP_C.purple, FUP_FUP_C.orange, FUP_FUP_C.green, "#F43F5E"][i % 6]} />)}
+                    {areaData.map((_, i) => <Cell key={i} fill={[FUP_C.teal, FUP_C.blue, FUP_C.purple, FUP_C.orange, FUP_C.green, "#F43F5E"][i % 6]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8 }} />
+                  <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 </PieChart>
               </ResponsiveContainer>
-            ) : <div style={{ color: FUP_FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Sem dados ainda.</div>}
+            ) : <div style={{ color: FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Sem dados ainda.</div>}
           </div>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_FUP_C.purple}>📋 KPIs e SLAs — Campanha Indicação Interna (Leap Plus)</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+            <SectionTitle accent={FUP_C.purple}>📋 KPIs e SLAs — Campanha Indicação Interna (Leap Plus)</SectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "1º Contato (Victoria)", meta: "≤ 30 min após lead entrar", freq: "Por lead", alerta: "Sem contato = perda imediata" },
@@ -3354,11 +3354,11 @@ function CampanhaInternaProject({ data, onChange }) {
                 { kpi: "Reunião Operacional Victoria", meta: "Semanal (30 min)", freq: "Semanal", alerta: "Sem reunião = gargalos ocultos" },
                 { kpi: "Reunião Estratégica", meta: "Mensal (60 min)", freq: "Mensal", alerta: "Avaliar ROI e tendências" },
               ].map((s, i) => (
-                <div key={i} style={{ background: FUP_FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_FUP_C.border}` }}>
-                  <div style={{ color: FUP_FUP_C.purple, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
+                  <div style={{ color: FUP_C.purple, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
                 </div>
               ))}
             </div>
@@ -3383,7 +3383,7 @@ function CampanhaInternaProject({ data, onChange }) {
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
           <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-          <Btn onClick={save} style={{ background: FUP_FUP_C.purple }}>Salvar Lead</Btn>
+          <Btn onClick={save} style={{ background: FUP_C.purple }}>Salvar Lead</Btn>
         </div>
       </Modal>
     </div>
@@ -3449,21 +3449,21 @@ function CursoBariatricosProject({ data, onChange }) {
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <KPICard label="Cirurgiões Capacitados" value={medicos.length} icon="🏥" />
-        <KPICard label="Ativos" value={totals.ativos} color={FUP_FUP_C.orange} />
-        <KPICard label="Com CRM" value={totals.comCRM} color={FUP_FUP_C.blue} sub={`${((totals.comCRM / medicos.length) * 100).toFixed(0)}%`} />
-        <KPICard label="Material Enviado" value={totals.materialEnviado} sub="follow-ups" color={FUP_FUP_C.green} />
-        <KPICard label="Avaliações Geradas" value={totals.totalAvaliacoes} color={FUP_FUP_C.teal} />
-        <KPICard label="Procedimentos ESG" value={totals.totalProcedimentos} color={FUP_FUP_C.green} icon="✓" />
-        <KPICard label="Score Médio Impl." value={totals.mediaScore + "/10"} color={totals.mediaScore >= 7 ? FUP_FUP_C.green : totals.mediaScore >= 4 ? FUP_FUP_C.yellow : FUP_FUP_C.red} />
+        <KPICard label="Ativos" value={totals.ativos} color={FUP_C.orange} />
+        <KPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} sub={`${((totals.comCRM / medicos.length) * 100).toFixed(0)}%`} />
+        <KPICard label="Material Enviado" value={totals.materialEnviado} sub="follow-ups" color={FUP_C.green} />
+        <KPICard label="Avaliações Geradas" value={totals.totalAvaliacoes} color={FUP_C.teal} />
+        <KPICard label="Procedimentos ESG" value={totals.totalProcedimentos} color={FUP_C.green} icon="✓" />
+        <KPICard label="Score Médio Impl." value={totals.mediaScore + "/10"} color={totals.mediaScore >= 7 ? FUP_C.green : totals.mediaScore >= 4 ? FUP_C.yellow : FUP_C.red} />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["medicos", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
             padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_FUP_C.orange : "transparent",
-            color: activeTab === t ? "#fff" : FUP_FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_FUP_C.orange : FUP_FUP_C.border}`,
+            background: activeTab === t ? FUP_C.orange : "transparent",
+            color: activeTab === t ? "#fff" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? FUP_C.orange : FUP_C.border}`,
           }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
         ))}
       </div>
@@ -3477,30 +3477,30 @@ function CursoBariatricosProject({ data, onChange }) {
             const score = lastFup?.scoreImpl || "—";
             const riscoColor = { Verde: "verde", Amarelo: "amarelo", Vermelho: "vermelho" };
             return (
-              <div key={m.id} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+              <div key={m.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                      <span style={{ color: FUP_FUP_C.text, fontWeight: 700, fontSize: 15 }}>{m.nome}</span>
+                      <span style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15 }}>{m.nome}</span>
                       {risco !== "—" && <Pill label={risco} color={riscoColor[risco] || "cinza"} />}
-                      {score !== "—" && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +score >= 7 ? FUP_FUP_C.green : +score >= 4 ? FUP_FUP_C.yellow : FUP_FUP_C.red }}>{score}/10</b></span>}
+                      {score !== "—" && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +score >= 7 ? FUP_C.green : +score >= 4 ? FUP_C.yellow : FUP_C.red }}>{score}/10</b></span>}
                     </div>
                     <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                      <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>📧 {m.email || "—"}</span>
-                      {m.cidade && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
-                      {m.possuiCRM && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>CRM: <Pill label={m.possuiCRM} color={m.possuiCRM === "Sim" ? "verde" : "vermelho"} /></span>}
+                      <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📧 {m.email || "—"}</span>
+                      {m.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
+                      {m.possuiCRM && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>CRM: <Pill label={m.possuiCRM} color={m.possuiCRM === "Sim" ? "verde" : "vermelho"} /></span>}
                     </div>
                     {fups.length > 0 && (
                       <div style={{ marginTop: 8, display: "flex", gap: 16 }}>
-                        <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>Follow-ups: <b style={{ color: FUP_FUP_C.text }}>{fups.length}</b></span>
-                        <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoes || 0), 0)}</b></span>
-                        <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos || 0), 0)}</b></span>
+                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Follow-ups: <b style={{ color: FUP_C.text }}>{fups.length}</b></span>
+                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoes || 0), 0)}</b></span>
+                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos || 0), 0)}</b></span>
                       </div>
                     )}
                   </div>
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
                     <Btn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m }); setModal(true); }}>✏️ Editar</Btn>
-                    <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_FUP_C.orange, border: "none" }}>+ FUP</Btn>
+                    <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.orange, border: "none" }}>+ FUP</Btn>
                   </div>
                 </div>
               </div>
@@ -3509,21 +3509,21 @@ function CursoBariatricosProject({ data, onChange }) {
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_FUP_C.orange}>Radar de Performance por Médico</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+            <SectionTitle accent={FUP_C.orange}>Radar de Performance por Médico</SectionTitle>
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart data={radarData}>
-                <PolarGrid stroke={FUP_FUP_C.border} />
-                <PolarAngleAxis dataKey="name" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 12 }} />
-                <Radar name="Performance" dataKey="Score" stroke={FUP_FUP_C.orange} fill={FUP_FUP_C.orange} fillOpacity={0.2} />
-                <Radar name="CRM" dataKey="CRM" stroke={FUP_FUP_C.blue} fill={FUP_FUP_C.blue} fillOpacity={0.1} />
-                <Radar name="Procedimentos" dataKey="Procedimentos" stroke={FUP_FUP_C.green} fill={FUP_FUP_C.green} fillOpacity={0.1} />
+                <PolarGrid stroke={FUP_C.border} />
+                <PolarAngleAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 12 }} />
+                <Radar name="Performance" dataKey="Score" stroke={FUP_C.orange} fill={FUP_C.orange} fillOpacity={0.2} />
+                <Radar name="CRM" dataKey="CRM" stroke={FUP_C.blue} fill={FUP_C.blue} fillOpacity={0.1} />
+                <Radar name="Procedimentos" dataKey="Procedimentos" stroke={FUP_C.green} fill={FUP_C.green} fillOpacity={0.1} />
                 <Legend />
               </RadarChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_FUP_C.orange}>📋 KPIs e SLAs — Curso IAS Cirurgiões Bariátricos</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+            <SectionTitle accent={FUP_C.orange}>📋 KPIs e SLAs — Curso IAS Cirurgiões Bariátricos</SectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "Encaminhou material pós-curso", meta: "100% em D+1", freq: "Imediato", alerta: "Não enviou = oportunidade perdida no CRM" },
@@ -3536,11 +3536,11 @@ function CursoBariatricosProject({ data, onChange }) {
                 { kpi: "Risco semáforo", meta: "Verde em M3", freq: "Por visita", alerta: "Vermelho = escalar para gestão" },
                 { kpi: "Devolutiva de status ao médico", meta: "Quinzenal", freq: "Quinzenal", alerta: "Médico sem feedback = desengaja" },
               ].map((s, i) => (
-                <div key={i} style={{ background: FUP_FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_FUP_C.border}` }}>
-                  <div style={{ color: FUP_FUP_C.orange, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
+                  <div style={{ color: FUP_C.orange, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
                 </div>
               ))}
             </div>
@@ -3561,7 +3561,7 @@ function CursoBariatricosProject({ data, onChange }) {
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
               <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-              <Btn onClick={saveMedico} style={{ background: FUP_FUP_C.orange }}>Salvar</Btn>
+              <Btn onClick={saveMedico} style={{ background: FUP_C.orange }}>Salvar</Btn>
             </div>
           </>
         )}
@@ -3586,7 +3586,7 @@ function CursoBariatricosProject({ data, onChange }) {
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
           <Btn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</Btn>
-          <Btn onClick={saveFUP} style={{ background: FUP_FUP_C.orange }}>Registrar FUP</Btn>
+          <Btn onClick={saveFUP} style={{ background: FUP_C.orange }}>Registrar FUP</Btn>
         </div>
       </Modal>
     </div>
@@ -3629,18 +3629,18 @@ function CursoEndoscopistasProject({ data, onChange }) {
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <KPICard label="Endoscopistas" value={medicos.length} icon="🔬" />
-        <KPICard label="Procedimentos Total" value={totals.totalProced} color={FUP_FUP_C.green} icon="✓" />
-        <KPICard label="Avaliações Geradas" value={totals.totalAval} color={FUP_FUP_C.teal} />
-        <KPICard label="Com CRM" value={totals.comCRM} color={FUP_FUP_C.blue} />
+        <KPICard label="Procedimentos Total" value={totals.totalProced} color={FUP_C.green} icon="✓" />
+        <KPICard label="Avaliações Geradas" value={totals.totalAval} color={FUP_C.teal} />
+        <KPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["medicos", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
             padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_FUP_C.green : "transparent",
-            color: activeTab === t ? "#fff" : FUP_FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_FUP_C.green : FUP_FUP_C.border}`,
+            background: activeTab === t ? FUP_C.green : "transparent",
+            color: activeTab === t ? "#fff" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? FUP_C.green : FUP_C.border}`,
           }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
         ))}
       </div>
@@ -3651,27 +3651,27 @@ function CursoEndoscopistasProject({ data, onChange }) {
             const fups = followups.filter((f) => f.medicoId === m.id);
             const lastFup = fups[fups.length - 1];
             return (
-              <div key={m.id} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+              <div key={m.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <div style={{ color: FUP_FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
+                    <div style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
                       {m.nome || `Endoscopista ${idx + 1}`}
                     </div>
                     <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                      {m.email && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>📧 {m.email}</span>}
-                      {m.cidade && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
-                      <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>
-                        Procedimentos: <b style={{ color: FUP_FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos30d || 0), 0)}</b>
+                      {m.email && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📧 {m.email}</span>}
+                      {m.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
+                      <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>
+                        Procedimentos: <b style={{ color: FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos30d || 0), 0)}</b>
                       </span>
-                      <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>
-                        Avaliações: <b style={{ color: FUP_FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0)}</b>
+                      <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>
+                        Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0)}</b>
                       </span>
                       {lastFup?.risco && <Pill label={lastFup.risco} color={lastFup.risco.toLowerCase()} />}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <Btn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m, _idx: idx }); setEditModal(true); }}>✏️ Editar</Btn>
-                    <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_FUP_C.green, border: "none" }}>+ FUP</Btn>
+                    <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.green, border: "none" }}>+ FUP</Btn>
                   </div>
                 </div>
               </div>
@@ -3679,8 +3679,8 @@ function CursoEndoscopistasProject({ data, onChange }) {
           })}
         </div>
       ) : (
-        <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-          <SectionTitle accent={FUP_FUP_C.green}>📋 KPIs e SLAs — Curso IAS Endoscopistas</SectionTitle>
+        <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+          <SectionTitle accent={FUP_C.green}>📋 KPIs e SLAs — Curso IAS Endoscopistas</SectionTitle>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
             {[
               { kpi: "Primeiro ESG autônomo", meta: "D+60 pós-curso", freq: "M2", alerta: "0 em D+60 = necessita supervisão" },
@@ -3690,11 +3690,11 @@ function CursoEndoscopistasProject({ data, onChange }) {
               { kpi: "Visita account", meta: "Mensal (M1, M2, M3)", freq: "Mensal", alerta: "Sem visita = abandono técnico" },
               { kpi: "CRM estruturado", meta: "Sim em M1", freq: "M1", alerta: "Sem CRM = sem rastreabilidade" },
             ].map((s, i) => (
-              <div key={i} style={{ background: FUP_FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_FUP_C.border}` }}>
-                <div style={{ color: FUP_FUP_C.green, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                <div style={{ color: FUP_FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                <div style={{ color: FUP_FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+              <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
+                <div style={{ color: FUP_C.green, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
+                <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
               </div>
             ))}
           </div>
@@ -3717,7 +3717,7 @@ function CursoEndoscopistasProject({ data, onChange }) {
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
           <Btn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</Btn>
-          <Btn onClick={saveFUP} style={{ background: FUP_FUP_C.green }}>Registrar FUP</Btn>
+          <Btn onClick={saveFUP} style={{ background: FUP_C.green }}>Registrar FUP</Btn>
         </div>
       </Modal>
 
@@ -3737,7 +3737,7 @@ function CursoEndoscopistasProject({ data, onChange }) {
                 updated[editMedico._idx] = { ...editMedico };
                 update(updated);
                 setEditModal(false);
-              }} style={{ background: FUP_FUP_C.green }}>Salvar</Btn>
+              }} style={{ background: FUP_C.green }}>Salvar</Btn>
             </div>
           </>
         )}
@@ -3799,12 +3799,12 @@ function PacientesReferidoresProject({ data, onChange }) {
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <KPICard label="Leads Totais" value={totals.total} icon="👥" />
-        <KPICard label="Contatados" value={totals.contatados} color={FUP_FUP_C.blue} sub={`SLA ≤30min: ${slaOk}`} />
-        <KPICard label="Agendados" value={totals.agendados} color={FUP_FUP_C.teal} />
-        <KPICard label="Compareceram" value={totals.compareceram} color={FUP_FUP_C.purple} />
-        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_FUP_C.green} icon="✓" />
-        <KPICard label="Conversão" value={`${convRate}%`} color={convRate >= 40 ? FUP_FUP_C.green : convRate >= 25 ? FUP_FUP_C.yellow : FUP_FUP_C.red} sub="Meta: 40–50%" />
-        <KPICard label="Perdidos" value={totals.perdidos} color={FUP_FUP_C.red} icon="✗" />
+        <KPICard label="Contatados" value={totals.contatados} color={FUP_C.blue} sub={`SLA ≤30min: ${slaOk}`} />
+        <KPICard label="Agendados" value={totals.agendados} color={FUP_C.teal} />
+        <KPICard label="Compareceram" value={totals.compareceram} color={FUP_C.purple} />
+        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <KPICard label="Conversão" value={`${convRate}%`} color={convRate >= 40 ? FUP_C.green : convRate >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: 40–50%" />
+        <KPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -3812,8 +3812,8 @@ function PacientesReferidoresProject({ data, onChange }) {
           <button key={t} onClick={() => setActiveTab(t)} style={{
             padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
             background: activeTab === t ? "#F43F5E" : "transparent",
-            color: activeTab === t ? "#fff" : FUP_FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? "#F43F5E" : FUP_FUP_C.border}`,
+            color: activeTab === t ? "#fff" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? "#F43F5E" : FUP_C.border}`,
           }}>{t === "funil" ? "📋 Pacientes" : "📊 Dashboard"}</button>
         ))}
         <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: "#F43F5E", border: "none" }}>+ Novo Paciente</Btn>
@@ -3821,7 +3821,7 @@ function PacientesReferidoresProject({ data, onChange }) {
 
       {activeTab === "funil" ? (
         records.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_FUP_C.textDim }}>
+          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
             <div>Nenhum paciente registrado.</div>
           </div>
@@ -3829,36 +3829,36 @@ function PacientesReferidoresProject({ data, onChange }) {
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
               <thead>
-                <tr style={{ borderBottom: `1px solid ${FUP_FUP_C.border}` }}>
+                <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                   {["Paciente", "Referidor", "Owner", "Contato", "Agendamento", "Comparec.", "Proced.", ""].map((h) => (
-                    <th key={h} style={{ padding: "10px 10px", textAlign: "left", color: FUP_FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
+                    <th key={h} style={{ padding: "10px 10px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_FUP_C.border}` }}>
-                    <td style={{ padding: "10px", color: FUP_FUP_C.text, fontWeight: 600 }}>
+                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
+                    <td style={{ padding: "10px", color: FUP_C.text, fontWeight: 600 }}>
                       <div>{r.paciente || "—"}</div>
-                      <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11 }}>{r.cidade}</div>
+                      <div style={{ color: FUP_C.textMuted, fontSize: 11 }}>{r.cidade}</div>
                     </td>
-                    <td style={{ padding: "10px", color: FUP_FUP_C.textMuted }}>{r.medicoReferidor || "—"}</td>
-                    <td style={{ padding: "10px", color: FUP_FUP_C.textMuted }}>{r.owner || "—"}</td>
+                    <td style={{ padding: "10px", color: FUP_C.textMuted }}>{r.medicoReferidor || "—"}</td>
+                    <td style={{ padding: "10px", color: FUP_C.textMuted }}>{r.owner || "—"}</td>
                     <td style={{ padding: "10px" }}>
                       <select value={r.statusContato} onChange={(e) => update(r.id, "statusContato", e.target.value)}
-                        style={{ background: FUP_FUP_C.bg, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 6, color: FUP_FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
+                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
                         {statusContatoOptions.map((s) => <option key={s}>{s}</option>)}
                       </select>
                     </td>
                     <td style={{ padding: "10px" }}>
                       <select value={r.statusAgendamento} onChange={(e) => update(r.id, "statusAgendamento", e.target.value)}
-                        style={{ background: FUP_FUP_C.bg, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 6, color: FUP_FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
+                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
                         {statusAgendOptions.map((s) => <option key={s}>{s}</option>)}
                       </select>
                     </td>
                     <td style={{ padding: "10px" }}>
                       <select value={r.statusComparecimento} onChange={(e) => update(r.id, "statusComparecimento", e.target.value)}
-                        style={{ background: FUP_FUP_C.bg, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 6, color: FUP_FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
+                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
                         {statusCompOptions.map((s) => <option key={s}>{s}</option>)}
                       </select>
                     </td>
@@ -3874,37 +3874,37 @@ function PacientesReferidoresProject({ data, onChange }) {
         )
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <SectionTitle accent="#F43F5E">Funil Completo</SectionTitle>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={funilData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_FUP_C.border} />
-                <XAxis dataKey="stage" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 10 }} />
-                <YAxis tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8 }} />
+                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
+                <XAxis dataKey="stage" tick={{ fill: FUP_C.textMuted, fontSize: 10 }} />
+                <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 <Bar dataKey="value" fill="#F43F5E" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 1" }}>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 1" }}>
             <SectionTitle accent="#F43F5E">📋 SLAs Operacionais (Playbook)</SectionTitle>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 { label: "1ª Tentativa de Contato", meta: "≤ 15–30 min após entrada", color: "#F43F5E" },
-                { label: "Tentativas no 1º dia", meta: "3 tentativas (canal + horário variados)", color: FUP_FUP_C.orange },
-                { label: "Janela total de prospecção", meta: "72 horas com múltiplas tentativas", color: FUP_FUP_C.yellow },
-                { label: "Confirmação de consulta", meta: "48h antes e no dia anterior", color: FUP_FUP_C.teal },
-                { label: "Registro no CRM", meta: "Imediato após cada interação", color: FUP_FUP_C.blue },
-                { label: "Devolutiva ao referidor", meta: "Por marco: agendamento + comparecimento", color: FUP_FUP_C.purple },
+                { label: "Tentativas no 1º dia", meta: "3 tentativas (canal + horário variados)", color: FUP_C.orange },
+                { label: "Janela total de prospecção", meta: "72 horas com múltiplas tentativas", color: FUP_C.yellow },
+                { label: "Confirmação de consulta", meta: "48h antes e no dia anterior", color: FUP_C.teal },
+                { label: "Registro no CRM", meta: "Imediato após cada interação", color: FUP_C.blue },
+                { label: "Devolutiva ao referidor", meta: "Por marco: agendamento + comparecimento", color: FUP_C.purple },
               ].map((s, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: FUP_FUP_C.bg, borderRadius: 8, border: `1px solid ${FUP_FUP_C.border}` }}>
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: FUP_C.bg, borderRadius: 8, border: `1px solid ${FUP_C.border}` }}>
                   <span style={{ color: s.color, fontSize: 12, fontWeight: 600 }}>{s.label}</span>
-                  <span style={{ color: FUP_FUP_C.text, fontSize: 12 }}>{s.meta}</span>
+                  <span style={{ color: FUP_C.text, fontSize: 12 }}>{s.meta}</span>
                 </div>
               ))}
             </div>
           </div>
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
             <SectionTitle accent="#F43F5E">📋 KPIs — Pacientes Indicados por Referidores</SectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
@@ -3915,11 +3915,11 @@ function PacientesReferidoresProject({ data, onChange }) {
                 { kpi: "Conversão Consulta→Proced.", meta: "40–50%", freq: "Mensal", alerta: "< 25% = rever elegibilidade" },
                 { kpi: "Devolutiva ao Referidor", meta: "≤ 7 dias por marco", freq: "Por evento", alerta: "Sem devolutiva = perde canal" },
               ].map((s, i) => (
-                <div key={i} style={{ background: FUP_FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_FUP_C.border}` }}>
+                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
                   <div style={{ color: "#F43F5E", fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
                 </div>
               ))}
             </div>
@@ -4006,28 +4006,28 @@ function ImersaoMarketingProject({ data, onChange }) {
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <KPICard label="Médicos" value={totals.medicos} icon="📡" />
-        <KPICard label="Com Site" value={totals.comSite} color={FUP_FUP_C.blue} />
-        <KPICard label="Com Instagram" value={totals.comInsta} color={FUP_FUP_C.purple} />
-        <KPICard label="Leads Orgânicos" value={totals.leadsGerados} color={FUP_FUP_C.teal} />
-        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_FUP_C.green} />
-        <KPICard label="GEO Score Médio" value={totals.mediaGEO + "/10"} color={totals.mediaGEO >= 6 ? FUP_FUP_C.green : FUP_FUP_C.yellow} sub="Meta: ≥ 6" />
+        <KPICard label="Com Site" value={totals.comSite} color={FUP_C.blue} />
+        <KPICard label="Com Instagram" value={totals.comInsta} color={FUP_C.purple} />
+        <KPICard label="Leads Orgânicos" value={totals.leadsGerados} color={FUP_C.teal} />
+        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} />
+        <KPICard label="GEO Score Médio" value={totals.mediaGEO + "/10"} color={totals.mediaGEO >= 6 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 6" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["medicos", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
             padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_FUP_C.yellow : "transparent",
-            color: activeTab === t ? "#000" : FUP_FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_FUP_C.yellow : FUP_FUP_C.border}`,
+            background: activeTab === t ? FUP_C.yellow : "transparent",
+            color: activeTab === t ? "#000" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? FUP_C.yellow : FUP_C.border}`,
           }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
         ))}
-        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_FUP_C.yellow, color: "#000", border: "none" }}>+ Novo Médico</Btn>
+        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.yellow, color: "#000", border: "none" }}>+ Novo Médico</Btn>
       </div>
 
       {activeTab === "medicos" ? (
         medicos.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_FUP_C.textDim }}>
+          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📡</div>
             <div>Adicione médicos que participaram da Imersão Marketing.</div>
           </div>
@@ -4037,21 +4037,21 @@ function ImersaoMarketingProject({ data, onChange }) {
               const mAcoes = acoes.filter((a) => a.medicoId === m.id);
               const last = mAcoes[mAcoes.length - 1];
               return (
-                <div key={m.id} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20 }}>
+                <div key={m.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div>
-                      <div style={{ color: FUP_FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{m.nome}</div>
+                      <div style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{m.nome}</div>
                       <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                        {m.especialidade && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>🩺 {m.especialidade}</span>}
-                        {m.cidade && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
-                        {m.instagram && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>📸 @{m.instagram}</span>}
-                        {last?.geoScore && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>GEO: <b style={{ color: FUP_FUP_C.yellow }}>{last.geoScore}/10</b></span>}
-                        {last?.leadsOrganicos && <span style={{ color: FUP_FUP_C.textMuted, fontSize: 12 }}>Leads: <b style={{ color: FUP_FUP_C.teal }}>{last.leadsOrganicos}</b></span>}
+                        {m.especialidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>🩺 {m.especialidade}</span>}
+                        {m.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
+                        {m.instagram && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📸 @{m.instagram}</span>}
+                        {last?.geoScore && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>GEO: <b style={{ color: FUP_C.yellow }}>{last.geoScore}/10</b></span>}
+                        {last?.leadsOrganicos && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Leads: <b style={{ color: FUP_C.teal }}>{last.leadsOrganicos}</b></span>}
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <Btn size="sm" variant="danger" onClick={() => updateM(medicos.filter((x) => x.id !== m.id))}>✕</Btn>
-                      <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</Btn>
+                      <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</Btn>
                     </div>
                   </div>
                 </div>
@@ -4062,24 +4062,24 @@ function ImersaoMarketingProject({ data, onChange }) {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {geoData.length > 0 && (
-            <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-              <SectionTitle accent={FUP_FUP_C.yellow}>GEO Score, Leads e Procedimentos por Médico</SectionTitle>
+            <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+              <SectionTitle accent={FUP_C.yellow}>GEO Score, Leads e Procedimentos por Médico</SectionTitle>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={geoData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={FUP_FUP_C.border} />
-                  <XAxis dataKey="name" tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                  <YAxis tick={{ fill: FUP_FUP_C.textMuted, fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8 }} />
+                  <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
+                  <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                  <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
+                  <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                   <Legend />
-                  <Bar dataKey="GEO" fill={FUP_FUP_C.yellow} radius={[4, 4, 0, 0]} name="GEO Score" />
-                  <Bar dataKey="Leads" fill={FUP_FUP_C.teal} radius={[4, 4, 0, 0]} name="Leads Orgânicos" />
-                  <Bar dataKey="Proced" fill={FUP_FUP_C.green} radius={[4, 4, 0, 0]} name="Procedimentos" />
+                  <Bar dataKey="GEO" fill={FUP_C.yellow} radius={[4, 4, 0, 0]} name="GEO Score" />
+                  <Bar dataKey="Leads" fill={FUP_C.teal} radius={[4, 4, 0, 0]} name="Leads Orgânicos" />
+                  <Bar dataKey="Proced" fill={FUP_C.green} radius={[4, 4, 0, 0]} name="Procedimentos" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           )}
-          <div style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_FUP_C.yellow}>📋 KPIs — Imersão Marketing (GEO + Visibilidade Digital)</SectionTitle>
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+            <SectionTitle accent={FUP_C.yellow}>📋 KPIs — Imersão Marketing (GEO + Visibilidade Digital)</SectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "GEO Score do Médico", meta: "≥ 6/10 em M3", freq: "Mensal", alerta: "< 4 = risco de invisibilidade em IA" },
@@ -4092,11 +4092,11 @@ function ImersaoMarketingProject({ data, onChange }) {
                 { kpi: "Schema Markup implementado", meta: "FAQ + Person + Medical em D+30", freq: "M1", alerta: "Sem schema = GEO score não sobe" },
                 { kpi: "NPS do médico sobre a imersão", meta: "≥ 8 em M3", freq: "Trimestral", alerta: "< 7 = reposicionar suporte" },
               ].map((s, i) => (
-                <div key={i} style={{ background: FUP_FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_FUP_C.border}` }}>
-                  <div style={{ color: FUP_FUP_C.yellow, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
+                  <div style={{ color: FUP_C.yellow, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
                 </div>
               ))}
             </div>
@@ -4115,7 +4115,7 @@ function ImersaoMarketingProject({ data, onChange }) {
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
           <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-          <Btn onClick={saveMedico} style={{ background: FUP_FUP_C.yellow, color: "#000" }}>Adicionar</Btn>
+          <Btn onClick={saveMedico} style={{ background: FUP_C.yellow, color: "#000" }}>Adicionar</Btn>
         </div>
       </Modal>
 
@@ -4137,7 +4137,7 @@ function ImersaoMarketingProject({ data, onChange }) {
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
           <Btn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</Btn>
-          <Btn onClick={saveFUP} style={{ background: FUP_FUP_C.yellow, color: "#000" }}>Registrar FUP</Btn>
+          <Btn onClick={saveFUP} style={{ background: FUP_C.yellow, color: "#000" }}>Registrar FUP</Btn>
         </div>
       </Modal>
     </div>
@@ -4256,34 +4256,34 @@ export default function FupProjetos() {
   const activeProjectMeta = PROJECTS.find((p) => p.id === activeProject);
 
   return (
-    <div style={{ background: FUP_FUP_C.bg, minHeight: "100vh", color: FUP_FUP_C.text, fontFamily: "'DM Sans', 'Sora', system-ui, sans-serif" }}>
+    <div style={{ background: FUP_C.bg, minHeight: "100vh", color: FUP_C.text, fontFamily: "'DM Sans', 'Sora', system-ui, sans-serif" }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: ${FUP_FUP_C.bg}; }
-        ::-webkit-scrollbar-thumb { background: ${FUP_FUP_C.border}; border-radius: 3px; }
+        ::-webkit-scrollbar-track { background: ${FUP_C.bg}; }
+        ::-webkit-scrollbar-thumb { background: ${FUP_C.border}; border-radius: 3px; }
         input, select, textarea { font-family: inherit; }
         @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
       `}</style>
 
       {/* HEADER */}
       <div style={{
-        background: FUP_FUP_C.card, borderBottom: `1px solid ${FUP_FUP_C.border}`,
+        background: FUP_C.card, borderBottom: `1px solid ${FUP_C.border}`,
         padding: "16px 32px", display: "flex", alignItems: "center", gap: 16,
         position: "sticky", top: 0, zIndex: 100,
       }}>
         {activeProject && (
           <button onClick={() => setActiveProject(null)} style={{
-            background: "transparent", border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 8,
-            color: FUP_FUP_C.textMuted, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600,
+            background: "transparent", border: `1px solid ${FUP_C.border}`, borderRadius: 8,
+            color: FUP_C.textMuted, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600,
           }}>← Voltar</button>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: `linear-gradient(135deg, ${FUP_FUP_C.teal}, ${FUP_FUP_C.tealDark})`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📌</div>
+          <div style={{ width: 32, height: 32, background: `linear-gradient(135deg, ${FUP_C.teal}, ${FUP_C.tealDark})`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📌</div>
           <div>
-            <div style={{ color: FUP_FUP_C.textDim, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>ESG Intelligence Hub</div>
-            <div style={{ color: FUP_FUP_C.text, fontSize: 15, fontWeight: 700 }}>
+            <div style={{ color: FUP_C.textDim, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>ESG Intelligence Hub</div>
+            <div style={{ color: FUP_C.text, fontSize: 15, fontWeight: 700 }}>
               {activeProjectMeta ? activeProjectMeta.label : "FUP Projetos"}
             </div>
           </div>
@@ -4292,16 +4292,16 @@ export default function FupProjetos() {
           {!activeProject && (
             <>
               <div style={{ textAlign: "right" }}>
-                <div style={{ color: FUP_FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>PROCEDIMENTOS</div>
-                <div style={{ color: FUP_FUP_C.teal, fontSize: 18, fontWeight: 800 }}>{aggStats.totalProcedimentos}</div>
+                <div style={{ color: FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>PROCEDIMENTOS</div>
+                <div style={{ color: FUP_C.teal, fontSize: 18, fontWeight: 800 }}>{aggStats.totalProcedimentos}</div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ color: FUP_FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>MÉDICOS</div>
-                <div style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 800 }}>{aggStats.totalMedicos}</div>
+                <div style={{ color: FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>MÉDICOS</div>
+                <div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 800 }}>{aggStats.totalMedicos}</div>
               </div>
               <div style={{ textAlign: "right" }}>
-                <div style={{ color: FUP_FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>LEADS</div>
-                <div style={{ color: FUP_FUP_C.purple, fontSize: 18, fontWeight: 800 }}>{aggStats.totalLeads}</div>
+                <div style={{ color: FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>LEADS</div>
+                <div style={{ color: FUP_C.purple, fontSize: 18, fontWeight: 800 }}>{aggStats.totalLeads}</div>
               </div>
             </>
           )}
@@ -4320,25 +4320,25 @@ export default function FupProjetos() {
           <>
             {/* ── GRAND TOTAL BAR ── */}
             <div style={{
-              background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 14,
+              background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 14,
               padding: "18px 24px", marginBottom: 24,
               display: "flex", gap: 0, flexWrap: "wrap", overflow: "hidden",
             }}>
-              <div style={{ color: FUP_FUP_C.textDim, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", width: "100%", marginBottom: 14 }}>
+              <div style={{ color: FUP_C.textDim, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", width: "100%", marginBottom: 14 }}>
                 Consolidado — Todos os 7 Projetos
               </div>
               {[
-                { label: "Procedimentos Totais", value: aggStats.totalProcedimentos, color: FUP_FUP_C.green, icon: "✓" },
-                { label: "Leads em Funil", value: aggStats.totalLeads, color: FUP_FUP_C.purple, icon: "👥" },
-                { label: "Médicos Engajados", value: aggStats.totalMedicos, color: FUP_FUP_C.blue, icon: "👨‍⚕️" },
-                { label: "Eventos Realizados", value: aggStats.totalEventos, color: FUP_FUP_C.teal, icon: "🎯" },
-                { label: "Receita ESG Day", value: aggStats.receitaESG > 0 ? `R$ ${(aggStats.receitaESG/1000).toFixed(0)}k` : "—", color: FUP_FUP_C.teal, icon: "💰" },
+                { label: "Procedimentos Totais", value: aggStats.totalProcedimentos, color: FUP_C.green, icon: "✓" },
+                { label: "Leads em Funil", value: aggStats.totalLeads, color: FUP_C.purple, icon: "👥" },
+                { label: "Médicos Engajados", value: aggStats.totalMedicos, color: FUP_C.blue, icon: "👨‍⚕️" },
+                { label: "Eventos Realizados", value: aggStats.totalEventos, color: FUP_C.teal, icon: "🎯" },
+                { label: "Receita ESG Day", value: aggStats.receitaESG > 0 ? `R$ ${(aggStats.receitaESG/1000).toFixed(0)}k` : "—", color: FUP_C.teal, icon: "💰" },
               ].map((s, i) => (
                 <div key={i} style={{
                   flex: 1, minWidth: 120, padding: "0 20px",
-                  borderLeft: i > 0 ? `1px solid ${FUP_FUP_C.border}` : "none",
+                  borderLeft: i > 0 ? `1px solid ${FUP_C.border}` : "none",
                 }}>
-                  <div style={{ color: FUP_FUP_C.textDim, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", marginBottom: 6 }}>{s.label}</div>
+                  <div style={{ color: FUP_C.textDim, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", marginBottom: 6 }}>{s.label}</div>
                   <div style={{ color: s.color, fontSize: 26, fontWeight: 800, lineHeight: 1 }}>{s.value}</div>
                 </div>
               ))}
@@ -4347,94 +4347,94 @@ export default function FupProjetos() {
             {/* ── PER-PROJECT SNAPSHOT STRIP ── */}
             <div style={{ marginBottom: 28 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <div style={{ width: 4, height: 20, background: FUP_FUP_C.teal, borderRadius: 2 }} />
-                <span style={{ color: FUP_FUP_C.textMuted, fontSize: 13, fontWeight: 600 }}>Visão Rápida por Projeto</span>
+                <div style={{ width: 4, height: 20, background: FUP_C.teal, borderRadius: 2 }} />
+                <span style={{ color: FUP_C.textMuted, fontSize: 13, fontWeight: 600 }}>Visão Rápida por Projeto</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
                 {/* ESG Day */}
-                <div onClick={() => setActiveProject("esgDay")} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_FUP_C.teal}` }}>
+                <div onClick={() => setActiveProject("esgDay")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.teal}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_FUP_C.teal, fontSize: 13, fontWeight: 700 }}>🎯 ESG Day</span>
-                    <span style={{ color: FUP_FUP_C.textDim, fontSize: 11 }}>{pStats.esgDay.eventos} eventos</span>
+                    <span style={{ color: FUP_C.teal, fontSize: 13, fontWeight: 700 }}>🎯 ESG Day</span>
+                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.esgDay.eventos} eventos</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>COMPARECERAM</div><div style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.compareceram}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PROCEDIMENTOS</div><div style={{ color: FUP_FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>CONVERSÃO</div><div style={{ color: +pStats.esgDay.conv >= 40 ? FUP_FUP_C.green : +pStats.esgDay.conv >= 25 ? FUP_FUP_C.yellow : FUP_FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.conv}%</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COMPARECERAM</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.compareceram}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCEDIMENTOS</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.procedimentos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONVERSÃO</div><div style={{ color: +pStats.esgDay.conv >= 40 ? FUP_C.green : +pStats.esgDay.conv >= 25 ? FUP_C.yellow : FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.conv}%</div></div>
                   </div>
                 </div>
                 {/* Aulas Referidores */}
-                <div onClick={() => setActiveProject("aulasReferidores")} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_FUP_C.blue}` }}>
+                <div onClick={() => setActiveProject("aulasReferidores")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.blue}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_FUP_C.blue, fontSize: 13, fontWeight: 700 }}>📚 Aulas Referidores</span>
-                    <span style={{ color: FUP_FUP_C.textDim, fontSize: 11 }}>{pStats.aulasRef.medicos} médicos</span>
+                    <span style={{ color: FUP_C.blue, fontSize: 13, fontWeight: 700 }}>📚 Aulas Referidores</span>
+                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.aulasRef.medicos} médicos</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>COM CRM</div><div style={{ color: FUP_FUP_C.blue, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.comCRM}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>INDICAÇÕES</div><div style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.indicacoes}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.procedimentos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COM CRM</div><div style={{ color: FUP_C.blue, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.comCRM}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>INDICAÇÕES</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.indicacoes}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.procedimentos}</div></div>
                   </div>
                 </div>
                 {/* Leap Plus */}
-                <div onClick={() => setActiveProject("campanhaInterna")} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_FUP_C.purple}` }}>
+                <div onClick={() => setActiveProject("campanhaInterna")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.purple}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_FUP_C.purple, fontSize: 13, fontWeight: 700 }}>🔗 Leap Plus</span>
-                    <span style={{ color: FUP_FUP_C.textDim, fontSize: 11 }}>{pStats.leap.leads} leads</span>
+                    <span style={{ color: FUP_C.purple, fontSize: 13, fontWeight: 700 }}>🔗 Leap Plus</span>
+                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.leap.leads} leads</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>CONTATADOS</div><div style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.leap.contatados}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>CONVERTIDOS</div><div style={{ color: FUP_FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.leap.convertidos}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PERDIDOS</div><div style={{ color: FUP_FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.leap.perdidos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONTATADOS</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.leap.contatados}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONVERTIDOS</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.leap.convertidos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PERDIDOS</div><div style={{ color: FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.leap.perdidos}</div></div>
                   </div>
                 </div>
                 {/* Curso Bariatricos */}
-                <div onClick={() => setActiveProject("cursoBariatricos")} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_FUP_C.orange}` }}>
+                <div onClick={() => setActiveProject("cursoBariatricos")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.orange}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_FUP_C.orange, fontSize: 13, fontWeight: 700 }}>🏥 Cirurgiões Bariátricos</span>
-                    <span style={{ color: FUP_FUP_C.textDim, fontSize: 11 }}>{pStats.bariatricos.medicos} médicos</span>
+                    <span style={{ color: FUP_C.orange, fontSize: 13, fontWeight: 700 }}>🏥 Cirurgiões Bariátricos</span>
+                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.bariatricos.medicos} médicos</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>FUPs</div><div style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.fups}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>SCORE MÉD.</div><div style={{ color: pStats.bariatricos.scoreMedio >= 7 ? FUP_FUP_C.green : pStats.bariatricos.scoreMedio >= 4 ? FUP_FUP_C.yellow : FUP_FUP_C.textDim, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.scoreMedio}</div></div>
-                    {pStats.bariatricos.riscosVermelhos > 0 && <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>⚠ RISCO</div><div style={{ color: FUP_FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.riscosVermelhos}</div></div>}
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>FUPs</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.fups}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.procedimentos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>SCORE MÉD.</div><div style={{ color: pStats.bariatricos.scoreMedio >= 7 ? FUP_C.green : pStats.bariatricos.scoreMedio >= 4 ? FUP_C.yellow : FUP_C.textDim, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.scoreMedio}</div></div>
+                    {pStats.bariatricos.riscosVermelhos > 0 && <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>⚠ RISCO</div><div style={{ color: FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.riscosVermelhos}</div></div>}
                   </div>
                 </div>
                 {/* Curso Endoscopistas */}
-                <div onClick={() => setActiveProject("cursoEndoscopistas")} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_FUP_C.green}` }}>
+                <div onClick={() => setActiveProject("cursoEndoscopistas")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.green}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_FUP_C.green, fontSize: 13, fontWeight: 700 }}>🔬 Endoscopistas</span>
-                    <span style={{ color: FUP_FUP_C.textDim, fontSize: 11 }}>{pStats.endoscopistas.medicos} médicos</span>
+                    <span style={{ color: FUP_C.green, fontSize: 13, fontWeight: 700 }}>🔬 Endoscopistas</span>
+                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.endoscopistas.medicos} médicos</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>FUPs</div><div style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.fups}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>AVALIAÇÕES</div><div style={{ color: FUP_FUP_C.teal, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.avaliacoes}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>FUPs</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.fups}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.procedimentos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>AVALIAÇÕES</div><div style={{ color: FUP_C.teal, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.avaliacoes}</div></div>
                   </div>
                 </div>
                 {/* Pacientes Referidores */}
-                <div onClick={() => setActiveProject("pacientesReferidores")} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: "3px solid #F43F5E" }}>
+                <div onClick={() => setActiveProject("pacientesReferidores")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: "3px solid #F43F5E" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
                     <span style={{ color: "#F43F5E", fontSize: 13, fontWeight: 700 }}>👥 Pac. Referidores</span>
-                    <span style={{ color: FUP_FUP_C.textDim, fontSize: 11 }}>{pStats.pacRef.leads} leads</span>
+                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.pacRef.leads} leads</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>COMPAREFUP_FUP_C.</div><div style={{ color: FUP_FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.compareceram}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>CONV.</div><div style={{ color: +pStats.pacRef.conv >= 40 ? FUP_FUP_C.green : +pStats.pacRef.conv >= 25 ? FUP_FUP_C.yellow : FUP_FUP_C.textDim, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.conv}%</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PERDIDOS</div><div style={{ color: FUP_FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.perdidos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COMPAREFUP_C.</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.compareceram}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.procedimentos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONV.</div><div style={{ color: +pStats.pacRef.conv >= 40 ? FUP_C.green : +pStats.pacRef.conv >= 25 ? FUP_C.yellow : FUP_C.textDim, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.conv}%</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PERDIDOS</div><div style={{ color: FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.perdidos}</div></div>
                   </div>
                 </div>
                 {/* Imersão Marketing */}
-                <div onClick={() => setActiveProject("imersaoMarketing")} style={{ background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_FUP_C.yellow}` }}>
+                <div onClick={() => setActiveProject("imersaoMarketing")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.yellow}` }}>
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_FUP_C.yellow, fontSize: 13, fontWeight: 700 }}>📡 Imersão Marketing</span>
-                    <span style={{ color: FUP_FUP_C.textDim, fontSize: 11 }}>{pStats.imersao.medicos} médicos</span>
+                    <span style={{ color: FUP_C.yellow, fontSize: 13, fontWeight: 700 }}>📡 Imersão Marketing</span>
+                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.imersao.medicos} médicos</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>GEO MÉD.</div><div style={{ color: FUP_FUP_C.yellow, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.geoMedio}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>LEADS ORG.</div><div style={{ color: FUP_FUP_C.teal, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.leadsOrganicos}</div></div>
-                    <div><div style={{ color: FUP_FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.procedimentos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>GEO MÉD.</div><div style={{ color: FUP_C.yellow, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.geoMedio}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>LEADS ORG.</div><div style={{ color: FUP_C.teal, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.leadsOrganicos}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.procedimentos}</div></div>
                   </div>
                 </div>
               </div>
@@ -4443,9 +4443,9 @@ export default function FupProjetos() {
             {/* PROJECT GRID */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-                <div style={{ width: 4, height: 24, background: FUP_FUP_C.teal, borderRadius: 2 }} />
-                <h2 style={{ color: FUP_FUP_C.text, fontSize: 20, fontWeight: 700 }}>Projetos em Andamento</h2>
-                <span style={{ color: FUP_FUP_C.textDim, fontSize: 13, marginLeft: 4 }}>{PROJECTS.length} projetos</span>
+                <div style={{ width: 4, height: 24, background: FUP_C.teal, borderRadius: 2 }} />
+                <h2 style={{ color: FUP_C.text, fontSize: 20, fontWeight: 700 }}>Projetos em Andamento</h2>
+                <span style={{ color: FUP_C.textDim, fontSize: 13, marginLeft: 4 }}>{PROJECTS.length} projetos</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
                 {PROJECTS.map((p) => {
@@ -4463,18 +4463,18 @@ export default function FupProjetos() {
                     <div key={p.id}
                       onClick={() => setActiveProject(p.id)}
                       style={{
-                        background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`,
+                        background: FUP_C.card, border: `1px solid ${FUP_C.border}`,
                         borderRadius: 14, padding: 24, cursor: "pointer",
                         transition: "all 0.2s", position: "relative", overflow: "hidden",
                       }}
                       onMouseEnter={(e) => {
                         e.currentTarget.style.border = `1px solid ${p.color}44`;
-                        e.currentTarget.style.background = FUP_FUP_C.cardHover;
+                        e.currentTarget.style.background = FUP_C.cardHover;
                         e.currentTarget.style.transform = "translateY(-2px)";
                       }}
                       onMouseLeave={(e) => {
-                        e.currentTarget.style.border = `1px solid ${FUP_FUP_C.border}`;
-                        e.currentTarget.style.background = FUP_FUP_C.card;
+                        e.currentTarget.style.border = `1px solid ${FUP_C.border}`;
+                        e.currentTarget.style.background = FUP_C.card;
                         e.currentTarget.style.transform = "translateY(0)";
                       }}
                     >
@@ -4487,8 +4487,8 @@ export default function FupProjetos() {
                           color: p.color, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
                         }}>{count} registros</div>
                       </div>
-                      <div style={{ color: FUP_FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{p.label}</div>
-                      <div style={{ color: FUP_FUP_C.textMuted, fontSize: 12, lineHeight: 1.5 }}>{p.desc}</div>
+                      <div style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{p.label}</div>
+                      <div style={{ color: FUP_C.textMuted, fontSize: 12, lineHeight: 1.5 }}>{p.desc}</div>
                       <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
                         <span style={{ color: p.color, fontSize: 12, fontWeight: 600 }}>Acessar →</span>
                       </div>
@@ -4502,7 +4502,7 @@ export default function FupProjetos() {
           <div>
             {/* Project header */}
             <div style={{
-              background: FUP_FUP_C.card, border: `1px solid ${FUP_FUP_C.border}`,
+              background: FUP_C.card, border: `1px solid ${FUP_C.border}`,
               borderRadius: 14, padding: "20px 24px", marginBottom: 24,
               borderTop: `3px solid ${activeProjectMeta?.color}`,
             }}>
@@ -4510,8 +4510,8 @@ export default function FupProjetos() {
                 <span style={{ fontSize: 28 }}>{activeProjectMeta?.icon}</span>
                 <div>
                   <div style={{ color: activeProjectMeta?.color, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Projeto Ativo</div>
-                  <div style={{ color: FUP_FUP_C.text, fontSize: 22, fontWeight: 800 }}>{activeProjectMeta?.label}</div>
-                  <div style={{ color: FUP_FUP_C.textMuted, fontSize: 13, marginTop: 2 }}>{activeProjectMeta?.desc}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 22, fontWeight: 800 }}>{activeProjectMeta?.label}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 13, marginTop: 2 }}>{activeProjectMeta?.desc}</div>
                 </div>
               </div>
             </div>
@@ -4520,7 +4520,7 @@ export default function FupProjetos() {
         )}
       </div>
 
-      {toast && <Toast msg={toast.msg} type={toast.type} />}
+      {toast && <FupToast msg={toast.msg} type={toast.type} />}
     </div>
   );
 }
