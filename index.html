@@ -3151,6 +3151,8 @@ function AulasReferidoresProject({ data, onChange }) {
   const [visitaModal, setVisitaModal] = useState(null);
   const [expandedRef, setExpandedRef] = useState(null);
   const [visitaForm, setVisitaForm] = useState({ data: "", tipo: "Visita presencial", indicacoes: "", procedimentos: "", obs: "" });
+  const [editEventoModal, setEditEventoModal] = useState(null);
+  const [editRefModal, setEditRefModal] = useState(null);
 
   const eventos = data?.eventos || [];
   const updateEventos = (e) => onChange({ eventos: e });
@@ -3184,6 +3186,8 @@ function AulasReferidoresProject({ data, onChange }) {
     setVisitaForm({ data: "", tipo: "Visita presencial", indicacoes: "", procedimentos: "", obs: "" });
   };
 
+  const saveEditEvento = (ev) => { updateEventos(eventos.map((e) => e.id === ev.id ? ev : e)); setEditEventoModal(null); };
+  const saveEditRef = ({ evId, ref }) => { updateEventos(eventos.map((ev) => ev.id === evId ? { ...ev, referidores: (ev.referidores||[]).map((r) => r.id === ref.id ? ref : r) } : ev)); setEditRefModal(null); };
   const delEvento = (id) => updateEventos(eventos.filter((e) => e.id !== id));
   const delRef = (evId, refId) => updateEventos(eventos.map((ev) => ev.id === evId ? { ...ev, referidores: (ev.referidores||[]).filter((r) => r.id !== refId) } : ev));
 
