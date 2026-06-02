@@ -4304,16 +4304,7 @@ function FupProjetos() {
   const activeProjectMeta = FUP_PROJECTS.find((p) => p.id === activeProject);
 
   return (
-    <div style={{ background: FUP_C.bg, minHeight: "100vh", color: FUP_C.text, fontFamily: "'DM Sans', 'Sora', system-ui, sans-serif" }}>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap');
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: ${FUP_C.bg}; }
-        ::-webkit-scrollbar-thumb { background: ${FUP_C.border}; border-radius: 3px; }
-        input, select, textarea { font-family: inherit; }
-        @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-      `}</style>
+    <div style={{ color: FUP_C.text, fontFamily: "inherit" }}>
 
       {/* HEADER */}
       {activeProject && (
