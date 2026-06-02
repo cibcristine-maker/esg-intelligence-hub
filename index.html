@@ -3352,7 +3352,6 @@ function CampanhaInternaProject({ data, onChange }) {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <>
                   <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                     <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.dataLead || "—"}</td>
                     <td style={{ padding: "12px", color: FUP_C.text, fontWeight: 600 }}>{r.nomePaciente || "—"}</td>
@@ -3880,7 +3879,6 @@ function PacientesReferidoresProject({ data, onChange }) {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <>
                   <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                     <td style={{ padding: "10px", color: FUP_C.text, fontWeight: 600 }}>
                       <div>{r.paciente || "—"}</div>
