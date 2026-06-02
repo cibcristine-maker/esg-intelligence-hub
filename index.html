@@ -8,8 +8,6 @@
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-<script src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
-<script src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
 </head>
 <body>
 <div id="root"></div>
@@ -2577,10 +2575,6 @@ const TABS = [
 // ════════════════════════════════════════════════════════════════
 // FUP PROJETOS — ESG Intelligence Hub
 // ════════════════════════════════════════════════════════════════
-const { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip: RC_Tooltip, Legend,
-  ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis
-} = Recharts;
 
 // ─── PALETTE ───────────────────────────────────────────────────────────────
 const FUP_C = {
@@ -2977,31 +2971,12 @@ function EsgDayProject({ data, onChange }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <FupSectionTitle>Funil por Clínica</FupSectionTitle>
-            <ResponsiveContainer width="100%" height={240}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
-                <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
-                <Legend />
-                <Bar dataKey="Convidados" fill={FUP_C.blue} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Compareceram" fill={FUP_C.teal} radius={[4, 4, 0, 0]} />
-                <Bar dataKey="Fechados" fill={FUP_C.green} radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <FupSectionTitle>ROI por Clínica (%)</FupSectionTitle>
             {roiData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={240}>
-                <BarChart data={roiData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
-                  <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                  <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                  <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
-                  <Bar dataKey="ROI" fill={FUP_C.purple} radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
             ) : <div style={{ color: FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Adicione eventos com custo para ver o ROI.</div>}
           </div>
           {/* SLAs */}
@@ -3151,19 +3126,7 @@ function AulasReferidoresProject({ data, onChange }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
             <FupSectionTitle accent={FUP_C.blue}>Indicações vs Procedimentos por Médico</FupSectionTitle>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
-                <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
-                <Legend />
-                <Bar dataKey="M1" fill={FUP_C.blue} radius={[4, 4, 0, 0]} name="Mês 1" />
-                <Bar dataKey="M2" fill={FUP_C.purple} radius={[4, 4, 0, 0]} name="Mês 2" />
-                <Bar dataKey="M3" fill={FUP_C.teal} radius={[4, 4, 0, 0]} name="Mês 3" />
-                <Bar dataKey="Proced" fill={FUP_C.green} radius={[4, 4, 0, 0]} name="Proced." />
-              </BarChart>
-            </ResponsiveContainer>
+            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
             <FupSectionTitle accent={FUP_C.blue}>📋 KPIs e SLAs — Aulas Referidores</FupSectionTitle>
@@ -3320,27 +3283,12 @@ function CampanhaInternaProject({ data, onChange }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <FupSectionTitle accent={FUP_C.purple}>Funil de Conversão</FupSectionTitle>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={funil.filter((f) => f.count > 0)} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
-                <XAxis type="number" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <YAxis dataKey="status" type="category" tick={{ fill: FUP_C.textMuted, fontSize: 10 }} width={120} />
-                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
-                <Bar dataKey="count" fill={FUP_C.purple} radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <FupSectionTitle accent={FUP_C.purple}>Leads por Área</FupSectionTitle>
             {areaData.length > 0 ? (
-              <ResponsiveContainer width="100%" height={220}>
-                <PieChart>
-                  <Pie data={areaData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
-                    {areaData.map((_, i) => <Cell key={i} fill={[FUP_C.teal, FUP_C.blue, FUP_C.purple, FUP_C.orange, FUP_C.green, "#F43F5E"][i % 6]} />)}
-                  </Pie>
-                  <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
-                </PieChart>
-              </ResponsiveContainer>
+              <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
             ) : <div style={{ color: FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Sem dados ainda.</div>}
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
@@ -3514,16 +3462,7 @@ function CursoBariatricosProject({ data, onChange }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
             <FupSectionTitle accent={FUP_C.orange}>Radar de Performance por Médico</FupSectionTitle>
-            <ResponsiveContainer width="100%" height={280}>
-              <RadarChart data={radarData}>
-                <PolarGrid stroke={FUP_C.border} />
-                <PolarAngleAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 12 }} />
-                <Radar name="Performance" dataKey="Score" stroke={FUP_C.orange} fill={FUP_C.orange} fillOpacity={0.2} />
-                <Radar name="CRM" dataKey="CRM" stroke={FUP_C.blue} fill={FUP_C.blue} fillOpacity={0.1} />
-                <Radar name="Procedimentos" dataKey="Procedimentos" stroke={FUP_C.green} fill={FUP_C.green} fillOpacity={0.1} />
-                <Legend />
-              </RadarChart>
-            </ResponsiveContainer>
+            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
             <FupSectionTitle accent={FUP_C.orange}>📋 KPIs e SLAs — Curso IAS Cirurgiões Bariátricos</FupSectionTitle>
@@ -3879,15 +3818,7 @@ function PacientesReferidoresProject({ data, onChange }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
             <FupSectionTitle accent="#F43F5E">Funil Completo</FupSectionTitle>
-            <ResponsiveContainer width="100%" height={220}>
-              <BarChart data={funilData}>
-                <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
-                <XAxis dataKey="stage" tick={{ fill: FUP_C.textMuted, fontSize: 10 }} />
-                <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
-                <Bar dataKey="value" fill="#F43F5E" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 1" }}>
             <FupSectionTitle accent="#F43F5E">📋 SLAs Operacionais (Playbook)</FupSectionTitle>
@@ -4067,18 +3998,7 @@ function ImersaoMarketingProject({ data, onChange }) {
           {geoData.length > 0 && (
             <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
               <FupSectionTitle accent={FUP_C.yellow}>GEO Score, Leads e Procedimentos por Médico</FupSectionTitle>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={geoData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
-                  <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                  <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                  <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
-                  <Legend />
-                  <Bar dataKey="GEO" fill={FUP_C.yellow} radius={[4, 4, 0, 0]} name="GEO Score" />
-                  <Bar dataKey="Leads" fill={FUP_C.teal} radius={[4, 4, 0, 0]} name="Leads Orgânicos" />
-                  <Bar dataKey="Proced" fill={FUP_C.green} radius={[4, 4, 0, 0]} name="Procedimentos" />
-                </BarChart>
-              </ResponsiveContainer>
+              <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
             </div>
           )}
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
