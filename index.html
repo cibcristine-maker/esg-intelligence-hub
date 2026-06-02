@@ -567,7 +567,7 @@ function Dashboard() {
     }
   });
 
-  const byTier = [1,2,3,4,5].map(t => ({
+  const byTier = ["ST",1,2,3,4,5].map(t => ({
     tier: t,
     total: medicos.filter(m => m.tier === t).length,
     visitados: visitas.filter(v => {
@@ -1024,7 +1024,7 @@ function Medicos() {
     const q = search.toLowerCase();
     return (!q || m.nome?.toLowerCase().includes(q) || m.estado?.toLowerCase().includes(q))
       && (!filterTier || String(m.tier) === filterTier);
-  }).sort((a,b) => (a.tier||99) - (b.tier||99));
+  }).sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   const saveAccount = async (medicoId, val) => {
     const { error } = await supabaseClient.from("perfil_medico").update({account: val || null}).eq("id", medicoId);
@@ -1227,7 +1227,7 @@ function Ativacao() {
   const [filterTier, setFilterTier] = useState("");
 
   const medicosFilt = medicos.filter(m => !filterTier || String(m.tier) === filterTier)
-    .sort((a,b) => (a.tier||99)-(b.tier||99));
+    .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   const getProgress = (medicoId) => {
     const mTps = medicoTps.filter(t => t.medico_id === medicoId);
@@ -1464,12 +1464,12 @@ function Inteligencia() {
         urgencia,
       };
     })
-    .sort((a,b) => (a.tier||"9").localeCompare(b.tier||"9"));
+    .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   // ── GAP Estratégico — T ST/1/2/3 sem nenhuma ação
   const gapMedicos = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && !visitas.some(v => v.medico_nome === m.nome))
-    .sort((a,b) => (a.tier||"9").localeCompare(b.tier||"9"));
+    .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   // ── Visitas Time Marketing
   const visMarketing = visitas.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
@@ -2303,7 +2303,7 @@ function BaseDados() {
   const filtered = medicos.filter(m =>
     !search || m.nome?.toLowerCase().includes(search.toLowerCase()) ||
     m.estado?.toLowerCase().includes(search.toLowerCase())
-  ).sort((a,b) => (a.tier||"9").localeCompare(b.tier||"9"));
+  ).sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   const completeness = (m) => {
     const filled = PERFIL_FIELDS.filter(f => m[f.key] && m[f.key] !== "").length;
@@ -2469,7 +2469,7 @@ function ConsultaMedico() {
     !search || m.nome?.toLowerCase().includes(search.toLowerCase()) ||
     m.estado?.toLowerCase().includes(search.toLowerCase()) ||
     m.perfil_medico?.toLowerCase().includes(search.toLowerCase())
-  ).sort((a,b) => (a.tier||"9").localeCompare(b.tier||"9"));
+  ).sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   return (
     <div>
