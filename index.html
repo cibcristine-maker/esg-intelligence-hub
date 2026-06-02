@@ -2936,7 +2936,7 @@ function EsgDayProject({ data, onChange }) {
         <FupKPICard label="Total Eventos" value={totals.eventos} icon="🎯" />
         <FupKPICard label="Compareceram" value={totals.compareceram} icon="👥" />
         <FupKPICard label="Procedimentos 30d" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
-        <FupKPICard label="Conversão Média" value={`${conversaoMedia}%`} color={conversaoMedia >= 40 ? FUP_C.green : conversaoMedia >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
+        <FupKPICard label="Conversão Média" value={conversaoMedia === "100+" ? "100+ ⚠" : `${conversaoMedia}%`} color={conversaoMedia === "100+" ? FUP_C.yellow : conversaoMediaRaw >= 40 ? FUP_C.green : conversaoMediaRaw >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
         <FupKPICard label="Receita Total" value={totals.receita > 0 ? `$ ${(totals.receita / 1000).toFixed(1)}k` : "—"} color={FUP_C.teal} icon="💰" />
         <FupKPICard label="ROI Médio" value={`${roi}%`} color={FUP_C.purple} sub="Custo vs Receita" icon="📈" />
       </div>
@@ -4532,7 +4532,7 @@ function FupProjetos() {
         const comp = state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0;
         const proc = state.esgDay?.reduce((a, r) => { const pv = (r.followups||[]).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); return a + (pv > 0 ? pv : (+r.procedimentos30d||0)); }, 0) || 0;
         const pct = comp > 0 ? ((proc / comp) * 100) : 0;
-        return pct > 100 ? "100+" : pct.toFixed(0);
+        return pct > 100 ? "100+⚠" : pct.toFixed(0);
       })(),
     },
     aulasRef: {
