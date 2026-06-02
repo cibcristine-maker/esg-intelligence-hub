@@ -3039,16 +3039,11 @@ function AulasReferidoresProject({ data, onChange }) {
   const [activeTab, setActiveTab] = useState("eventos");
   const [eventoModal, setEventoModal] = useState(false);
   const [refModal, setRefModal] = useState(null); // eventoId
-  const [visitaModal, setVisitaModal] = useState(null); // { evId, refId }
-  const [expandedRef, setExpandedRef] = useState(null); // refId
   const [eventoForm, setEventoForm] = useState({
     nome: "", dataEvento: "", cidade: "", medicoExecutor: "", local: "", obs: "",
   });
   const [refForm, setRefForm] = useState({
     medico: "", especialidade: "", possuiCRM: "Não", indicacoesM1: "", indicacoesM2: "", indicacoesM3: "", procedimentosGerados: "", obs: "",
-  });
-  const [visitaForm, setVisitaForm] = useState({
-    data: "", tipo: "Visita presencial", indicacoes: "", procedimentos: "", obs: "",
   });
 
   const eventos = data?.eventos || [];
@@ -3149,37 +3144,8 @@ function AulasReferidoresProject({ data, onChange }) {
                             <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM2 || 0}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM3 || 0}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.green, fontWeight: 700, textAlign: "center" }}>{r.procedimentosGerados || 0}</td>
-                            <td style={{ padding: "8px 10px" }}>
-                              <div style={{ display: "flex", gap: 6 }}>
-                                <FupBtn size="sm" onClick={() => setVisitaModal({ evId: ev.id, refId: r.id })} style={{ background: FUP_C.blue, border: "none", whiteSpace: "nowrap" }}>+ Visita</FupBtn>
-                                {(r.visitas || []).length > 0 && (
-                                  <FupBtn size="sm" variant="ghost" onClick={() => setExpandedRef(expandedRef === r.id ? null : r.id)}>
-                                    {expandedRef === r.id ? "▼" : "▶ " + (r.visitas || []).length}
-                                  </FupBtn>
-                                )}
-                                <FupBtn variant="danger" size="sm" onClick={() => delRef(ev.id, r.id)}>✕</FupBtn>
-                              </div>
-                            </td>
+                            <td style={{ padding: "8px 10px" }}><FupBtn variant="danger" size="sm" onClick={() => delRef(ev.id, r.id)}>✕</FupBtn></td>
                           </tr>
-                          {expandedRef === r.id && (r.visitas || []).length > 0 && (
-                            <tr key={r.id + "_visitas"}>
-                              <td colSpan={8} style={{ padding: "0 10px 12px 10px", background: FUP_C.bg }}>
-                                <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingTop: 8 }}>
-                                  {(r.visitas || []).map((v, vIdx) => (
-                                    <div key={v.id || vIdx} style={{ background: FUP_C.card, borderRadius: 8, padding: "8px 14px", border: "1px solid " + FUP_C.border, borderLeft: "3px solid " + FUP_C.blue }}>
-                                      <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                                        <span style={{ color: FUP_C.text, fontWeight: 600, fontSize: 12 }}>{"Visita " + (vIdx+1) + " · " + (v.data || "Sem data")}</span>
-                                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>{v.tipo || ""}</span>
-                                        {v.indicacoes && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Indicações: <b style={{ color: FUP_C.teal }}>{v.indicacoes}</b></span>}
-                                        {v.procedimentos && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{v.procedimentos}</b></span>}
-                                        {v.obs && <span style={{ color: FUP_C.textMuted, fontSize: 12, fontStyle: "italic" }}>💬 {v.obs}</span>}
-                                      </div>
-                                    </div>
-                                  ))}
-                                </div>
-                              </td>
-                            </tr>
-                          )}
                         ))}
                       </tbody>
                     </table>
@@ -3225,23 +3191,6 @@ function AulasReferidoresProject({ data, onChange }) {
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
           <FupBtn variant="ghost" onClick={() => setEventoModal(false)}>Cancelar</FupBtn>
           <FupBtn onClick={saveEvento}>Salvar Evento</FupBtn>
-        </div>
-      </FupModal>
-
-      {/* Modal Nova Visita Referidor */}
-      <FupModal open={!!visitaModal} onClose={() => setVisitaModal(null)} title="Registrar Visita ao Referidor">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Data" type="date" value={visitaForm.data} onChange={(v) => setVisitaForm({ ...visitaForm, data: v })} />
-          <FupSelect label="Tipo" value={visitaForm.tipo} onChange={(v) => setVisitaForm({ ...visitaForm, tipo: v })} options={["Visita presencial", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
-          <FupInput label="Indicações geradas" type="number" value={visitaForm.indicacoes} onChange={(v) => setVisitaForm({ ...visitaForm, indicacoes: v })} />
-          <FupInput label="Procedimentos gerados" type="number" value={visitaForm.procedimentos} onChange={(v) => setVisitaForm({ ...visitaForm, procedimentos: v })} />
-          <div style={{ gridColumn: "span 2" }}>
-            <FupInput label="Observações" value={visitaForm.obs} onChange={(v) => setVisitaForm({ ...visitaForm, obs: v })} />
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setVisitaModal(null)}>Cancelar</FupBtn>
-          <FupBtn onClick={saveVisita} style={{ background: FUP_C.blue, border: "none" }}>Registrar Visita</FupBtn>
         </div>
       </FupModal>
 
