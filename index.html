@@ -3243,6 +3243,7 @@ function AulasReferidoresProject({ data, onChange }) {
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <FupBtn size="sm" onClick={() => setRefModal(ev.id)} style={{ background: FUP_C.blue, border: "none" }}>+ Referidor</FupBtn>
+                    <FupBtn size="sm" variant="ghost" onClick={() => setEditEventoModal({ ...ev })}>✏️</FupBtn>
                     <FupBtn size="sm" variant="danger" onClick={() => delEvento(ev.id)}>✕</FupBtn>
                   </div>
                 </div>
@@ -3262,10 +3263,10 @@ function AulasReferidoresProject({ data, onChange }) {
                             <td style={{ padding: "8px 10px", color: FUP_C.text, fontWeight: 600 }}>{r.medico || "—"}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.textMuted }}>{r.especialidade || "—"}</td>
                             <td style={{ padding: "8px 10px" }}><FupPill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM1 || 0}</td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM2 || 0}</td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM3 || 0}</td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.green, fontWeight: 700, textAlign: "center" }}>{r.procedimentosGerados || 0}</td>
+                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{(+r.indicacoesM1||0) + (r.visitas||[]).reduce((a,v)=>a+(+v.indicacoes||0),0)}</td>
+                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{(+r.indicacoesM2||0)}</td>
+                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{(+r.indicacoesM3||0)}</td>
+                            <td style={{ padding: "8px 10px", color: FUP_C.green, fontWeight: 700, textAlign: "center" }}>{(+r.procedimentosGerados||0) + (r.visitas||[]).reduce((a,v)=>a+(+v.procedimentos||0),0)}</td>
                             <td style={{ padding: "8px 10px" }}>
                               <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
                                 <button onClick={() => setVisitaModal({ evId: ev.id, refId: r.id })} style={{ background: FUP_C.blue, color: "#fff", border: "none", borderRadius: 6, padding: "4px 10px", fontSize: 11, fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>+ Visita</button>
