@@ -3916,6 +3916,13 @@ function PacientesReferidoresProject({ data, onChange }) {
                       <FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn>
                     </td>
                   </tr>
+                  {r.obs && (
+                    <tr key={r.id+"_obs"}>
+                      <td colSpan={8} style={{ padding: "0 10px 8px", color: FUP_C.textMuted, fontSize: 12, fontStyle: "italic" }}>
+                        💬 {r.obs}
+                      </td>
+                    </tr>
+                  )}
                 ))}
               </tbody>
             </table>
@@ -4309,52 +4316,14 @@ function FupProjetos() {
       `}</style>
 
       {/* HEADER */}
-      <div style={{
-        background: FUP_C.card, borderBottom: `1px solid ${FUP_C.border}`,
-        padding: "16px 32px", display: "flex", alignItems: "center", gap: 16,
-        position: "sticky", top: 0, zIndex: 100,
-      }}>
-        {activeProject && (
+      {activeProject && (
+        <div style={{ padding: "12px 20px 0 20px" }}>
           <button onClick={() => setActiveProject(null)} style={{
             background: "transparent", border: `1px solid ${FUP_C.border}`, borderRadius: 8,
             color: FUP_C.textMuted, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600,
-          }}>← Voltar</button>
-        )}
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <div style={{ width: 32, height: 32, background: `linear-gradient(135deg, ${FUP_C.teal}, ${FUP_C.tealDark})`, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>📌</div>
-          <div>
-            <div style={{ color: FUP_C.textDim, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase" }}>ESG Intelligence Hub</div>
-            <div style={{ color: FUP_C.text, fontSize: 15, fontWeight: 700 }}>
-              {activeProjectMeta ? activeProjectMeta.label : "FUP Projetos"}
-            </div>
-          </div>
+          }}>← Voltar para Projetos</button>
         </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 16, alignItems: "center" }}>
-          {!activeProject && (
-            <>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ color: FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>PROCEDIMENTOS</div>
-                <div style={{ color: FUP_C.teal, fontSize: 18, fontWeight: 800 }}>{aggStats.totalProcedimentos}</div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ color: FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>MÉDICOS</div>
-                <div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 800 }}>{aggStats.totalMedicos}</div>
-              </div>
-              <div style={{ textAlign: "right" }}>
-                <div style={{ color: FUP_C.textDim, fontSize: 10, letterSpacing: "0.06em" }}>LEADS</div>
-                <div style={{ color: FUP_C.purple, fontSize: 18, fontWeight: 800 }}>{aggStats.totalLeads}</div>
-              </div>
-            </>
-          )}
-          {activeProjectMeta && (
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: `${activeProjectMeta.color}22`, border: `1px solid ${activeProjectMeta.color}44`,
-              display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18,
-            }}>{activeProjectMeta.icon}</div>
-          )}
-        </div>
-      </div>
+      )}
 
       <div style={{ padding: "32px" }}>
         {!activeProject ? (
