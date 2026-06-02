@@ -4617,7 +4617,7 @@ function FupProjetos() {
     totalLeads: pStats.leap.leads + pStats.pacRef.leads,
     totalMedicos: pStats.aulasRef.medicos + pStats.bariatricos.medicos + pStats.endoscopistas.medicos + pStats.imersao.medicos,
     totalEventos: pStats.esgDay.eventos + pStats.aulasRef.eventos,
-    totalReceita: (pStats.esgDay.receita || 0) + (pStats.aulasRef.receita || 0),
+    totalReceita: (pStats.esgDay.receita || 0) + (pStats.aulasRef.receita || 0) + (pStats.leap.receita || 0) + (pStats.pacRef.receita || 0),
     receitaESG: pStats.esgDay.receita,
   };
 
@@ -4713,6 +4713,7 @@ function FupProjetos() {
                 { label: "Leads em Funil", value: aggStats.totalLeads, color: FUP_C.purple, icon: "👥" },
                 { label: "Médicos Engajados", value: aggStats.totalMedicos, color: FUP_C.blue, icon: "👨‍⚕️" },
                 { label: "Eventos Realizados", value: aggStats.totalEventos, color: FUP_C.teal, icon: "🎯" },
+                { label: "Receita Est.", value: aggStats.totalReceita > 0 ? `$ ${(aggStats.totalReceita/1000).toFixed(1)}k` : "—", color: FUP_C.yellow, icon: "💰" },
               ].map((s, i) => (
                 <div key={i} style={{
                   flex: 1, minWidth: 120, padding: "0 20px",
