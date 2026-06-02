@@ -2873,13 +2873,18 @@ function EsgDayProject({ data, onChange }) {
 
   const records = data || [];
 
-  const totals = records.reduce((a, r) => ({
-    eventos: a.eventos + 1,
-    compareceram: a.compareceram + (+r.compareceram || 0),
-    procedimentos: a.procedimentos + (+r.procedimentos30d || 0),
-    receita: a.receita + ((+r.procedimentos30d || 0) * (+r.ticketMedio || 0)),
-    custo: a.custo + (+r.custoEvento || 0),
-  }), { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
+  const totals = records.reduce((a, r) => {
+    const procBase = +r.procedimentos30d || 0;
+    const procVisitas = (r.followups||[]).reduce((s,f) => s + (+f.procedimentosFechados||0), 0);
+    const procTotal = procBase + procVisitas;
+    return {
+      eventos: a.eventos + 1,
+      compareceram: a.compareceram + (+r.compareceram || 0),
+      procedimentos: a.procedimentos + procTotal,
+      receita: a.receita + (procTotal * (+r.ticketMedio || 0)),
+      custo: a.custo + (+r.custoEvento || 0),
+    };
+  }, { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
 
   const conversaoMedia = totals.compareceram > 0
     ? ((totals.procedimentos / totals.compareceram) * 100).toFixed(1)
@@ -3263,7 +3268,7 @@ function AulasReferidoresProject({ data, onChange }) {
                             <td style={{ padding: "8px 10px", color: FUP_C.text, fontWeight: 600 }}>{r.medico || "—"}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.textMuted }}>{r.especialidade || "—"}</td>
                             <td style={{ padding: "8px 10px" }}><FupPill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{(+r.indicacoesM1||0) + (r.visitas||[]).reduce((a,v)=>a+(+v.indicacoes||0),0)}</td>
+                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{+r.indicacoesM1||0}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{(+r.indicacoesM2||0)}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{(+r.indicacoesM3||0)}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.green, fontWeight: 700, textAlign: "center" }}>{(+r.procedimentosGerados||0) + (r.visitas||[]).reduce((a,v)=>a+(+v.procedimentos||0),0)}</td>
@@ -3425,7 +3430,7 @@ function CampanhaInternaProject({ data, onChange }) {
   const totals = {
     total: records.length,
     contatados: records.filter((r) => !["Novo Lead", "Tentativa 1", "Tentativa 2"].includes(r.statusFunil) && r.statusFunil !== "Perdido").length,
-    convertidos: records.filter((r) => r.conversao === "Sim").length,
+    convertidos: records.filter((r) => r.conversao === "Sim" || (r.followups||[]).some(f => f.statusContato === "Convertido")).length,
     perdidos: records.filter((r) => r.statusFunil === "Perdido").length,
     receita: records.filter((r) => r.conversao === "Sim").reduce((a, r) => a + (+r.valorProcedimento || 0), 0),
   };
@@ -4023,7 +4028,7 @@ function PacientesReferidoresProject({ data, onChange }) {
     contatados: records.filter((r) => r.statusContato === "Contato Realizado").length,
     agendados: records.filter((r) => ["Agendado", "Confirmado"].includes(r.statusAgendamento)).length,
     compareceram: records.filter((r) => r.statusComparecimento === "Compareceu").length,
-    procedimentos: records.filter((r) => r.procedimentoFechado === "Sim").length,
+    procedimentos: records.filter((r) => r.procedimentoFechado === "Sim" || (r.followups||[]).some(f => f.resultado && f.resultado.toLowerCase().includes("fechado"))).length,
     perdidos: records.filter((r) => r.statusFunil === "Perdido").length,
   };
 
