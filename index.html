@@ -3470,7 +3470,8 @@ function CampanhaInternaProject({ data, onChange }) {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
+                  <React.Fragment key={r.id}>
+                  <tr key={r.id + "_row"} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                     <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.dataLead || "—"}</td>
                     <td style={{ padding: "12px", color: FUP_C.text, fontWeight: 600 }}>{r.nomePaciente || "—"}</td>
                     <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.colaboradorIndicador || "—"}</td>
@@ -3510,6 +3511,7 @@ function CampanhaInternaProject({ data, onChange }) {
                       </td>
                     </tr>
                   )}
+                    </React.Fragment>
                 ))}
               </tbody>
             </table>
@@ -4070,7 +4072,8 @@ function PacientesReferidoresProject({ data, onChange }) {
               </thead>
               <tbody>
                 {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
+                  <React.Fragment key={r.id}>
+                  <tr key={r.id + "_row"} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
                     <td style={{ padding: "10px", color: FUP_C.text, fontWeight: 600 }}>
                       <div>{r.paciente || "—"}</div>
                       <div style={{ color: FUP_C.textMuted, fontSize: 11 }}>{r.cidade}</div>
@@ -4126,6 +4129,7 @@ function PacientesReferidoresProject({ data, onChange }) {
                       </td>
                     </tr>
                   )}
+                    </React.Fragment>
                 ))}
               </tbody>
             </table>
