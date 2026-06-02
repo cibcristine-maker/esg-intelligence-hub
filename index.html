@@ -3235,6 +3235,7 @@ function AulasReferidoresProject({ data, onChange }) {
         <FupKPICard label="Com CRM" value={totals.comCRM} color={FUP_C.teal} />
         <FupKPICard label="Indicações" value={totals.indicacoes} />
         <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Receita Est." value={totals.procedimentos > 0 ? `$ ${(totals.procedimentos * 1680 / 1000).toFixed(1)}k` : "—"} color={FUP_C.teal} icon="💰" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -4104,6 +4105,7 @@ function PacientesReferidoresProject({ data, onChange }) {
         <FupKPICard label="Agendados" value={totals.agendados} color={FUP_C.teal} />
         <FupKPICard label="Compareceram" value={totals.compareceram} color={FUP_C.purple} />
         <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Receita Est." value={totals.procedimentos > 0 ? `$ ${(totals.procedimentos * 1680 / 1000).toFixed(1)}k` : "—"} color={FUP_C.teal} icon="💰" />
         <FupKPICard label="Conversão" value={`${convRate}%`} color={convRate >= 40 ? FUP_C.green : convRate >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: 40–50%" />
         <FupKPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
       </div>
@@ -4541,6 +4543,7 @@ function FupProjetos() {
       comCRM: (state.aulasReferidores?.eventos || []).reduce((a, ev) => a + (ev.referidores||[]).filter((r) => r.possuiCRM === "Sim").length, 0),
       indicacoes: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.indicacoesM1||0) + (+r.indicacoesM2||0) + (+r.indicacoesM3||0) + (r.visitas||[]).reduce((c,v)=>c+(+v.indicacoes||0),0), a), 0),
       procedimentos: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.procedimentosGerados||0) + (r.visitas||[]).reduce((c,v)=>c+(+v.procedimentos||0),0), a), 0),
+      receita: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + ((+r.procedimentosGerados||0) + (r.visitas||[]).reduce((c,v)=>c+(+v.procedimentos||0),0)) * 1680, a), 0),
     },
     leap: {
       leads: state.campanhaInterna?.length || 0,
@@ -4593,6 +4596,7 @@ function FupProjetos() {
     totalLeads: pStats.leap.leads + pStats.pacRef.leads,
     totalMedicos: pStats.aulasRef.medicos + pStats.bariatricos.medicos + pStats.endoscopistas.medicos + pStats.imersao.medicos,
     totalEventos: pStats.esgDay.eventos + pStats.aulasRef.eventos,
+    totalReceita: (pStats.esgDay.receita || 0) + (pStats.aulasRef.receita || 0),
     receitaESG: pStats.esgDay.receita,
   };
 
