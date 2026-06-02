@@ -4088,20 +4088,13 @@ function ImersaoMarketingProject({ data, onChange }) {
       </FupModal>
 
       <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Follow-up — Imersão Marketing">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
-          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
-          <FupSelect label="Instagram Ativo?" value={fupForm.instagramAtivo} onChange={(v) => setFupForm({ ...fupForm, instagramAtivo: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <FupInput label="Seguidores" type="number" value={fupForm.seguidores} onChange={(v) => setFupForm({ ...fupForm, seguidores: v })} />
-          <FupInput label="Posts/mês" type="number" value={fupForm.postsMes} onChange={(v) => setFupForm({ ...fupForm, postsMes: v })} />
           <FupInput label="GEO Score (0–10)" type="number" value={fupForm.geoScore} onChange={(v) => setFupForm({ ...fupForm, geoScore: v })} />
-          <FupSelect label="Visível no ChatGPT?" value={fupForm.llmVisivelChatGPT} onChange={(v) => setFupForm({ ...fupForm, llmVisivelChatGPT: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
-          <FupSelect label="Visível no Google/Gemini?" value={fupForm.llmVisivelGoogle} onChange={(v) => setFupForm({ ...fupForm, llmVisivelGoogle: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
+          <FupInput label="Seguidores" type="number" value={fupForm.seguidores} onChange={(v) => setFupForm({ ...fupForm, seguidores: v })} />
           <FupInput label="Leads Orgânicos" type="number" value={fupForm.leadsOrganicos} onChange={(v) => setFupForm({ ...fupForm, leadsOrganicos: v })} />
           <FupInput label="Procedimentos Gerados" type="number" value={fupForm.procedimentosGerados} onChange={(v) => setFupForm({ ...fupForm, procedimentosGerados: v })} />
-          <div style={{ gridColumn: "span 2" }}>
-            <FupInput label="Observações / Ações concluídas" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
-          </div>
+          <FupInput label="Observações" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
           <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
