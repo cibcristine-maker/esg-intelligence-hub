@@ -1024,7 +1024,8 @@ function Medicos() {
   const filtered = medicos.filter(m => {
     const q = search.toLowerCase();
     return (!q || m.nome?.toLowerCase().includes(q) || m.estado?.toLowerCase().includes(q))
-      && (!filterTier || String(m.tier) === filterTier);
+      && (!filterTier || String(m.tier) === filterTier)
+      && (!filterAccount || (m.account || "") === filterAccount);
   }).sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   const saveAccount = async (medicoId, val) => {
