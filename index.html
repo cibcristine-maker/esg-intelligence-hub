@@ -3335,6 +3335,23 @@ function AulasReferidoresProject({ data, onChange }) {
         </div>
       </FupModal>
 
+      {/* Modal Editar Evento — Aulas Referidores */}
+      <FupModal open={!!editEventoModal} onClose={() => setEditEventoModal(null)} title="Editar Evento">
+        {editEventoModal && (
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <FupInput label="Nome do Evento" value={editEventoModal.nome} onChange={(v) => setEditEventoModal({ ...editEventoModal, nome: v })} style={{ gridColumn: "span 2" }} />
+            <FupInput label="Data" type="date" value={editEventoModal.dataEvento} onChange={(v) => setEditEventoModal({ ...editEventoModal, dataEvento: v })} />
+            <FupInput label="Cidade" value={editEventoModal.cidade} onChange={(v) => setEditEventoModal({ ...editEventoModal, cidade: v })} />
+            <FupInput label="Médico Executor" value={editEventoModal.medicoExecutor} onChange={(v) => setEditEventoModal({ ...editEventoModal, medicoExecutor: v })} style={{ gridColumn: "span 2" }} />
+            <FupInput label="Local" value={editEventoModal.local} onChange={(v) => setEditEventoModal({ ...editEventoModal, local: v })} />
+            <FupInput label="Obs" value={editEventoModal.obs} onChange={(v) => setEditEventoModal({ ...editEventoModal, obs: v })} />
+            <div style={{ gridColumn: "span 2", display: "flex", justifyContent: "flex-end", gap: 12 }}>
+              <FupBtn variant="ghost" onClick={() => setEditEventoModal(null)}>Cancelar</FupBtn>
+              <FupBtn onClick={() => saveEditEvento(editEventoModal)} style={{ background: FUP_C.blue, border: "none" }}>Salvar Alterações</FupBtn>
+            </div>
+          </div>
+        )}
+      </FupModal>
       {/* Modal Editar Referidor */}
       <FupModal open={!!editRefModal} onClose={() => setEditRefModal(null)} title="Editar Referidor">
         {editRefModal && (<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
