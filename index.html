@@ -8,11 +8,12 @@
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
-  <script src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
+<script src="https://unpkg.com/recharts@2/umd/Recharts.js"></script>
 </head>
 <body>
 <div id="root"></div>
 <script type="text/babel">
+const { useState, useEffect, useCallback } = React;
 const supabaseClient = window.supabase.createClient(
   "https://vumtiszgrcjzgekkpgmp.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bXRpc3pncmNqemdla2twZ21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MTk0NjUsImV4cCI6MjA5NTQ5NTQ2NX0.eWO05aayH7lmb5eOuEOwjyEoVx-SGWKh-MBZspfH_Xk"
@@ -520,7 +521,7 @@ function probBadge(prob) {
   return <span className={`badge ${map[prob] || "badge-sem"}`}>{prob || "—"}</span>;
 }
 
-function FupToast({ msg, onHide }) {
+function Toast({ msg, onHide }) {
   useEffect(() => { const t = setTimeout(onHide, 2800); return () => clearTimeout(t); }, []);
   return <div className="toast">✓ {msg}</div>;
 }
@@ -868,7 +869,7 @@ function Visitas() {
           onDelete={handleDelete}
         />
       )}
-      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -1119,7 +1120,7 @@ function Medicos() {
         </div>
       )}
       {selected && <MedicoModal medico={selected} onClose={() => setSelected(null)} />}
-      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -1402,7 +1403,7 @@ function Ativacao() {
           )}
         </div>
       )}
-      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2027,7 +2028,7 @@ function Metas() {
           onClose={() => setEditing(null)}
         />
       )}
-      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2220,7 +2221,7 @@ function Historico() {
           onDelete={handleDelete}
         />
       )}
-      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2327,7 +2328,7 @@ function BaseDados() {
           onClose={() => setShowNew(false)}
         />
       )}
-      {toast2 && <FupToast msg={toast2} onHide={() => setToast2(null)} />}
+      {toast2 && <Toast msg={toast2} onHide={() => setToast2(null)} />}
 
       {loadingM ? <div className="loading"><div className="spinner"/>Carregando...</div> : (
         <div className="card" style={{padding:0}}>
@@ -2382,7 +2383,7 @@ function BaseDados() {
           onClose={() => setSelected(null)}
         />
       )}
-      {toast && <FupToast msg={toast} onHide={() => setToast(null)} />}
+      {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
     </div>
   );
 }
@@ -2571,13 +2572,14 @@ const TABS = [
   { id:"consulta",   label:"Consulta Médico", icon:"🔍" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
 ];
-// ─── FUP PROJETOS — ESG Intelligence Hub ───────────────────────────────────
-const {
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  RadarChart, Radar, PolarGrid, PolarAngleAxis
-} = Recharts;
 
+// ════════════════════════════════════════════════════════════════
+// FUP PROJETOS — ESG Intelligence Hub
+// ════════════════════════════════════════════════════════════════
+const { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip: RC_Tooltip, Legend,
+  ResponsiveContainer, RadarChart, Radar, PolarGrid, PolarAngleAxis
+} = Recharts;
 
 // ─── PALETTE ───────────────────────────────────────────────────────────────
 const FUP_C = {
@@ -2601,10 +2603,10 @@ const FUP_C = {
 };
 
 // ─── STORAGE KEY ───────────────────────────────────────────────────────────
-const STORAGE_KEY = "esg_hub_fup_projetos_v2";
+const FUP_STORAGE_KEY = "esg_hub_fup_projetos_v2";
 
 // ─── INITIAL STATE ─────────────────────────────────────────────────────────
-const initialState = {
+const fupInitialState = {
   esgDay: [],
   aulasReferidores: [],
   campanhaInterna: [],
@@ -2639,40 +2641,40 @@ const initialState = {
 };
 
 // ─── LOAD / SAVE ────────────────────────────────────────────────────────────
-function loadData() {
+function fupLoadData() {
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return initialState;
+    const raw = localStorage.getItem(FUP_STORAGE_KEY);
+    if (!raw) return fupInitialState;
     const parsed = JSON.parse(raw);
     // deep merge to preserve new fields
     return {
-      ...initialState,
+      ...fupInitialState,
       ...parsed,
       cursoBariatricos: {
-        ...initialState.cursoBariatricos,
+        ...fupInitialState.cursoBariatricos,
         ...parsed.cursoBariatricos,
         medicos: parsed.cursoBariatricos?.medicos?.length
           ? parsed.cursoBariatricos.medicos
-          : initialState.cursoBariatricos.medicos,
+          : fupInitialState.cursoBariatricos.medicos,
       },
       cursoEndoscopistas: {
-        ...initialState.cursoEndoscopistas,
+        ...fupInitialState.cursoEndoscopistas,
         ...parsed.cursoEndoscopistas,
       },
       imersaoMarketing: {
-        ...initialState.imersaoMarketing,
+        ...fupInitialState.imersaoMarketing,
         ...parsed.imersaoMarketing,
       },
     };
   } catch (e) {
     console.error("Load error:", e);
-    return initialState;
+    return fupInitialState;
   }
 }
 
-function saveData(data) {
+function fupSaveData(data) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    localStorage.setItem(FUP_STORAGE_KEY, JSON.stringify(data));
     return true;
   } catch (e) {
     console.error("Save error:", e);
@@ -2681,9 +2683,9 @@ function saveData(data) {
 }
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
-const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+const fupUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
 
-function KPICard({ label, value, sub, color = FUP_C.teal, icon }) {
+function FupKPICard({ label, value, sub, color = FUP_C.teal, icon }) {
   return (
     <div style={{
       background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12,
@@ -2701,7 +2703,7 @@ function KPICard({ label, value, sub, color = FUP_C.teal, icon }) {
   );
 }
 
-function SectionTitle({ children, accent = FUP_C.teal }) {
+function FupSectionTitle({ children, accent = FUP_C.teal }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
       <div style={{ width: 4, height: 24, background: accent, borderRadius: 2 }} />
@@ -2710,7 +2712,7 @@ function SectionTitle({ children, accent = FUP_C.teal }) {
   );
 }
 
-function Pill({ label, color }) {
+function FupPill({ label, color }) {
   const map = {
     verde: { bg: "#052D1A", color: FUP_C.green, border: "#0D4A2A" },
     amarelo: { bg: "#2D2200", color: FUP_C.yellow, border: "#4A3800" },
@@ -2728,7 +2730,7 @@ function Pill({ label, color }) {
   );
 }
 
-function Input({ label, value, onChange, type = "text", placeholder, required, style }) {
+function FupInput({ label, value, onChange, type = "text", placeholder, required, style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
       {label && <label style={{ color: FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}{required && <span style={{ color: FUP_C.red }}> *</span>}</label>}
@@ -2749,7 +2751,7 @@ function Input({ label, value, onChange, type = "text", placeholder, required, s
   );
 }
 
-function Select({ label, value, onChange, options, style }) {
+function FupSelect({ label, value, onChange, options, style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
       {label && <label style={{ color: FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}</label>}
@@ -2769,7 +2771,7 @@ function Select({ label, value, onChange, options, style }) {
   );
 }
 
-function Btn({ children, onClick, variant = "primary", size = "md", style }) {
+function FupBtn({ children, onClick, variant = "primary", size = "md", style }) {
   const styles = {
     primary: { background: FUP_C.teal, color: "#fff", border: "none" },
     ghost: { background: "transparent", color: FUP_C.teal, border: `1px solid ${FUP_C.teal}` },
@@ -2792,7 +2794,7 @@ function Btn({ children, onClick, variant = "primary", size = "md", style }) {
   );
 }
 
-function Modal({ open, onClose, title, children, width = 680 }) {
+function FupModal({ open, onClose, title, children, width = 680 }) {
   if (!open) return null;
   return (
     <div style={{
@@ -2814,7 +2816,7 @@ function Modal({ open, onClose, title, children, width = 680 }) {
   );
 }
 
-const FUP_TOAST_DURATION = 2800;
+const FUP_TOAST_DUR = 2800;
 function FupProjToast({ msg, type }) {
   const bg = type === "success" ? "#052D1A" : type === "error" ? "#2D0505" : "#051A2D";
   const border = type === "success" ? FUP_C.green : type === "error" ? FUP_C.red : FUP_C.blue;
@@ -2834,7 +2836,7 @@ function FupProjToast({ msg, type }) {
 }
 
 // ─── PROJECT CARDS (LANDING) ─────────────────────────────────────────────────
-const PROJECTS = [
+const FUP_PROJECTS = [
   { id: "esgDay", label: "ESG Day", icon: "🎯", desc: "Eventos em clínicas com pacientes elegíveis. Seguimento de comparecimento, fechamento e ROI.", color: FUP_C.teal },
   { id: "aulasReferidores", label: "Aulas Referidores", icon: "📚", desc: "Capacitação de médicos referidores. KPIs de engajamento, indicações e conversão.", color: FUP_C.blue },
   { id: "campanhaInterna", label: "Campanha Indicação Interna", icon: "🔗", desc: "Campanha Leap Plus — colaboradores indicando pacientes para procedimentos.", color: FUP_C.purple },
@@ -2874,7 +2876,7 @@ function EsgDayProject({ data, onChange }) {
     : "—";
 
   const save = () => {
-    const newRec = { ...form, id: uid() };
+    const newRec = { ...form, id: fupUid() };
     onChange([...records, newRec]);
     setModal(false);
     setForm({ clinica: "", cidade: "", data: "", responsavel: "", medico: "", pacientesElegiveis: "", convidados: "", confirmados: "", compareceram: "", procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "" });
@@ -2901,12 +2903,12 @@ function EsgDayProject({ data, onChange }) {
     <div>
       {/* KPIs */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <KPICard label="Total Eventos" value={totals.eventos} icon="🎯" />
-        <KPICard label="Compareceram" value={totals.compareceram} icon="👥" />
-        <KPICard label="Procedimentos 30d" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
-        <KPICard label="Conversão Média" value={`${conversaoMedia}%`} color={conversaoMedia >= 40 ? FUP_C.green : conversaoMedia >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
-        <KPICard label="Receita Total" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
-        <KPICard label="ROI Médio" value={`${roi}%`} color={FUP_C.purple} sub="Custo vs Receita" icon="📈" />
+        <FupKPICard label="Total Eventos" value={totals.eventos} icon="🎯" />
+        <FupKPICard label="Compareceram" value={totals.compareceram} icon="👥" />
+        <FupKPICard label="Procedimentos 30d" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Conversão Média" value={`${conversaoMedia}%`} color={conversaoMedia >= 40 ? FUP_C.green : conversaoMedia >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
+        <FupKPICard label="Receita Total" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
+        <FupKPICard label="ROI Médio" value={`${roi}%`} color={FUP_C.purple} sub="Custo vs Receita" icon="📈" />
       </div>
 
       {/* Tabs */}
@@ -2919,7 +2921,7 @@ function EsgDayProject({ data, onChange }) {
             border: `1px solid ${activeTab === t ? FUP_C.teal : FUP_C.border}`,
           }}>{t === "form" ? "📋 Registros" : "📊 Dashboard"}</button>
         ))}
-        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Evento</Btn>
+        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Evento</FupBtn>
       </div>
 
       {activeTab === "form" ? (
@@ -2957,10 +2959,10 @@ function EsgDayProject({ data, onChange }) {
                         <td style={{ padding: "12px 12px", color: FUP_C.green, textAlign: "center", fontWeight: 700 }}>{r.procedimentos30d || 0}</td>
                         <td style={{ padding: "12px 12px", color: FUP_C.teal }}>{rec > 0 ? `R$ ${(rec / 1000).toFixed(0)}k` : "—"}</td>
                         <td style={{ padding: "12px 12px" }}>
-                          <Pill label={roi} color={roi !== "—" && +roi >= 0 ? "verde" : "vermelho"} />
+                          <FupPill label={roi} color={roi !== "—" && +roi >= 0 ? "verde" : "vermelho"} />
                         </td>
                         <td style={{ padding: "12px 12px" }}>
-                          <Btn variant="danger" size="sm" onClick={() => del(r.id)}>✕</Btn>
+                          <FupBtn variant="danger" size="sm" onClick={() => del(r.id)}>✕</FupBtn>
                         </td>
                       </tr>
                     );
@@ -2973,13 +2975,13 @@ function EsgDayProject({ data, onChange }) {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <SectionTitle>Funil por Clínica</SectionTitle>
+            <FupSectionTitle>Funil por Clínica</FupSectionTitle>
             <ResponsiveContainer width="100%" height={240}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
                 <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
                 <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 <Legend />
                 <Bar dataKey="Convidados" fill={FUP_C.blue} radius={[4, 4, 0, 0]} />
                 <Bar dataKey="Compareceram" fill={FUP_C.teal} radius={[4, 4, 0, 0]} />
@@ -2988,14 +2990,14 @@ function EsgDayProject({ data, onChange }) {
             </ResponsiveContainer>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <SectionTitle>ROI por Clínica (%)</SectionTitle>
+            <FupSectionTitle>ROI por Clínica (%)</FupSectionTitle>
             {roiData.length > 0 ? (
               <ResponsiveContainer width="100%" height={240}>
                 <BarChart data={roiData}>
                   <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
                   <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
                   <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                  <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                   <Bar dataKey="ROI" fill={FUP_C.purple} radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -3003,7 +3005,7 @@ function EsgDayProject({ data, onChange }) {
           </div>
           {/* SLAs */}
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle>📋 Rota de KPIs e SLAs — ESG Day</SectionTitle>
+            <FupSectionTitle>📋 Rota de KPIs e SLAs — ESG Day</FupSectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "Taxa de Comparecimento", meta: "≥ 50% dos convidados", freq: "Por evento", alerta: "< 40% = revisar convite/CRM" },
@@ -3026,29 +3028,29 @@ function EsgDayProject({ data, onChange }) {
       )}
 
       {/* Modal Novo Evento */}
-      <Modal open={modal} onClose={() => setModal(false)} title="Registrar Evento ESG Day">
+      <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Evento ESG Day">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Clínica" value={form.clinica} onChange={(v) => setForm({ ...form, clinica: v })} required />
-          <Input label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
-          <Input label="Data do Evento" type="date" value={form.data} onChange={(v) => setForm({ ...form, data: v })} />
-          <Input label="Responsável (Account)" value={form.responsavel} onChange={(v) => setForm({ ...form, responsavel: v })} />
-          <Input label="Médico" value={form.medico} onChange={(v) => setForm({ ...form, medico: v })} />
-          <Input label="Pacientes Elegíveis (CRM)" type="number" value={form.pacientesElegiveis} onChange={(v) => setForm({ ...form, pacientesElegiveis: v })} />
-          <Input label="Convidados" type="number" value={form.convidados} onChange={(v) => setForm({ ...form, convidados: v })} />
-          <Input label="Confirmados" type="number" value={form.confirmados} onChange={(v) => setForm({ ...form, confirmados: v })} />
-          <Input label="Compareceram" type="number" value={form.compareceram} onChange={(v) => setForm({ ...form, compareceram: v })} />
-          <Input label="Procedimentos Fechados (30d)" type="number" value={form.procedimentos30d} onChange={(v) => setForm({ ...form, procedimentos30d: v })} />
-          <Input label="Ticket Médio (R$)" type="number" value={form.ticketMedio} onChange={(v) => setForm({ ...form, ticketMedio: v })} />
-          <Input label="Custo do Evento (R$)" type="number" value={form.custoEvento} onChange={(v) => setForm({ ...form, custoEvento: v })} />
+          <FupInput label="Clínica" value={form.clinica} onChange={(v) => setForm({ ...form, clinica: v })} required />
+          <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
+          <FupInput label="Data do Evento" type="date" value={form.data} onChange={(v) => setForm({ ...form, data: v })} />
+          <FupInput label="Responsável (Account)" value={form.responsavel} onChange={(v) => setForm({ ...form, responsavel: v })} />
+          <FupInput label="Médico" value={form.medico} onChange={(v) => setForm({ ...form, medico: v })} />
+          <FupInput label="Pacientes Elegíveis (CRM)" type="number" value={form.pacientesElegiveis} onChange={(v) => setForm({ ...form, pacientesElegiveis: v })} />
+          <FupInput label="Convidados" type="number" value={form.convidados} onChange={(v) => setForm({ ...form, convidados: v })} />
+          <FupInput label="Confirmados" type="number" value={form.confirmados} onChange={(v) => setForm({ ...form, confirmados: v })} />
+          <FupInput label="Compareceram" type="number" value={form.compareceram} onChange={(v) => setForm({ ...form, compareceram: v })} />
+          <FupInput label="Procedimentos Fechados (30d)" type="number" value={form.procedimentos30d} onChange={(v) => setForm({ ...form, procedimentos30d: v })} />
+          <FupInput label="Ticket Médio (R$)" type="number" value={form.ticketMedio} onChange={(v) => setForm({ ...form, ticketMedio: v })} />
+          <FupInput label="Custo do Evento (R$)" type="number" value={form.custoEvento} onChange={(v) => setForm({ ...form, custoEvento: v })} />
           <div style={{ gridColumn: "span 2" }}>
-            <Input label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
+            <FupInput label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-          <Btn onClick={save}>Salvar Evento</Btn>
+          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
+          <FupBtn onClick={save}>Salvar Evento</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
     </div>
   );
 }
@@ -3077,7 +3079,7 @@ function AulasReferidoresProject({ data, onChange }) {
   const convRate = totals.indicacoes > 0 ? ((totals.procedimentos / totals.indicacoes) * 100).toFixed(1) : 0;
 
   const save = () => {
-    onChange([...records, { ...form, id: uid() }]);
+    onChange([...records, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ medico: "", especialidade: "", cidade: "", account: "", dataAula: "", compareceu: "Sim", possuiCRM: "Não", crmEstrutruado: "Não", indicacoesM1: "", indicacoesM2: "", indicacoesM3: "", procedimentosGerados: "", ticketMedio: "", status: "Ativo", obs: "" });
   };
@@ -3091,11 +3093,11 @@ function AulasReferidoresProject({ data, onChange }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <KPICard label="Médicos Treinados" value={totals.medicos} icon="📚" />
-        <KPICard label="Com CRM Ativo" value={totals.comCRM} sub={`${totals.medicos > 0 ? ((totals.comCRM / totals.medicos) * 100).toFixed(0) : 0}%`} color={FUP_C.blue} icon="🗃️" />
-        <KPICard label="Indicações Geradas" value={totals.indicacoes} icon="🔗" />
-        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
-        <KPICard label="Conv. Indicação→Proc" value={`${convRate}%`} color={convRate >= 30 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 30%" icon="📊" />
+        <FupKPICard label="Médicos Treinados" value={totals.medicos} icon="📚" />
+        <FupKPICard label="Com CRM Ativo" value={totals.comCRM} sub={`${totals.medicos > 0 ? ((totals.comCRM / totals.medicos) * 100).toFixed(0) : 0}%`} color={FUP_C.blue} icon="🗃️" />
+        <FupKPICard label="Indicações Geradas" value={totals.indicacoes} icon="🔗" />
+        <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Conv. Indicação→Proc" value={`${convRate}%`} color={convRate >= 30 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 30%" icon="📊" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -3107,7 +3109,7 @@ function AulasReferidoresProject({ data, onChange }) {
             border: `1px solid ${activeTab === t ? FUP_C.blue : FUP_C.border}`,
           }}>{t === "form" ? "📋 Médicos" : "📊 Dashboard"}</button>
         ))}
-        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Referidor</Btn>
+        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Referidor</FupBtn>
       </div>
 
       {activeTab === "form" ? (
@@ -3132,12 +3134,12 @@ function AulasReferidoresProject({ data, onChange }) {
                     <td style={{ padding: "12px", color: FUP_C.text, fontWeight: 600 }}>{r.medico}</td>
                     <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.especialidade || "—"}</td>
                     <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.cidade || "—"}</td>
-                    <td style={{ padding: "12px" }}><Pill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
+                    <td style={{ padding: "12px" }}><FupPill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
                     <td style={{ padding: "12px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM1 || 0}</td>
                     <td style={{ padding: "12px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM2 || 0}</td>
                     <td style={{ padding: "12px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM3 || 0}</td>
                     <td style={{ padding: "12px", color: FUP_C.green, fontWeight: 700, textAlign: "center" }}>{r.procedimentosGerados || 0}</td>
-                    <td style={{ padding: "12px" }}><Btn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</Btn></td>
+                    <td style={{ padding: "12px" }}><FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn></td>
                   </tr>
                 ))}
               </tbody>
@@ -3147,13 +3149,13 @@ function AulasReferidoresProject({ data, onChange }) {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_C.blue}>Indicações vs Procedimentos por Médico</SectionTitle>
+            <FupSectionTitle accent={FUP_C.blue}>Indicações vs Procedimentos por Médico</FupSectionTitle>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
                 <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
                 <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 <Legend />
                 <Bar dataKey="M1" fill={FUP_C.blue} radius={[4, 4, 0, 0]} name="Mês 1" />
                 <Bar dataKey="M2" fill={FUP_C.purple} radius={[4, 4, 0, 0]} name="Mês 2" />
@@ -3163,7 +3165,7 @@ function AulasReferidoresProject({ data, onChange }) {
             </ResponsiveContainer>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_C.blue}>📋 KPIs e SLAs — Aulas Referidores</SectionTitle>
+            <FupSectionTitle accent={FUP_C.blue}>📋 KPIs e SLAs — Aulas Referidores</FupSectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "Indicações por Referidor/mês", meta: "≥ 2", freq: "Mensal", alerta: "< 1 = visita de reativação" },
@@ -3185,29 +3187,29 @@ function AulasReferidoresProject({ data, onChange }) {
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Registrar Médico Referidor">
+      <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Médico Referidor">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Nome do Médico" value={form.medico} onChange={(v) => setForm({ ...form, medico: v })} required />
-          <Input label="Especialidade" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} />
-          <Input label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
-          <Input label="Account Responsável" value={form.account} onChange={(v) => setForm({ ...form, account: v })} />
-          <Input label="Data da Aula" type="date" value={form.dataAula} onChange={(v) => setForm({ ...form, dataAula: v })} />
-          <Select label="Compareceu?" value={form.compareceu} onChange={(v) => setForm({ ...form, compareceu: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <Select label="Possui CRM?" value={form.possuiCRM} onChange={(v) => setForm({ ...form, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <Select label="CRM Estruturado?" value={form.crmEstrutruado} onChange={(v) => setForm({ ...form, crmEstrutruado: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
-          <Input label="Indicações Mês 1" type="number" value={form.indicacoesM1} onChange={(v) => setForm({ ...form, indicacoesM1: v })} />
-          <Input label="Indicações Mês 2" type="number" value={form.indicacoesM2} onChange={(v) => setForm({ ...form, indicacoesM2: v })} />
-          <Input label="Indicações Mês 3" type="number" value={form.indicacoesM3} onChange={(v) => setForm({ ...form, indicacoesM3: v })} />
-          <Input label="Procedimentos Gerados" type="number" value={form.procedimentosGerados} onChange={(v) => setForm({ ...form, procedimentosGerados: v })} />
+          <FupInput label="Nome do Médico" value={form.medico} onChange={(v) => setForm({ ...form, medico: v })} required />
+          <FupInput label="Especialidade" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} />
+          <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
+          <FupInput label="Account Responsável" value={form.account} onChange={(v) => setForm({ ...form, account: v })} />
+          <FupInput label="Data da Aula" type="date" value={form.dataAula} onChange={(v) => setForm({ ...form, dataAula: v })} />
+          <FupSelect label="Compareceu?" value={form.compareceu} onChange={(v) => setForm({ ...form, compareceu: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+          <FupSelect label="Possui CRM?" value={form.possuiCRM} onChange={(v) => setForm({ ...form, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+          <FupSelect label="CRM Estruturado?" value={form.crmEstrutruado} onChange={(v) => setForm({ ...form, crmEstrutruado: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
+          <FupInput label="Indicações Mês 1" type="number" value={form.indicacoesM1} onChange={(v) => setForm({ ...form, indicacoesM1: v })} />
+          <FupInput label="Indicações Mês 2" type="number" value={form.indicacoesM2} onChange={(v) => setForm({ ...form, indicacoesM2: v })} />
+          <FupInput label="Indicações Mês 3" type="number" value={form.indicacoesM3} onChange={(v) => setForm({ ...form, indicacoesM3: v })} />
+          <FupInput label="Procedimentos Gerados" type="number" value={form.procedimentosGerados} onChange={(v) => setForm({ ...form, procedimentosGerados: v })} />
           <div style={{ gridColumn: "span 2" }}>
-            <Input label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
+            <FupInput label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-          <Btn onClick={save}>Salvar</Btn>
+          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
+          <FupBtn onClick={save}>Salvar</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
     </div>
   );
 }
@@ -3239,7 +3241,7 @@ function CampanhaInternaProject({ data, onChange }) {
   const txConv = totals.total > 0 ? ((totals.convertidos / totals.total) * 100).toFixed(1) : 0;
 
   const save = () => {
-    onChange([...records, { ...form, id: uid() }]);
+    onChange([...records, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "", telefoneIndicador: "", area: "", statusFunil: "Novo Lead", procedimento: "", origem: "Convenção", conversao: "Não", valorProcedimento: "", motivoPerda: "", obs: "" });
   };
@@ -3255,12 +3257,12 @@ function CampanhaInternaProject({ data, onChange }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <KPICard label="Leads Totais" value={totals.total} icon="🔗" />
-        <KPICard label="Contatados" value={totals.contatados} icon="📞" />
-        <KPICard label="Convertidos" value={totals.convertidos} color={FUP_C.green} icon="✓" />
-        <KPICard label="Taxa Conversão" value={`${txConv}%`} color={txConv >= 40 ? FUP_C.green : txConv >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" />
-        <KPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
-        <KPICard label="Receita Gerada" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
+        <FupKPICard label="Leads Totais" value={totals.total} icon="🔗" />
+        <FupKPICard label="Contatados" value={totals.contatados} icon="📞" />
+        <FupKPICard label="Convertidos" value={totals.convertidos} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Taxa Conversão" value={`${txConv}%`} color={txConv >= 40 ? FUP_C.green : txConv >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" />
+        <FupKPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
+        <FupKPICard label="Receita Gerada" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -3272,7 +3274,7 @@ function CampanhaInternaProject({ data, onChange }) {
             border: `1px solid ${activeTab === t ? FUP_C.purple : FUP_C.border}`,
           }}>{t === "form" ? "📋 Leads" : "📊 Dashboard"}</button>
         ))}
-        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.purple }}>+ Novo Lead</Btn>
+        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.purple }}>+ Novo Lead</FupBtn>
       </div>
 
       {activeTab === "form" ? (
@@ -3305,8 +3307,8 @@ function CampanhaInternaProject({ data, onChange }) {
                       </select>
                     </td>
                     <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.procedimento || "—"}</td>
-                    <td style={{ padding: "12px" }}><Pill label={r.conversao} color={r.conversao === "Sim" ? "verde" : "cinza"} /></td>
-                    <td style={{ padding: "12px" }}><Btn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</Btn></td>
+                    <td style={{ padding: "12px" }}><FupPill label={r.conversao} color={r.conversao === "Sim" ? "verde" : "cinza"} /></td>
+                    <td style={{ padding: "12px" }}><FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn></td>
                   </tr>
                 ))}
               </tbody>
@@ -3316,32 +3318,32 @@ function CampanhaInternaProject({ data, onChange }) {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <SectionTitle accent={FUP_C.purple}>Funil de Conversão</SectionTitle>
+            <FupSectionTitle accent={FUP_C.purple}>Funil de Conversão</FupSectionTitle>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={funil.filter((f) => f.count > 0)} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
                 <XAxis type="number" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
                 <YAxis dataKey="status" type="category" tick={{ fill: FUP_C.textMuted, fontSize: 10 }} width={120} />
-                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 <Bar dataKey="count" fill={FUP_C.purple} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <SectionTitle accent={FUP_C.purple}>Leads por Área</SectionTitle>
+            <FupSectionTitle accent={FUP_C.purple}>Leads por Área</FupSectionTitle>
             {areaData.length > 0 ? (
               <ResponsiveContainer width="100%" height={220}>
                 <PieChart>
                   <Pie data={areaData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
                     {areaData.map((_, i) => <Cell key={i} fill={[FUP_C.teal, FUP_C.blue, FUP_C.purple, FUP_C.orange, FUP_C.green, "#F43F5E"][i % 6]} />)}
                   </Pie>
-                  <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                  <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 </PieChart>
               </ResponsiveContainer>
             ) : <div style={{ color: FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Sem dados ainda.</div>}
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_C.purple}>📋 KPIs e SLAs — Campanha Indicação Interna (Leap Plus)</SectionTitle>
+            <FupSectionTitle accent={FUP_C.purple}>📋 KPIs e SLAs — Campanha Indicação Interna (Leap Plus)</FupSectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "1º Contato (Victoria)", meta: "≤ 30 min após lead entrar", freq: "Por lead", alerta: "Sem contato = perda imediata" },
@@ -3366,26 +3368,26 @@ function CampanhaInternaProject({ data, onChange }) {
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Registrar Lead — Indicação Interna">
+      <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Lead — Indicação Interna">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Data do Lead" type="date" value={form.dataLead} onChange={(v) => setForm({ ...form, dataLead: v })} />
-          <Input label="Nome do Paciente" value={form.nomePaciente} onChange={(v) => setForm({ ...form, nomePaciente: v })} />
-          <Input label="Telefone Paciente" value={form.telefone} onChange={(v) => setForm({ ...form, telefone: v })} />
-          <Input label="Colaborador Indicador" value={form.colaboradorIndicador} onChange={(v) => setForm({ ...form, colaboradorIndicador: v })} required />
-          <Input label="Telefone Indicador" value={form.telefoneIndicador} onChange={(v) => setForm({ ...form, telefoneIndicador: v })} />
-          <Input label="Área (PI, IC, Uro, etc.)" value={form.area} onChange={(v) => setForm({ ...form, area: v })} />
-          <Select label="Status do Funil" value={form.statusFunil} onChange={(v) => setForm({ ...form, statusFunil: v })} options={funilOrder.map((s) => ({ value: s, label: s }))} />
-          <Select label="Origem" value={form.origem} onChange={(v) => setForm({ ...form, origem: v })} options={["Convenção", "Online", "Outro"].map((s) => ({ value: s, label: s }))} />
-          <Input label="Procedimento" value={form.procedimento} onChange={(v) => setForm({ ...form, procedimento: v })} />
-          <Select label="Conversão?" value={form.conversao} onChange={(v) => setForm({ ...form, conversao: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }]} />
-          <Input label="Valor Procedimento (R$)" type="number" value={form.valorProcedimento} onChange={(v) => setForm({ ...form, valorProcedimento: v })} />
-          <Input label="Motivo Perda (se perdido)" value={form.motivoPerda} onChange={(v) => setForm({ ...form, motivoPerda: v })} />
+          <FupInput label="Data do Lead" type="date" value={form.dataLead} onChange={(v) => setForm({ ...form, dataLead: v })} />
+          <FupInput label="Nome do Paciente" value={form.nomePaciente} onChange={(v) => setForm({ ...form, nomePaciente: v })} />
+          <FupInput label="Telefone Paciente" value={form.telefone} onChange={(v) => setForm({ ...form, telefone: v })} />
+          <FupInput label="Colaborador Indicador" value={form.colaboradorIndicador} onChange={(v) => setForm({ ...form, colaboradorIndicador: v })} required />
+          <FupInput label="Telefone Indicador" value={form.telefoneIndicador} onChange={(v) => setForm({ ...form, telefoneIndicador: v })} />
+          <FupInput label="Área (PI, IC, Uro, etc.)" value={form.area} onChange={(v) => setForm({ ...form, area: v })} />
+          <FupSelect label="Status do Funil" value={form.statusFunil} onChange={(v) => setForm({ ...form, statusFunil: v })} options={funilOrder.map((s) => ({ value: s, label: s }))} />
+          <FupSelect label="Origem" value={form.origem} onChange={(v) => setForm({ ...form, origem: v })} options={["Convenção", "Online", "Outro"].map((s) => ({ value: s, label: s }))} />
+          <FupInput label="Procedimento" value={form.procedimento} onChange={(v) => setForm({ ...form, procedimento: v })} />
+          <FupSelect label="Conversão?" value={form.conversao} onChange={(v) => setForm({ ...form, conversao: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }]} />
+          <FupInput label="Valor Procedimento (R$)" type="number" value={form.valorProcedimento} onChange={(v) => setForm({ ...form, valorProcedimento: v })} />
+          <FupInput label="Motivo Perda (se perdido)" value={form.motivoPerda} onChange={(v) => setForm({ ...form, motivoPerda: v })} />
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-          <Btn onClick={save} style={{ background: FUP_C.purple }}>Salvar Lead</Btn>
+          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
+          <FupBtn onClick={save} style={{ background: FUP_C.purple }}>Salvar Lead</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
     </div>
   );
 }
@@ -3404,7 +3406,7 @@ function CursoBariatricosProject({ data, onChange }) {
     scoreImpl: "", risco: "Verde", obs: "",
   });
 
-  const medicos = data?.medicos || initialState.cursoBariatricos.medicos;
+  const medicos = data?.medicos || fupInitialState.cursoBariatricos.medicos;
   const followups = data?.followups || [];
 
   const update = (updated) => onChange({ medicos: updated, followups });
@@ -3422,7 +3424,7 @@ function CursoBariatricosProject({ data, onChange }) {
   };
 
   const saveFUP = () => {
-    updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: uid() }]);
+    updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
     setFupModal(null);
     setFupForm({ data: "", tipo: "Visita", encaminhouMaterial: "Sim", possuiCRM: "Não", qtdContatosEnviados: "", respostas: "", avaliacoes: "", procedimentos: "", scoreImpl: "", risco: "Verde", obs: "" });
   };
@@ -3448,13 +3450,13 @@ function CursoBariatricosProject({ data, onChange }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <KPICard label="Cirurgiões Capacitados" value={medicos.length} icon="🏥" />
-        <KPICard label="Ativos" value={totals.ativos} color={FUP_C.orange} />
-        <KPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} sub={`${((totals.comCRM / medicos.length) * 100).toFixed(0)}%`} />
-        <KPICard label="Material Enviado" value={totals.materialEnviado} sub="follow-ups" color={FUP_C.green} />
-        <KPICard label="Avaliações Geradas" value={totals.totalAvaliacoes} color={FUP_C.teal} />
-        <KPICard label="Procedimentos ESG" value={totals.totalProcedimentos} color={FUP_C.green} icon="✓" />
-        <KPICard label="Score Médio Impl." value={totals.mediaScore + "/10"} color={totals.mediaScore >= 7 ? FUP_C.green : totals.mediaScore >= 4 ? FUP_C.yellow : FUP_C.red} />
+        <FupKPICard label="Cirurgiões Capacitados" value={medicos.length} icon="🏥" />
+        <FupKPICard label="Ativos" value={totals.ativos} color={FUP_C.orange} />
+        <FupKPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} sub={`${((totals.comCRM / medicos.length) * 100).toFixed(0)}%`} />
+        <FupKPICard label="Material Enviado" value={totals.materialEnviado} sub="follow-ups" color={FUP_C.green} />
+        <FupKPICard label="Avaliações Geradas" value={totals.totalAvaliacoes} color={FUP_C.teal} />
+        <FupKPICard label="Procedimentos ESG" value={totals.totalProcedimentos} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Score Médio Impl." value={totals.mediaScore + "/10"} color={totals.mediaScore >= 7 ? FUP_C.green : totals.mediaScore >= 4 ? FUP_C.yellow : FUP_C.red} />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -3482,13 +3484,13 @@ function CursoBariatricosProject({ data, onChange }) {
                   <div>
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
                       <span style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15 }}>{m.nome}</span>
-                      {risco !== "—" && <Pill label={risco} color={riscoColor[risco] || "cinza"} />}
+                      {risco !== "—" && <FupPill label={risco} color={riscoColor[risco] || "cinza"} />}
                       {score !== "—" && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +score >= 7 ? FUP_C.green : +score >= 4 ? FUP_C.yellow : FUP_C.red }}>{score}/10</b></span>}
                     </div>
                     <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
                       <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📧 {m.email || "—"}</span>
                       {m.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
-                      {m.possuiCRM && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>CRM: <Pill label={m.possuiCRM} color={m.possuiCRM === "Sim" ? "verde" : "vermelho"} /></span>}
+                      {m.possuiCRM && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>CRM: <FupPill label={m.possuiCRM} color={m.possuiCRM === "Sim" ? "verde" : "vermelho"} /></span>}
                     </div>
                     {fups.length > 0 && (
                       <div style={{ marginTop: 8, display: "flex", gap: 16 }}>
@@ -3499,8 +3501,8 @@ function CursoBariatricosProject({ data, onChange }) {
                     )}
                   </div>
                   <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <Btn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m }); setModal(true); }}>✏️ Editar</Btn>
-                    <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.orange, border: "none" }}>+ FUP</Btn>
+                    <FupBtn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m }); setModal(true); }}>✏️ Editar</FupBtn>
+                    <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.orange, border: "none" }}>+ FUP</FupBtn>
                   </div>
                 </div>
               </div>
@@ -3510,7 +3512,7 @@ function CursoBariatricosProject({ data, onChange }) {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_C.orange}>Radar de Performance por Médico</SectionTitle>
+            <FupSectionTitle accent={FUP_C.orange}>Radar de Performance por Médico</FupSectionTitle>
             <ResponsiveContainer width="100%" height={280}>
               <RadarChart data={radarData}>
                 <PolarGrid stroke={FUP_C.border} />
@@ -3523,7 +3525,7 @@ function CursoBariatricosProject({ data, onChange }) {
             </ResponsiveContainer>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_C.orange}>📋 KPIs e SLAs — Curso IAS Cirurgiões Bariátricos</SectionTitle>
+            <FupSectionTitle accent={FUP_C.orange}>📋 KPIs e SLAs — Curso IAS Cirurgiões Bariátricos</FupSectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "Encaminhou material pós-curso", meta: "100% em D+1", freq: "Imediato", alerta: "Não enviou = oportunidade perdida no CRM" },
@@ -3549,46 +3551,46 @@ function CursoBariatricosProject({ data, onChange }) {
       )}
 
       {/* Edit Medico Modal */}
-      <Modal open={modal && !!editMedico} onClose={() => setModal(false)} title="Editar Médico">
+      <FupModal open={modal && !!editMedico} onClose={() => setModal(false)} title="Editar Médico">
         {editMedico && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Input label="Nome" value={editMedico.nome} onChange={(v) => setEditMedico({ ...editMedico, nome: v })} style={{ gridColumn: "span 2" }} />
-              <Input label="Email" value={editMedico.email} onChange={(v) => setEditMedico({ ...editMedico, email: v })} />
-              <Input label="Cidade" value={editMedico.cidade || ""} onChange={(v) => setEditMedico({ ...editMedico, cidade: v })} />
-              <Input label="CRM" value={editMedico.crm || ""} onChange={(v) => setEditMedico({ ...editMedico, crm: v })} />
-              <Select label="Possui CRM Estruturado?" value={editMedico.possuiCRM || "Não"} onChange={(v) => setEditMedico({ ...editMedico, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
+              <FupInput label="Nome" value={editMedico.nome} onChange={(v) => setEditMedico({ ...editMedico, nome: v })} style={{ gridColumn: "span 2" }} />
+              <FupInput label="Email" value={editMedico.email} onChange={(v) => setEditMedico({ ...editMedico, email: v })} />
+              <FupInput label="Cidade" value={editMedico.cidade || ""} onChange={(v) => setEditMedico({ ...editMedico, cidade: v })} />
+              <FupInput label="CRM" value={editMedico.crm || ""} onChange={(v) => setEditMedico({ ...editMedico, crm: v })} />
+              <FupSelect label="Possui CRM Estruturado?" value={editMedico.possuiCRM || "Não"} onChange={(v) => setEditMedico({ ...editMedico, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-              <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-              <Btn onClick={saveMedico} style={{ background: FUP_C.orange }}>Salvar</Btn>
+              <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
+              <FupBtn onClick={saveMedico} style={{ background: FUP_C.orange }}>Salvar</FupBtn>
             </div>
           </>
         )}
-      </Modal>
+      </FupModal>
 
       {/* FUP Modal */}
-      <Modal open={!!fupModal} onClose={() => setFupModal(null)} title={`Registrar Follow-up — ${medicos.find((m) => m.id === fupModal)?.nome?.split(" ")[0] || ""}`}>
+      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title={`Registrar Follow-up — ${medicos.find((m) => m.id === fupModal)?.nome?.split(" ")[0] || ""}`}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Data da Visita" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
-          <Select label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita presencial", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
-          <Select label="Encaminhou material pós-curso?" value={fupForm.encaminhouMaterial} onChange={(v) => setFupForm({ ...fupForm, encaminhouMaterial: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <Select label="Possui CRM?" value={fupForm.possuiCRM} onChange={(v) => setFupForm({ ...fupForm, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
-          <Input label="Contatos disparados pelo CRM" type="number" value={fupForm.qtdContatosEnviados} onChange={(v) => setFupForm({ ...fupForm, qtdContatosEnviados: v })} />
-          <Input label="Respostas recebidas" type="number" value={fupForm.respostas} onChange={(v) => setFupForm({ ...fupForm, respostas: v })} />
-          <Input label="Avaliações ESG agendadas" type="number" value={fupForm.avaliacoes} onChange={(v) => setFupForm({ ...fupForm, avaliacoes: v })} />
-          <Input label="Procedimentos ESG realizados" type="number" value={fupForm.procedimentos} onChange={(v) => setFupForm({ ...fupForm, procedimentos: v })} />
-          <Input label="Score Implementação (0–10)" type="number" value={fupForm.scoreImpl} onChange={(v) => setFupForm({ ...fupForm, scoreImpl: v })} />
-          <Select label="Risco (Semáforo)" value={fupForm.risco} onChange={(v) => setFupForm({ ...fupForm, risco: v })} options={["Verde", "Amarelo", "Vermelho"].map((s) => ({ value: s, label: s }))} />
+          <FupInput label="Data da Visita" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
+          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita presencial", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
+          <FupSelect label="Encaminhou material pós-curso?" value={fupForm.encaminhouMaterial} onChange={(v) => setFupForm({ ...fupForm, encaminhouMaterial: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+          <FupSelect label="Possui CRM?" value={fupForm.possuiCRM} onChange={(v) => setFupForm({ ...fupForm, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
+          <FupInput label="Contatos disparados pelo CRM" type="number" value={fupForm.qtdContatosEnviados} onChange={(v) => setFupForm({ ...fupForm, qtdContatosEnviados: v })} />
+          <FupInput label="Respostas recebidas" type="number" value={fupForm.respostas} onChange={(v) => setFupForm({ ...fupForm, respostas: v })} />
+          <FupInput label="Avaliações ESG agendadas" type="number" value={fupForm.avaliacoes} onChange={(v) => setFupForm({ ...fupForm, avaliacoes: v })} />
+          <FupInput label="Procedimentos ESG realizados" type="number" value={fupForm.procedimentos} onChange={(v) => setFupForm({ ...fupForm, procedimentos: v })} />
+          <FupInput label="Score Implementação (0–10)" type="number" value={fupForm.scoreImpl} onChange={(v) => setFupForm({ ...fupForm, scoreImpl: v })} />
+          <FupSelect label="Risco (Semáforo)" value={fupForm.risco} onChange={(v) => setFupForm({ ...fupForm, risco: v })} options={["Verde", "Amarelo", "Vermelho"].map((s) => ({ value: s, label: s }))} />
           <div style={{ gridColumn: "span 2" }}>
-            <Input label="Observações / Próxima Ação" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
+            <FupInput label="Observações / Próxima Ação" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</Btn>
-          <Btn onClick={saveFUP} style={{ background: FUP_C.orange }}>Registrar FUP</Btn>
+          <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
+          <FupBtn onClick={saveFUP} style={{ background: FUP_C.orange }}>Registrar FUP</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
     </div>
   );
 }
@@ -3607,7 +3609,7 @@ function CursoEndoscopistasProject({ data, onChange }) {
     scoreImpl: "", risco: "Verde", obs: "",
   });
 
-  const medicos = data?.medicos || initialState.cursoEndoscopistas.medicos;
+  const medicos = data?.medicos || fupInitialState.cursoEndoscopistas.medicos;
   const followups = data?.followups || [];
 
   const update = (m) => onChange({ medicos: m, followups });
@@ -3620,7 +3622,7 @@ function CursoEndoscopistasProject({ data, onChange }) {
   };
 
   const saveFUP = () => {
-    updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: uid() }]);
+    updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
     setFupModal(null);
     setFupForm({ data: "", tipo: "Visita presencial", realizandoProcedimentos: "Sim", procedimentos30d: "", avaliacoesAgendadas: "", possuiCRM: "Não", scoreImpl: "", risco: "Verde", obs: "" });
   };
@@ -3628,10 +3630,10 @@ function CursoEndoscopistasProject({ data, onChange }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <KPICard label="Endoscopistas" value={medicos.length} icon="🔬" />
-        <KPICard label="Procedimentos Total" value={totals.totalProced} color={FUP_C.green} icon="✓" />
-        <KPICard label="Avaliações Geradas" value={totals.totalAval} color={FUP_C.teal} />
-        <KPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} />
+        <FupKPICard label="Endoscopistas" value={medicos.length} icon="🔬" />
+        <FupKPICard label="Procedimentos Total" value={totals.totalProced} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Avaliações Geradas" value={totals.totalAval} color={FUP_C.teal} />
+        <FupKPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -3666,12 +3668,12 @@ function CursoEndoscopistasProject({ data, onChange }) {
                       <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>
                         Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0)}</b>
                       </span>
-                      {lastFup?.risco && <Pill label={lastFup.risco} color={lastFup.risco.toLowerCase()} />}
+                      {lastFup?.risco && <FupPill label={lastFup.risco} color={lastFup.risco.toLowerCase()} />}
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
-                    <Btn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m, _idx: idx }); setEditModal(true); }}>✏️ Editar</Btn>
-                    <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.green, border: "none" }}>+ FUP</Btn>
+                    <FupBtn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m, _idx: idx }); setEditModal(true); }}>✏️ Editar</FupBtn>
+                    <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.green, border: "none" }}>+ FUP</FupBtn>
                   </div>
                 </div>
               </div>
@@ -3680,7 +3682,7 @@ function CursoEndoscopistasProject({ data, onChange }) {
         </div>
       ) : (
         <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-          <SectionTitle accent={FUP_C.green}>📋 KPIs e SLAs — Curso IAS Endoscopistas</SectionTitle>
+          <FupSectionTitle accent={FUP_C.green}>📋 KPIs e SLAs — Curso IAS Endoscopistas</FupSectionTitle>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
             {[
               { kpi: "Primeiro ESG autônomo", meta: "D+60 pós-curso", freq: "M2", alerta: "0 em D+60 = necessita supervisão" },
@@ -3701,47 +3703,47 @@ function CursoEndoscopistasProject({ data, onChange }) {
         </div>
       )}
 
-      <Modal open={!!fupModal} onClose={() => setFupModal(null)} title="Registrar Follow-up — Endoscopista">
+      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Registrar Follow-up — Endoscopista">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
-          <Select label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita presencial", "Call", "WhatsApp"].map((s) => ({ value: s, label: s }))} />
-          <Select label="Realizando procedimentos?" value={fupForm.realizandoProcedimentos} onChange={(v) => setFupForm({ ...fupForm, realizandoProcedimentos: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <Select label="Possui CRM?" value={fupForm.possuiCRM} onChange={(v) => setFupForm({ ...fupForm, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <Input label="Procedimentos ESG (30d)" type="number" value={fupForm.procedimentos30d} onChange={(v) => setFupForm({ ...fupForm, procedimentos30d: v })} />
-          <Input label="Avaliações Agendadas" type="number" value={fupForm.avaliacoesAgendadas} onChange={(v) => setFupForm({ ...fupForm, avaliacoesAgendadas: v })} />
-          <Input label="Score Implementação (0–10)" type="number" value={fupForm.scoreImpl} onChange={(v) => setFupForm({ ...fupForm, scoreImpl: v })} />
-          <Select label="Risco" value={fupForm.risco} onChange={(v) => setFupForm({ ...fupForm, risco: v })} options={["Verde", "Amarelo", "Vermelho"].map((s) => ({ value: s, label: s }))} />
+          <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
+          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita presencial", "Call", "WhatsApp"].map((s) => ({ value: s, label: s }))} />
+          <FupSelect label="Realizando procedimentos?" value={fupForm.realizandoProcedimentos} onChange={(v) => setFupForm({ ...fupForm, realizandoProcedimentos: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+          <FupSelect label="Possui CRM?" value={fupForm.possuiCRM} onChange={(v) => setFupForm({ ...fupForm, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+          <FupInput label="Procedimentos ESG (30d)" type="number" value={fupForm.procedimentos30d} onChange={(v) => setFupForm({ ...fupForm, procedimentos30d: v })} />
+          <FupInput label="Avaliações Agendadas" type="number" value={fupForm.avaliacoesAgendadas} onChange={(v) => setFupForm({ ...fupForm, avaliacoesAgendadas: v })} />
+          <FupInput label="Score Implementação (0–10)" type="number" value={fupForm.scoreImpl} onChange={(v) => setFupForm({ ...fupForm, scoreImpl: v })} />
+          <FupSelect label="Risco" value={fupForm.risco} onChange={(v) => setFupForm({ ...fupForm, risco: v })} options={["Verde", "Amarelo", "Vermelho"].map((s) => ({ value: s, label: s }))} />
           <div style={{ gridColumn: "span 2" }}>
-            <Input label="Observações" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
+            <FupInput label="Observações" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</Btn>
-          <Btn onClick={saveFUP} style={{ background: FUP_C.green }}>Registrar FUP</Btn>
+          <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
+          <FupBtn onClick={saveFUP} style={{ background: FUP_C.green }}>Registrar FUP</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
 
-      <Modal open={editModal && !!editMedico} onClose={() => setEditModal(false)} title="Editar Endoscopista">
+      <FupModal open={editModal && !!editMedico} onClose={() => setEditModal(false)} title="Editar Endoscopista">
         {editMedico && (
           <>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <Input label="Nome" value={editMedico.nome} onChange={(v) => setEditMedico({ ...editMedico, nome: v })} style={{ gridColumn: "span 2" }} />
-              <Input label="Email" value={editMedico.email} onChange={(v) => setEditMedico({ ...editMedico, email: v })} />
-              <Input label="Cidade" value={editMedico.cidade || ""} onChange={(v) => setEditMedico({ ...editMedico, cidade: v })} />
-              <Select label="Possui CRM?" value={editMedico.possuiCRM || "Não"} onChange={(v) => setEditMedico({ ...editMedico, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+              <FupInput label="Nome" value={editMedico.nome} onChange={(v) => setEditMedico({ ...editMedico, nome: v })} style={{ gridColumn: "span 2" }} />
+              <FupInput label="Email" value={editMedico.email} onChange={(v) => setEditMedico({ ...editMedico, email: v })} />
+              <FupInput label="Cidade" value={editMedico.cidade || ""} onChange={(v) => setEditMedico({ ...editMedico, cidade: v })} />
+              <FupSelect label="Possui CRM?" value={editMedico.possuiCRM || "Não"} onChange={(v) => setEditMedico({ ...editMedico, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
             </div>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-              <Btn variant="ghost" onClick={() => setEditModal(false)}>Cancelar</Btn>
-              <Btn onClick={() => {
+              <FupBtn variant="ghost" onClick={() => setEditModal(false)}>Cancelar</FupBtn>
+              <FupBtn onClick={() => {
                 const updated = [...medicos];
                 updated[editMedico._idx] = { ...editMedico };
                 update(updated);
                 setEditModal(false);
-              }} style={{ background: FUP_C.green }}>Salvar</Btn>
+              }} style={{ background: FUP_C.green }}>Salvar</FupBtn>
             </div>
           </>
         )}
-      </Modal>
+      </FupModal>
     </div>
   );
 }
@@ -3788,7 +3790,7 @@ function PacientesReferidoresProject({ data, onChange }) {
   ];
 
   const save = () => {
-    onChange([...records, { ...form, id: uid() }]);
+    onChange([...records, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ dataEntrada: "", paciente: "", telefone: "", medicoReferidor: "", clinicaReferidor: "", cidade: "", owner: "", statusContato: "Novo Lead", dataContato1: "", tempoPrimContato: "", statusAgendamento: "Não agendado", dataAgendamento: "", dataConsulta: "", statusComparecimento: "Pendente", statusFunil: "Em andamento", procedimentoFechado: "Não", dataProcedimento: "", obs: "" });
   };
@@ -3798,13 +3800,13 @@ function PacientesReferidoresProject({ data, onChange }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <KPICard label="Leads Totais" value={totals.total} icon="👥" />
-        <KPICard label="Contatados" value={totals.contatados} color={FUP_C.blue} sub={`SLA ≤30min: ${slaOk}`} />
-        <KPICard label="Agendados" value={totals.agendados} color={FUP_C.teal} />
-        <KPICard label="Compareceram" value={totals.compareceram} color={FUP_C.purple} />
-        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
-        <KPICard label="Conversão" value={`${convRate}%`} color={convRate >= 40 ? FUP_C.green : convRate >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: 40–50%" />
-        <KPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
+        <FupKPICard label="Leads Totais" value={totals.total} icon="👥" />
+        <FupKPICard label="Contatados" value={totals.contatados} color={FUP_C.blue} sub={`SLA ≤30min: ${slaOk}`} />
+        <FupKPICard label="Agendados" value={totals.agendados} color={FUP_C.teal} />
+        <FupKPICard label="Compareceram" value={totals.compareceram} color={FUP_C.purple} />
+        <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
+        <FupKPICard label="Conversão" value={`${convRate}%`} color={convRate >= 40 ? FUP_C.green : convRate >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: 40–50%" />
+        <FupKPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -3816,7 +3818,7 @@ function PacientesReferidoresProject({ data, onChange }) {
             border: `1px solid ${activeTab === t ? "#F43F5E" : FUP_C.border}`,
           }}>{t === "funil" ? "📋 Pacientes" : "📊 Dashboard"}</button>
         ))}
-        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: "#F43F5E", border: "none" }}>+ Novo Paciente</Btn>
+        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: "#F43F5E", border: "none" }}>+ Novo Paciente</FupBtn>
       </div>
 
       {activeTab === "funil" ? (
@@ -3863,9 +3865,9 @@ function PacientesReferidoresProject({ data, onChange }) {
                       </select>
                     </td>
                     <td style={{ padding: "10px" }}>
-                      <Pill label={r.procedimentoFechado === "Sim" ? "Sim ✓" : "Não"} color={r.procedimentoFechado === "Sim" ? "verde" : "cinza"} />
+                      <FupPill label={r.procedimentoFechado === "Sim" ? "Sim ✓" : "Não"} color={r.procedimentoFechado === "Sim" ? "verde" : "cinza"} />
                     </td>
-                    <td style={{ padding: "10px" }}><Btn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</Btn></td>
+                    <td style={{ padding: "10px" }}><FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn></td>
                   </tr>
                 ))}
               </tbody>
@@ -3875,19 +3877,19 @@ function PacientesReferidoresProject({ data, onChange }) {
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <SectionTitle accent="#F43F5E">Funil Completo</SectionTitle>
+            <FupSectionTitle accent="#F43F5E">Funil Completo</FupSectionTitle>
             <ResponsiveContainer width="100%" height={220}>
               <BarChart data={funilData}>
                 <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
                 <XAxis dataKey="stage" tick={{ fill: FUP_C.textMuted, fontSize: 10 }} />
                 <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                 <Bar dataKey="value" fill="#F43F5E" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 1" }}>
-            <SectionTitle accent="#F43F5E">📋 SLAs Operacionais (Playbook)</SectionTitle>
+            <FupSectionTitle accent="#F43F5E">📋 SLAs Operacionais (Playbook)</FupSectionTitle>
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
               {[
                 { label: "1ª Tentativa de Contato", meta: "≤ 15–30 min após entrada", color: "#F43F5E" },
@@ -3905,7 +3907,7 @@ function PacientesReferidoresProject({ data, onChange }) {
             </div>
           </div>
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent="#F43F5E">📋 KPIs — Pacientes Indicados por Referidores</SectionTitle>
+            <FupSectionTitle accent="#F43F5E">📋 KPIs — Pacientes Indicados por Referidores</FupSectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "SLA 1º Contato", meta: "≤ 30 min (ideal ≤ 15 min)", freq: "Por lead", alerta: "> 2h = conversão cai 60%" },
@@ -3927,30 +3929,30 @@ function PacientesReferidoresProject({ data, onChange }) {
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Registrar Paciente — Indicado por Referidor" width={720}>
+      <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Paciente — Indicado por Referidor" width={720}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Data de Entrada" type="date" value={form.dataEntrada} onChange={(v) => setForm({ ...form, dataEntrada: v })} />
-          <Input label="Nome do Paciente" value={form.paciente} onChange={(v) => setForm({ ...form, paciente: v })} required />
-          <Input label="Telefone" value={form.telefone} onChange={(v) => setForm({ ...form, telefone: v })} />
-          <Input label="Médico Referidor" value={form.medicoReferidor} onChange={(v) => setForm({ ...form, medicoReferidor: v })} required />
-          <Input label="Clínica Referidor" value={form.clinicaReferidor} onChange={(v) => setForm({ ...form, clinicaReferidor: v })} />
-          <Input label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
-          <Input label="Owner (Inside Sales)" value={form.owner} onChange={(v) => setForm({ ...form, owner: v })} />
-          <Input label="Tempo 1º Contato (min)" type="number" value={form.tempoPrimContato} onChange={(v) => setForm({ ...form, tempoPrimContato: v })} />
-          <Select label="Status Contato" value={form.statusContato} onChange={(v) => setForm({ ...form, statusContato: v })} options={statusContatoOptions.map((s) => ({ value: s, label: s }))} />
-          <Select label="Status Agendamento" value={form.statusAgendamento} onChange={(v) => setForm({ ...form, statusAgendamento: v })} options={statusAgendOptions.map((s) => ({ value: s, label: s }))} />
-          <Input label="Data Consulta" type="date" value={form.dataConsulta} onChange={(v) => setForm({ ...form, dataConsulta: v })} />
-          <Select label="Comparecimento" value={form.statusComparecimento} onChange={(v) => setForm({ ...form, statusComparecimento: v })} options={statusCompOptions.map((s) => ({ value: s, label: s }))} />
-          <Select label="Procedimento Fechado?" value={form.procedimentoFechado} onChange={(v) => setForm({ ...form, procedimentoFechado: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }]} />
+          <FupInput label="Data de Entrada" type="date" value={form.dataEntrada} onChange={(v) => setForm({ ...form, dataEntrada: v })} />
+          <FupInput label="Nome do Paciente" value={form.paciente} onChange={(v) => setForm({ ...form, paciente: v })} required />
+          <FupInput label="Telefone" value={form.telefone} onChange={(v) => setForm({ ...form, telefone: v })} />
+          <FupInput label="Médico Referidor" value={form.medicoReferidor} onChange={(v) => setForm({ ...form, medicoReferidor: v })} required />
+          <FupInput label="Clínica Referidor" value={form.clinicaReferidor} onChange={(v) => setForm({ ...form, clinicaReferidor: v })} />
+          <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
+          <FupInput label="Owner (Inside Sales)" value={form.owner} onChange={(v) => setForm({ ...form, owner: v })} />
+          <FupInput label="Tempo 1º Contato (min)" type="number" value={form.tempoPrimContato} onChange={(v) => setForm({ ...form, tempoPrimContato: v })} />
+          <FupSelect label="Status Contato" value={form.statusContato} onChange={(v) => setForm({ ...form, statusContato: v })} options={statusContatoOptions.map((s) => ({ value: s, label: s }))} />
+          <FupSelect label="Status Agendamento" value={form.statusAgendamento} onChange={(v) => setForm({ ...form, statusAgendamento: v })} options={statusAgendOptions.map((s) => ({ value: s, label: s }))} />
+          <FupInput label="Data Consulta" type="date" value={form.dataConsulta} onChange={(v) => setForm({ ...form, dataConsulta: v })} />
+          <FupSelect label="Comparecimento" value={form.statusComparecimento} onChange={(v) => setForm({ ...form, statusComparecimento: v })} options={statusCompOptions.map((s) => ({ value: s, label: s }))} />
+          <FupSelect label="Procedimento Fechado?" value={form.procedimentoFechado} onChange={(v) => setForm({ ...form, procedimentoFechado: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }]} />
           <div style={{ gridColumn: "span 2" }}>
-            <Input label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
+            <FupInput label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-          <Btn onClick={save} style={{ background: "#F43F5E", border: "none" }}>Salvar Paciente</Btn>
+          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
+          <FupBtn onClick={save} style={{ background: "#F43F5E", border: "none" }}>Salvar Paciente</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
     </div>
   );
 }
@@ -3985,13 +3987,13 @@ function ImersaoMarketingProject({ data, onChange }) {
   };
 
   const saveMedico = () => {
-    updateM([...medicos, { ...form, id: uid() }]);
+    updateM([...medicos, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ nome: "", especialidade: "", cidade: "", email: "", instagram: "", site: "" });
   };
 
   const saveFUP = () => {
-    updateA([...acoes, { ...fupForm, medicoId: fupModal, id: uid() }]);
+    updateA([...acoes, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
     setFupModal(null);
     setFupForm({ data: "", tipo: "Visita", instagramAtivo: "Sim", seguidores: "", postsMes: "", geoScore: "", llmVisivelChatGPT: "Não", llmVisivelGoogle: "Não", leadsOrganicos: "", procedimentosGerados: "", acoesConcluidas: "", obs: "" });
   };
@@ -4005,12 +4007,12 @@ function ImersaoMarketingProject({ data, onChange }) {
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <KPICard label="Médicos" value={totals.medicos} icon="📡" />
-        <KPICard label="Com Site" value={totals.comSite} color={FUP_C.blue} />
-        <KPICard label="Com Instagram" value={totals.comInsta} color={FUP_C.purple} />
-        <KPICard label="Leads Orgânicos" value={totals.leadsGerados} color={FUP_C.teal} />
-        <KPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} />
-        <KPICard label="GEO Score Médio" value={totals.mediaGEO + "/10"} color={totals.mediaGEO >= 6 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 6" />
+        <FupKPICard label="Médicos" value={totals.medicos} icon="📡" />
+        <FupKPICard label="Com Site" value={totals.comSite} color={FUP_C.blue} />
+        <FupKPICard label="Com Instagram" value={totals.comInsta} color={FUP_C.purple} />
+        <FupKPICard label="Leads Orgânicos" value={totals.leadsGerados} color={FUP_C.teal} />
+        <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} />
+        <FupKPICard label="GEO Score Médio" value={totals.mediaGEO + "/10"} color={totals.mediaGEO >= 6 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 6" />
       </div>
 
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
@@ -4022,7 +4024,7 @@ function ImersaoMarketingProject({ data, onChange }) {
             border: `1px solid ${activeTab === t ? FUP_C.yellow : FUP_C.border}`,
           }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
         ))}
-        <Btn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.yellow, color: "#000", border: "none" }}>+ Novo Médico</Btn>
+        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.yellow, color: "#000", border: "none" }}>+ Novo Médico</FupBtn>
       </div>
 
       {activeTab === "medicos" ? (
@@ -4050,8 +4052,8 @@ function ImersaoMarketingProject({ data, onChange }) {
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
-                      <Btn size="sm" variant="danger" onClick={() => updateM(medicos.filter((x) => x.id !== m.id))}>✕</Btn>
-                      <Btn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</Btn>
+                      <FupBtn size="sm" variant="danger" onClick={() => updateM(medicos.filter((x) => x.id !== m.id))}>✕</FupBtn>
+                      <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</FupBtn>
                     </div>
                   </div>
                 </div>
@@ -4063,13 +4065,13 @@ function ImersaoMarketingProject({ data, onChange }) {
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
           {geoData.length > 0 && (
             <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-              <SectionTitle accent={FUP_C.yellow}>GEO Score, Leads e Procedimentos por Médico</SectionTitle>
+              <FupSectionTitle accent={FUP_C.yellow}>GEO Score, Leads e Procedimentos por Médico</FupSectionTitle>
               <ResponsiveContainer width="100%" height={220}>
                 <BarChart data={geoData}>
                   <CartesianGrid strokeDasharray="3 3" stroke={FUP_C.border} />
                   <XAxis dataKey="name" tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
                   <YAxis tick={{ fill: FUP_C.textMuted, fontSize: 11 }} />
-                  <Tooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
+                  <RechartTooltip contentStyle={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 8 }} />
                   <Legend />
                   <Bar dataKey="GEO" fill={FUP_C.yellow} radius={[4, 4, 0, 0]} name="GEO Score" />
                   <Bar dataKey="Leads" fill={FUP_C.teal} radius={[4, 4, 0, 0]} name="Leads Orgânicos" />
@@ -4079,7 +4081,7 @@ function ImersaoMarketingProject({ data, onChange }) {
             </div>
           )}
           <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <SectionTitle accent={FUP_C.yellow}>📋 KPIs — Imersão Marketing (GEO + Visibilidade Digital)</SectionTitle>
+            <FupSectionTitle accent={FUP_C.yellow}>📋 KPIs — Imersão Marketing (GEO + Visibilidade Digital)</FupSectionTitle>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
               {[
                 { kpi: "GEO Score do Médico", meta: "≥ 6/10 em M3", freq: "Mensal", alerta: "< 4 = risco de invisibilidade em IA" },
@@ -4104,42 +4106,42 @@ function ImersaoMarketingProject({ data, onChange }) {
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Adicionar Médico — Imersão Marketing">
+      <FupModal open={modal} onClose={() => setModal(false)} title="Adicionar Médico — Imersão Marketing">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Nome" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} required style={{ gridColumn: "span 2" }} />
-          <Input label="Especialidade" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} />
-          <Input label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
-          <Input label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-          <Input label="Instagram (sem @)" value={form.instagram} onChange={(v) => setForm({ ...form, instagram: v })} />
-          <Input label="Site" value={form.site} onChange={(v) => setForm({ ...form, site: v })} style={{ gridColumn: "span 2" }} />
+          <FupInput label="Nome" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} required style={{ gridColumn: "span 2" }} />
+          <FupInput label="Especialidade" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} />
+          <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
+          <FupInput label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
+          <FupInput label="Instagram (sem @)" value={form.instagram} onChange={(v) => setForm({ ...form, instagram: v })} />
+          <FupInput label="Site" value={form.site} onChange={(v) => setForm({ ...form, site: v })} style={{ gridColumn: "span 2" }} />
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setModal(false)}>Cancelar</Btn>
-          <Btn onClick={saveMedico} style={{ background: FUP_C.yellow, color: "#000" }}>Adicionar</Btn>
+          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
+          <FupBtn onClick={saveMedico} style={{ background: FUP_C.yellow, color: "#000" }}>Adicionar</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
 
-      <Modal open={!!fupModal} onClose={() => setFupModal(null)} title="Follow-up — Imersão Marketing">
+      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Follow-up — Imersão Marketing">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <Input label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
-          <Select label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
-          <Select label="Instagram Ativo?" value={fupForm.instagramAtivo} onChange={(v) => setFupForm({ ...fupForm, instagramAtivo: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <Input label="Seguidores" type="number" value={fupForm.seguidores} onChange={(v) => setFupForm({ ...fupForm, seguidores: v })} />
-          <Input label="Posts/mês" type="number" value={fupForm.postsMes} onChange={(v) => setFupForm({ ...fupForm, postsMes: v })} />
-          <Input label="GEO Score (0–10)" type="number" value={fupForm.geoScore} onChange={(v) => setFupForm({ ...fupForm, geoScore: v })} />
-          <Select label="Visível no ChatGPT?" value={fupForm.llmVisivelChatGPT} onChange={(v) => setFupForm({ ...fupForm, llmVisivelChatGPT: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
-          <Select label="Visível no Google/Gemini?" value={fupForm.llmVisivelGoogle} onChange={(v) => setFupForm({ ...fupForm, llmVisivelGoogle: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
-          <Input label="Leads Orgânicos" type="number" value={fupForm.leadsOrganicos} onChange={(v) => setFupForm({ ...fupForm, leadsOrganicos: v })} />
-          <Input label="Procedimentos Gerados" type="number" value={fupForm.procedimentosGerados} onChange={(v) => setFupForm({ ...fupForm, procedimentosGerados: v })} />
+          <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
+          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
+          <FupSelect label="Instagram Ativo?" value={fupForm.instagramAtivo} onChange={(v) => setFupForm({ ...fupForm, instagramAtivo: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+          <FupInput label="Seguidores" type="number" value={fupForm.seguidores} onChange={(v) => setFupForm({ ...fupForm, seguidores: v })} />
+          <FupInput label="Posts/mês" type="number" value={fupForm.postsMes} onChange={(v) => setFupForm({ ...fupForm, postsMes: v })} />
+          <FupInput label="GEO Score (0–10)" type="number" value={fupForm.geoScore} onChange={(v) => setFupForm({ ...fupForm, geoScore: v })} />
+          <FupSelect label="Visível no ChatGPT?" value={fupForm.llmVisivelChatGPT} onChange={(v) => setFupForm({ ...fupForm, llmVisivelChatGPT: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
+          <FupSelect label="Visível no Google/Gemini?" value={fupForm.llmVisivelGoogle} onChange={(v) => setFupForm({ ...fupForm, llmVisivelGoogle: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
+          <FupInput label="Leads Orgânicos" type="number" value={fupForm.leadsOrganicos} onChange={(v) => setFupForm({ ...fupForm, leadsOrganicos: v })} />
+          <FupInput label="Procedimentos Gerados" type="number" value={fupForm.procedimentosGerados} onChange={(v) => setFupForm({ ...fupForm, procedimentosGerados: v })} />
           <div style={{ gridColumn: "span 2" }}>
-            <Input label="Observações / Ações concluídas" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
+            <FupInput label="Observações / Ações concluídas" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
           </div>
         </div>
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <Btn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</Btn>
-          <Btn onClick={saveFUP} style={{ background: FUP_C.yellow, color: "#000" }}>Registrar FUP</Btn>
+          <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
+          <FupBtn onClick={saveFUP} style={{ background: FUP_C.yellow, color: "#000" }}>Registrar FUP</FupBtn>
         </div>
-      </Modal>
+      </FupModal>
     </div>
   );
 }
@@ -4157,9 +4159,9 @@ function FupProjetos() {
   const persistData = useCallback((newState) => {
     if (saveTimer) clearTimeout(saveTimer);
     const timer = setTimeout(() => {
-      const ok = saveData(newState);
+      const ok = fupSaveData(newState);
       setToast({ msg: ok ? "✓ Dados salvos automaticamente" : "Erro ao salvar", type: ok ? "success" : "error" });
-      setTimeout(() => setToast(null), FUP_TOAST_DURATION);
+      setTimeout(() => setToast(null), FUP_TOAST_DUR);
     }, 600);
     setSaveTimer(timer);
   }, [saveTimer]);
@@ -4253,7 +4255,7 @@ function FupProjetos() {
     imersaoMarketing: <ImersaoMarketingProject data={state.imersaoMarketing} onChange={(v) => updateProject("imersaoMarketing", v)} />,
   };
 
-  const activeProjectMeta = PROJECTS.find((p) => p.id === activeProject);
+  const activeProjectMeta = FUP_PROJECTS.find((p) => p.id === activeProject);
 
   return (
     <div style={{ background: FUP_C.bg, minHeight: "100vh", color: FUP_C.text, fontFamily: "'DM Sans', 'Sora', system-ui, sans-serif" }}>
@@ -4419,7 +4421,7 @@ function FupProjetos() {
                     <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.pacRef.leads} leads</span>
                   </div>
                   <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COMPAREFUP_C.</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.compareceram}</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COMPAREC.</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.compareceram}</div></div>
                     <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.procedimentos}</div></div>
                     <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONV.</div><div style={{ color: +pStats.pacRef.conv >= 40 ? FUP_C.green : +pStats.pacRef.conv >= 25 ? FUP_C.yellow : FUP_C.textDim, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.conv}%</div></div>
                     <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PERDIDOS</div><div style={{ color: FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.perdidos}</div></div>
@@ -4445,10 +4447,10 @@ function FupProjetos() {
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
                 <div style={{ width: 4, height: 24, background: FUP_C.teal, borderRadius: 2 }} />
                 <h2 style={{ color: FUP_C.text, fontSize: 20, fontWeight: 700 }}>Projetos em Andamento</h2>
-                <span style={{ color: FUP_C.textDim, fontSize: 13, marginLeft: 4 }}>{PROJECTS.length} projetos</span>
+                <span style={{ color: FUP_C.textDim, fontSize: 13, marginLeft: 4 }}>{FUP_PROJECTS.length} projetos</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
-                {PROJECTS.map((p) => {
+                {FUP_PROJECTS.map((p) => {
                   // get record count for badge
                   let count = 0;
                   if (p.id === "esgDay") count = state.esgDay?.length || 0;
@@ -4524,7 +4526,6 @@ function FupProjetos() {
     </div>
   );
 }
-
 
 function App() {
   const [tab, setTab] = useState("dashboard");
