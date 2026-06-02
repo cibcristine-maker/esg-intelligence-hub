@@ -1077,10 +1077,20 @@ function Medicos() {
                         <span style={{fontWeight:500}}>{m.nome}</span>
                       </div>
                     </td>
-                    <td>
-                      <span className="badge badge-tier" style={{background:`${TIER_COLOR[m.tier] || "#888"}22`, color: TIER_COLOR[m.tier] || "#888"}}>
-                        {m.tier === "ST" ? "STAR" : m.tier ? `T${m.tier}` : "—"}
-                      </span>
+                    <td onClick={e => e.stopPropagation()}>
+                      <select value={m.tier || ""} onChange={async e => {
+                          const v = e.target.value;
+                          if (supabaseClient) await supabaseClient.from("perfil_medico").update({ tier: v || null }).eq("id", m.id);
+                          setMedicos(prev => prev.map(x => x.id === m.id ? {...x, tier: v} : x));
+                        }} style={{background: "#1e2d3d", color: TIER_COLOR[m.tier] || "#888", border:`1px solid ${TIER_COLOR[m.tier]||"#333"}`, borderRadius:6, padding:"3px 8px", fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit"}}>
+                        <option value="">—</option>
+                        <option value="ST">ST ⭐</option>
+                        <option value="1">T1</option>
+                        <option value="2">T2</option>
+                        <option value="3">T3</option>
+                        <option value="4">T4</option>
+                        <option value="5">T5</option>
+                      </select>
                     </td>
                     <td className="td-muted">{m.estado || "—"}</td>
                     <td className="td-muted" style={{maxWidth:160,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.clinica || "—"}</td>
