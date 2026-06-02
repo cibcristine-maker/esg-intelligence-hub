@@ -4482,8 +4482,8 @@ function FupProjetos() {
     esgDay: {
       eventos: state.esgDay?.length || 0,
       compareceram: state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0,
-      procedimentos: state.esgDay?.reduce((a, r) => a + (+r.procedimentos30d || 0), 0) || 0,
-      receita: state.esgDay?.reduce((a, r) => a + ((+r.procedimentos30d || 0) * (+r.ticketMedio || 0)), 0) || 0,
+      procedimentos: state.esgDay?.reduce((a, r) => { const pv = (r.followups||[]).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); return a + (pv > 0 ? pv : (+r.procedimentos30d||0)); }, 0) || 0,
+      receita: state.esgDay?.reduce((a, r) => { const pv = (r.followups||[]).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); const p = pv > 0 ? pv : (+r.procedimentos30d||0); return a + (p * (+r.ticketMedio || 1680)); }, 0) || 0,
       conv: (() => {
         const comp = state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0;
         const proc = state.esgDay?.reduce((a, r) => a + (+r.procedimentos30d || 0), 0) || 0;
