@@ -2903,8 +2903,12 @@ function EsgDayProject({ data, onChange }) {
   const saveEdit = (updated) => { onChange(records.map((r) => r.id === updated.id ? updated : r)); setEditModal(null); };
   const saveFup = () => {
     if (!fupModal) return;
-    onChange(records.map((r) => r.id === fupModal
-      ? { ...r, followups: [...(r.followups || []), { ...fupForm, id: fupUid() }] }
+    const rid = typeof fupModal === "string" ? fupModal : fupModal.rid;
+    const isEdit = typeof fupModal === "object" && fupModal.fupId !== undefined;
+    onChange(records.map((r) => r.id === rid
+      ? { ...r, followups: isEdit
+          ? (r.followups||[]).map((f, idx) => (idx === fupModal.fupId || f.id === fupModal.fupId) ? { ...f, ...fupForm } : f)
+          : [...(r.followups||[]), { ...fupForm, id: fupUid() }] }
       : r));
     setFupModal(null);
     setFupForm({ data: "", tipo: "Visita presencial", procedimentosFechados: "", obs: "" });
