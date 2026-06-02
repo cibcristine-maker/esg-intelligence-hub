@@ -2676,6 +2676,19 @@ function fupSaveData(data) {
     return false;
   }
 }
+async function fupLoadRemote() {
+  try {
+    const { data, error } = await supabaseClient.from("fup_projetos").select("data").eq("id", "shared").single();
+    if (error || !data) return null;
+    return data.data || null;
+  } catch(e) { return null; }
+}
+async function fupSaveRemote(d) {
+  try {
+    const { error } = await supabaseClient.from("fup_projetos").upsert({ id: "shared", data: d, updated_at: new Date().toISOString() });
+    return !error;
+  } catch(e) { return false; }
+}
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const fupUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
@@ -4214,14 +4227,28 @@ function FupProjetos() {
   const [state, setState] = useState(() => fupLoadData());
   const [toast, setToast] = useState(null);
   const [saveTimer, setSaveTimer] = useState(null);
+  const [syncing, setSyncing] = useState(true);
 
-  // Auto-save with debounce
+  // Load from Supabase on mount
+  useEffect(() => {
+    fupLoadRemote().then((remote) => {
+      if (remote && Object.keys(remote).length > 0) {
+        setState(remote);
+        fupSaveData(remote);
+      }
+      setSyncing(false);
+    });
+  }, []);
+
+  // Auto-save with debounce — saves to both localStorage and Supabase
   const persistData = useCallback((newState) => {
     if (saveTimer) clearTimeout(saveTimer);
     const timer = setTimeout(() => {
-      const ok = fupSaveData(newState);
-      setToast({ msg: ok ? "✓ Dados salvos automaticamente" : "Erro ao salvar", type: ok ? "success" : "error" });
-      setTimeout(() => setToast(null), FUP_TOAST_DUR);
+      fupSaveData(newState);
+      fupSaveRemote(newState).then((ok) => {
+        setToast({ msg: ok ? "✓ Salvo para o time" : "✓ Salvo localmente", type: ok ? "success" : "info" });
+        setTimeout(() => setToast(null), FUP_TOAST_DUR);
+      });
     }, 600);
     setSaveTimer(timer);
   }, [saveTimer]);
@@ -4386,8 +4413,11 @@ function FupProjetos() {
               padding: "18px 24px", marginBottom: 24,
               display: "flex", gap: 0, flexWrap: "wrap", overflow: "hidden",
             }}>
-              <div style={{ color: FUP_C.textDim, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", width: "100%", marginBottom: 14 }}>
-                Consolidado — Todos os 7 Projetos
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%", marginBottom: 14 }}>
+                <div style={{ color: FUP_C.textDim, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                  {syncing ? "🔄 Sincronizando dados do time..." : "Consolidado — Todos os 7 Projetos"}
+                </div>
+                {!syncing && <button onClick={() => { setSyncing(true); fupLoadRemote().then((r) => { if (r && Object.keys(r).length > 0) { setState(r); fupSaveData(r); } setSyncing(false); }); }} style={{ background: "transparent", border: "1px solid " + FUP_C.border, borderRadius: 8, color: FUP_C.textMuted, fontSize: 11, fontWeight: 600, cursor: "pointer", padding: "4px 12px", fontFamily: "inherit" }}>🔄 Sincronizar</button>}
               </div>
               {[
                 { label: "Procedimentos Totais", value: aggStats.totalProcedimentos, color: FUP_C.green, icon: "✓" },
