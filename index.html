@@ -1015,6 +1015,7 @@ function Medicos() {
   const { data: medicos, loading, refresh } = useSupabase("perfil_medico");
   const [search, setSearch] = useState("");
   const [filterTier, setFilterTier] = useState("");
+  const [filterAccount, setFilterAccount] = useState("");
   const [selected, setSelected] = useState(null);
   const [editingAccount, setEditingAccount] = useState(null);
   const [accountVal, setAccountVal] = useState("");
@@ -1050,6 +1051,10 @@ function Medicos() {
         <select className="search-select" value={filterTier} onChange={e => setFilterTier(e.target.value)}>
           <option value="">Todos os tiers</option>
           {["ST","1","2","3","4","5"].map(t => <option key={t} value={t}>Tier {t}</option>)}
+        </select>
+        <select className="search-select" value={filterAccount} onChange={e => setFilterAccount(e.target.value)}>
+          <option value="">Todos accounts</option>
+          {[...new Set(medicos.map(m => m.account).filter(Boolean))].sort().map(a => <option key={a} value={a}>{a}</option>)}
         </select>
       </div>
 
@@ -1225,8 +1230,9 @@ function Ativacao() {
   const [selectedMedico, setSelectedMedico] = useState(null);
   const [toast, setToast] = useState(null);
   const [filterTier, setFilterTier] = useState("");
+  const [filterAccount, setFilterAccount] = useState("");
 
-  const medicosFilt = medicos.filter(m => !filterTier || String(m.tier) === filterTier)
+  const medicosFilt = medicos.filter(m => (!filterTier || String(m.tier) === filterTier) && (!filterAccount || (m.account||"") === filterAccount))
     .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   const getProgress = (medicoId) => {
@@ -1270,6 +1276,10 @@ function Ativacao() {
         <select className="search-select" value={filterTier} onChange={e => setFilterTier(e.target.value)}>
           <option value="">Todos os tiers</option>
           {["ST","1","2","3","4","5"].map(t => <option key={t} value={t}>Tier {t}</option>)}
+        </select>
+        <select className="search-select" value={filterAccount} onChange={e => setFilterAccount(e.target.value)}>
+          <option value="">Todos accounts</option>
+          {[...new Set(medicos.map(m => m.account).filter(Boolean))].sort().map(a => <option key={a} value={a}>{a}</option>)}
         </select>
       </div>
 
