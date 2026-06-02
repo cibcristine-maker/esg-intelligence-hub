@@ -2880,7 +2880,7 @@ function EsgDayProject({ data, onChange }) {
       eventos: a.eventos + 1,
       compareceram: a.compareceram + (+r.compareceram || 0),
       procedimentos: a.procedimentos + procTotal,
-      receita: a.receita + (procTotal * (+r.ticketMedio || 0)),
+      receita: a.receita + (procTotal * (+r.ticketMedio || ESG_PRICE_USD)),
       custo: a.custo + (+r.custoEvento || 0),
     };
   }, { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
@@ -3431,7 +3431,7 @@ function CampanhaInternaProject({ data, onChange }) {
     contatados: records.filter((r) => !["Novo Lead", "Tentativa 1", "Tentativa 2"].includes(r.statusFunil) && r.statusFunil !== "Perdido").length,
     convertidos: records.filter((r) => r.conversao === "Sim" || (r.followups||[]).some(f => f.statusContato === "Convertido")).length,
     perdidos: records.filter((r) => r.statusFunil === "Perdido").length,
-    receita: records.filter((r) => r.conversao === "Sim").reduce((a, r) => a + (+r.valorProcedimento || 0), 0),
+    receita: records.filter((r) => r.conversao === "Sim").reduce((a, r) => a + (+r.valorProcedimento || ESG_PRICE_USD), 0),
   };
   const txConv = totals.total > 0 ? ((totals.convertidos / totals.total) * 100).toFixed(1) : 0;
 
