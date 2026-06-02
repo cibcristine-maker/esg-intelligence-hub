@@ -4486,7 +4486,7 @@ function FupProjetos() {
       receita: state.esgDay?.reduce((a, r) => { const pv = (r.followups||[]).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); const p = pv > 0 ? pv : (+r.procedimentos30d||0); return a + (p * (+r.ticketMedio || 1680)); }, 0) || 0,
       conv: (() => {
         const comp = state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0;
-        const proc = state.esgDay?.reduce((a, r) => a + (+r.procedimentos30d || 0), 0) || 0;
+        const proc = state.esgDay?.reduce((a, r) => { const pv = (r.followups||[]).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); return a + (pv > 0 ? pv : (+r.procedimentos30d||0)); }, 0) || 0;
         return comp > 0 ? ((proc / comp) * 100).toFixed(0) : 0;
       })(),
     },
