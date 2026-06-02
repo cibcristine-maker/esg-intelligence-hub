@@ -2577,61 +2577,6 @@ const TABS = [
 // ════════════════════════════════════════════════════════════════
 
 
-// ─── TIMELINE DE VISITAS ────────────────────────────────────────────────────
-function FupTimeline({ fups, fields, accentColor }) {
-  const [expanded, setExpanded] = React.useState(false);
-  if (!fups || fups.length === 0) return null;
-  const color = accentColor || FUP_C.teal;
-  const riscoColor = { Verde: FUP_C.green, Amarelo: FUP_C.yellow, Vermelho: FUP_C.red };
-  return (
-    <div style={{ marginTop: 12, borderTop: `1px solid ${FUP_C.border}`, paddingTop: 12 }}>
-      <button onClick={() => setExpanded(!expanded)} style={{
-        background: "none", border: "none", cursor: "pointer",
-        color: color, fontSize: 12, fontWeight: 600, display: "flex", alignItems: "center", gap: 6,
-        padding: 0,
-      }}>
-        {expanded ? "▼" : "▶"} {fups.length} visita{fups.length > 1 ? "s" : ""} registrada{fups.length > 1 ? "s" : ""}
-      </button>
-      {expanded && (
-        <div style={{ marginTop: 12, display: "flex", flexDirection: "column", gap: 10 }}>
-          {fups.map((f, idx) => (
-            <div key={f.id || idx} style={{
-              background: FUP_C.bg, borderRadius: 8, padding: "12px 14px",
-              border: `1px solid ${FUP_C.border}`,
-              borderLeft: `3px solid ${f.risco ? riscoColor[f.risco] || color : color}`,
-              position: "relative",
-            }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ background: color, color: "#fff", borderRadius: "50%", width: 22, height: 22, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>{idx + 1}</span>
-                  <span style={{ color: FUP_C.text, fontWeight: 600, fontSize: 13 }}>{f.data || "Sem data"}</span>
-                  {f.tipo && <span style={{ color: FUP_C.textMuted, fontSize: 11 }}>· {f.tipo}</span>}
-                </div>
-                {f.risco && (
-                  <span style={{ color: riscoColor[f.risco] || FUP_C.textMuted, fontSize: 11, fontWeight: 700 }}>
-                    {f.risco === "Verde" ? "🟢" : f.risco === "Amarelo" ? "🟡" : "🔴"} {f.risco}
-                  </span>
-                )}
-              </div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 20px" }}>
-                {fields.map((field) => f[field.key] !== undefined && f[field.key] !== "" && (
-                  <div key={field.key} style={{ fontSize: 12 }}>
-                    <span style={{ color: FUP_C.textDim }}>{field.label}: </span>
-                    <span style={{ color: field.color ? field.color : FUP_C.text, fontWeight: 600 }}>{f[field.key]}</span>
-                  </div>
-                ))}
-              </div>
-              {f.obs && (
-                <div style={{ marginTop: 8, color: FUP_C.textMuted, fontSize: 12, fontStyle: "italic" }}>
-                  💬 {f.obs}
-                </div>
-              )}
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
 }
 
 // ─── PALETTE ───────────────────────────────────────────────────────────────
@@ -3703,13 +3648,7 @@ function CursoEndoscopistasProject({ data, onChange }) {
                       </span>
                       {lastFup?.risco && <FupPill label={lastFup.risco} color={lastFup.risco.toLowerCase()} />}
                     </div>
-                    <FupTimeline fups={fups} accentColor={FUP_C.green} fields={[
-                      { key: "realizandoProcedimentos", label: "Realizando proced." },
-                      { key: "possuiCRM", label: "CRM" },
-                      { key: "procedimentos30d", label: "Procedimentos 30d", color: FUP_C.green },
-                      { key: "avaliacoesAgendadas", label: "Avaliações", color: FUP_C.teal },
-                      { key: "scoreImpl", label: "Score" },
-                    ]} />
+
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <FupBtn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m, _idx: idx }); setEditModal(true); }}>✏️ Editar</FupBtn>
@@ -4088,16 +4027,7 @@ function ImersaoMarketingProject({ data, onChange }) {
                         {last?.geoScore && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>GEO: <b style={{ color: FUP_C.yellow }}>{last.geoScore}/10</b></span>}
                         {last?.leadsOrganicos && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Leads: <b style={{ color: FUP_C.teal }}>{last.leadsOrganicos}</b></span>}
                     </div>
-                    <FupTimeline fups={mAcoes} accentColor={FUP_C.yellow} fields={[
-                      { key: "instagramAtivo", label: "Instagram" },
-                      { key: "seguidores", label: "Seguidores" },
-                      { key: "postsMes", label: "Posts/mês" },
-                      { key: "geoScore", label: "GEO Score", color: FUP_C.yellow },
-                      { key: "llmVisivelChatGPT", label: "ChatGPT" },
-                      { key: "llmVisivelGoogle", label: "Google/Gemini" },
-                      { key: "leadsOrganicos", label: "Leads org.", color: FUP_C.teal },
-                      { key: "procedimentosGerados", label: "Procedimentos", color: FUP_C.green },
-                    ]} />
+
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
