@@ -3160,6 +3160,7 @@ function AulasReferidoresProject({ data, onChange }) {
     medico: "", especialidade: "", possuiCRM: "Não", indicacoesM1: "", indicacoesM2: "", indicacoesM3: "", procedimentosGerados: "", obs: "",
   });
   const [visitaModal, setVisitaModal] = useState(null);
+  const [editVisitaModal, setEditVisitaModal] = useState(null); // { evId, refId, vi }
   const [expandedRef, setExpandedRef] = useState(null);
   const [visitaForm, setVisitaForm] = useState({ data: "", tipo: "Visita presencial", indicacoes: "", procedimentos: "", obs: "" });
   const [editEventoModal, setEditEventoModal] = useState(null);
@@ -3199,6 +3200,22 @@ function AulasReferidoresProject({ data, onChange }) {
 
   const saveEditEvento = (ev) => { updateEventos(eventos.map((e) => e.id === ev.id ? ev : e)); setEditEventoModal(null); };
   const saveEditRef = ({ evId, ref }) => { updateEventos(eventos.map((ev) => ev.id === evId ? { ...ev, referidores: (ev.referidores||[]).map((r) => r.id === ref.id ? ref : r) } : ev)); setEditRefModal(null); };
+  const saveEditVisita = ({ evId, refId, vi }) => {
+    updateEventos(eventos.map((ev) => ev.id === evId
+      ? { ...ev, referidores: (ev.referidores||[]).map((r) => r.id === refId
+          ? { ...r, visitas: (r.visitas||[]).map((v, idx) => idx === vi ? { ...v, ...visitaForm } : v) }
+          : r) }
+      : ev));
+    setEditVisitaModal(null);
+    setVisitaForm({ data: "", tipo: "Visita presencial", indicacoes: "", procedimentos: "", obs: "" });
+  };
+  const deleteVisita = ({ evId, refId, vi }) => {
+    updateEventos(eventos.map((ev) => ev.id === evId
+      ? { ...ev, referidores: (ev.referidores||[]).map((r) => r.id === refId
+          ? { ...r, visitas: (r.visitas||[]).filter((_, idx) => idx !== vi) }
+          : r) }
+      : ev));
+  };
   const delEvento = (id) => updateEventos(eventos.filter((e) => e.id !== id));
   const delRef = (evId, refId) => updateEventos(eventos.map((ev) => ev.id === evId ? { ...ev, referidores: (ev.referidores||[]).filter((r) => r.id !== refId) } : ev));
 
@@ -3287,11 +3304,17 @@ function AulasReferidoresProject({ data, onChange }) {
                               {expandedRef === r.id && (r.visitas||[]).length > 0 && (
                                 <div style={{ marginTop: 8, display: "flex", flexDirection: "column", gap: 6 }}>
                                   {(r.visitas||[]).map((v, vi) => (
-                                    <div key={v.id||vi} style={{ background: FUP_C.bg, borderRadius: 6, padding: "6px 10px", border: "1px solid " + FUP_C.border, borderLeft: "3px solid " + FUP_C.blue, fontSize: 12 }}>
-                                      <span style={{ color: FUP_C.text, fontWeight: 600 }}>{"V" + (vi+1) + " · " + (v.data||"—") + " · " + (v.tipo||"")}</span>
-                                      {v.indicacoes && <span style={{ color: FUP_C.teal, marginLeft: 10 }}>{"Ind: " + v.indicacoes}</span>}
-                                      {v.procedimentos && <span style={{ color: FUP_C.green, marginLeft: 10 }}>{"Proced: " + v.procedimentos}</span>}
-                                      {v.obs && <span style={{ color: FUP_C.textMuted, marginLeft: 10, fontStyle: "italic" }}>{"💬 " + v.obs}</span>}
+                                    <div key={v.id||vi} style={{ background: FUP_C.bg, borderRadius: 6, padding: "6px 10px", border: "1px solid " + FUP_C.border, borderLeft: "3px solid " + FUP_C.blue, fontSize: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                      <div>
+                                        <span style={{ color: FUP_C.text, fontWeight: 600 }}>{"V" + (vi+1) + " · " + (v.data||"—") + " · " + (v.tipo||"")}</span>
+                                        {v.indicacoes && <span style={{ color: FUP_C.teal, marginLeft: 10 }}>{"Ind: " + v.indicacoes}</span>}
+                                        {v.procedimentos && <span style={{ color: FUP_C.green, marginLeft: 10 }}>{"Proced: " + v.procedimentos}</span>}
+                                        {v.obs && <span style={{ color: FUP_C.textMuted, marginLeft: 10, fontStyle: "italic" }}>{"💬 " + v.obs}</span>}
+                                      </div>
+                                      <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
+                                        <button onClick={() => { setVisitaForm({ data: v.data||"", tipo: v.tipo||"Visita presencial", indicacoes: v.indicacoes||"", procedimentos: v.procedimentos||"", obs: v.obs||"" }); setEditVisitaModal({ evId: ev.id, refId: r.id, vi }); }} style={{ background: "none", border: "1px solid " + FUP_C.border, borderRadius: 4, color: FUP_C.textMuted, fontSize: 10, cursor: "pointer", padding: "2px 5px" }}>✏️</button>
+                                        <button onClick={() => deleteVisita({ evId: ev.id, refId: r.id, vi })} style={{ background: "none", border: "1px solid " + FUP_C.red, borderRadius: 4, color: FUP_C.red, fontSize: 10, cursor: "pointer", padding: "2px 5px" }}>✕</button>
+                                      </div>
                                     </div>
                                   ))}
                                 </div>
@@ -3377,6 +3400,20 @@ function AulasReferidoresProject({ data, onChange }) {
             <FupBtn onClick={() => saveEditRef(editRefModal)} style={{ background: FUP_C.blue, border: "none" }}>Salvar</FupBtn>
           </div>
         </div>)}
+      </FupModal>
+      {/* Modal Editar Visita Referidor */}
+      <FupModal open={!!editVisitaModal} onClose={() => setEditVisitaModal(null)} title="Editar Visita">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <FupInput label="Data" type="date" value={visitaForm.data} onChange={(v) => setVisitaForm({ ...visitaForm, data: v })} />
+          <FupSelect label="Tipo" value={visitaForm.tipo} onChange={(v) => setVisitaForm({ ...visitaForm, tipo: v })} options={["Visita presencial","Call","WhatsApp","E-mail"].map((s) => ({ value: s, label: s }))} />
+          <FupInput label="Indicações geradas" type="number" value={visitaForm.indicacoes} onChange={(v) => setVisitaForm({ ...visitaForm, indicacoes: v })} />
+          <FupInput label="Procedimentos gerados" type="number" value={visitaForm.procedimentos} onChange={(v) => setVisitaForm({ ...visitaForm, procedimentos: v })} />
+          <div style={{ gridColumn: "span 2" }}><FupInput label="Obs" value={visitaForm.obs} onChange={(v) => setVisitaForm({ ...visitaForm, obs: v })} /></div>
+          <div style={{ gridColumn: "span 2", display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <FupBtn variant="ghost" onClick={() => setEditVisitaModal(null)}>Cancelar</FupBtn>
+            <FupBtn onClick={() => saveEditVisita(editVisitaModal)} style={{ background: FUP_C.blue, border: "none" }}>Salvar Alterações</FupBtn>
+          </div>
+        </div>
       </FupModal>
       {/* Modal Nova Visita */}
       <FupModal open={!!visitaModal} onClose={() => setVisitaModal(null)} title="Nova Visita ao Referidor">
