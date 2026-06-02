@@ -3369,6 +3369,10 @@ function AulasReferidoresProject({ data, onChange }) {
 }
 function CampanhaInternaProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
+  const [editModal, setEditModal] = useState(null);
+  const [detalheId, setDetalheId] = useState(null);
+  const [fupModal, setFupModal] = useState(null);
+  const [fupForm, setFupForm] = useState({ data: "", tipo: "Visita presencial", statusContato: "", obs: "" });
   const [form, setForm] = useState({
     dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "",
     telefoneIndicador: "", area: "", statusFunil: "Novo Lead",
@@ -3396,6 +3400,8 @@ function CampanhaInternaProject({ data, onChange }) {
     setForm({ dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "", telefoneIndicador: "", area: "", statusFunil: "Novo Lead", procedimento: "", origem: "Convenção", conversao: "Não", valorProcedimento: "", motivoPerda: "", obs: "" });
   };
 
+  const saveEditC = (u) => { onChange(records.map((r) => r.id === u.id ? u : r)); setEditModal(null); };
+  const saveFupC = () => { if (!fupModal) return; onChange(records.map((r) => r.id === fupModal ? { ...r, followups: [...(r.followups||[]), { ...fupForm, id: fupUid() }] } : r)); setFupModal(null); setFupForm({ data: "", tipo: "Visita presencial", statusContato: "", obs: "" }); };
   const updateStatus = (id, statusFunil) => onChange(records.map((r) => r.id === id ? { ...r, statusFunil } : r));
 
   const statusColor = { "Novo Lead": "azul", "Contato Realizado": "amarelo", "Avaliação Realizada": "roxo", "Procedimento Realizado": "verde", "Perdido": "vermelho" };
@@ -3458,8 +3464,33 @@ function CampanhaInternaProject({ data, onChange }) {
                     </td>
                     <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.procedimento || "—"}</td>
                     <td style={{ padding: "12px" }}><FupPill label={r.conversao} color={r.conversao === "Sim" ? "verde" : "cinza"} /></td>
-                    <td style={{ padding: "12px" }}><FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn></td>
+                    <td style={{ padding: "12px" }}>
+                      <div style={{ display: "flex", gap: 6 }}>
+                        <FupBtn size="sm" variant="ghost" onClick={() => setDetalheId(detalheId === r.id ? null : r.id)}>📋</FupBtn>
+                        <FupBtn size="sm" variant="ghost" onClick={() => setEditModal({ ...r })}>✏️</FupBtn>
+                        <FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn>
+                      </div>
+                    </td>
                   </tr>
+                  {detalheId === r.id && (
+                    <tr key={r.id + "_det"}>
+                      <td colSpan={8} style={{ padding: "0 12px 14px", background: FUP_C.bg }}>
+                        <div style={{ borderLeft: `3px solid ${FUP_C.purple}`, paddingLeft: 16, paddingTop: 10 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                            <span style={{ color: FUP_C.purple, fontWeight: 700, fontSize: 13 }}>Seguimento — {r.nomePaciente || r.colaboradorIndicador}</span>
+                            <FupBtn size="sm" onClick={() => setFupModal(r.id)} style={{ background: FUP_C.purple, border: "none" }}>+ Nova Ação</FupBtn>
+                          </div>
+                          {(r.followups || []).length > 0 && (r.followups || []).map((f, fi) => (
+                            <div key={f.id || fi} style={{ background: FUP_C.card, borderRadius: 8, padding: "7px 12px", border: `1px solid ${FUP_C.border}`, borderLeft: `3px solid ${FUP_C.purple}`, marginBottom: 6, fontSize: 12 }}>
+                              <span style={{ color: FUP_C.text, fontWeight: 600 }}>{"A" + (fi+1) + " · " + (f.data||"—") + " · " + (f.tipo||"")}</span>
+                              {f.statusContato && <span style={{ color: FUP_C.textMuted, marginLeft: 12 }}>{f.statusContato}</span>}
+                              {f.obs && <span style={{ color: FUP_C.textMuted, marginLeft: 12, fontStyle: "italic" }}>{"💬 " + f.obs}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 ))}
               </tbody>
             </table>
@@ -3928,6 +3959,10 @@ function CursoEndoscopistasProject({ data, onChange }) {
 // ════════════════════════════════════════════════════════════════════════════
 function PacientesReferidoresProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
+  const [editModal, setEditModal] = useState(null);
+  const [detalheId, setDetalheId] = useState(null);
+  const [fupModal, setFupModal] = useState(null);
+  const [fupForm, setFupForm] = useState({ data: "", tipo: "Call", resultado: "", obs: "" });
   const [form, setForm] = useState({
     dataEntrada: "", paciente: "", telefone: "", medicoReferidor: "",
     clinicaReferidor: "", cidade: "", owner: "",
@@ -3971,6 +4006,8 @@ function PacientesReferidoresProject({ data, onChange }) {
   };
 
   const update = (id, field, val) => onChange(records.map((r) => r.id === id ? { ...r, [field]: val } : r));
+  const saveEditP = (u) => { onChange(records.map((r) => r.id === u.id ? u : r)); setEditModal(null); };
+  const saveFupP = () => { if (!fupModal) return; onChange(records.map((r) => r.id === fupModal ? { ...r, followups: [...(r.followups||[]), { ...fupForm, id: fupUid() }] } : r)); setFupModal(null); setFupForm({ data: "", tipo: "Call", resultado: "", obs: "" }); };
 
   return (
     <div>
@@ -4042,14 +4079,34 @@ function PacientesReferidoresProject({ data, onChange }) {
                     <td style={{ padding: "10px" }}>
                       <FupPill label={r.procedimentoFechado === "Sim" ? "Sim ✓" : "Não"} color={r.procedimentoFechado === "Sim" ? "verde" : "cinza"} />
                     </td>
-                    <td style={{ padding: "10px", display: "flex", gap: 6 }}>
-                      <FupBtn size="sm" variant="ghost" onClick={() => {
-                        const updated = records.map((x) => x.id === r.id ? { ...x, procedimentoFechado: x.procedimentoFechado === "Sim" ? "Não" : "Sim" } : x);
-                        onChange(updated);
-                      }}>{r.procedimentoFechado === "Sim" ? "↩" : "✓ Fechado"}</FupBtn>
-                      <FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn>
+                    <td style={{ padding: "10px" }}>
+                      <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                        <FupBtn size="sm" variant="ghost" onClick={() => { const u = records.map((x) => x.id === r.id ? { ...x, procedimentoFechado: x.procedimentoFechado === "Sim" ? "Não" : "Sim" } : x); onChange(u); }}>{r.procedimentoFechado === "Sim" ? "↩" : "✓"}</FupBtn>
+                        <FupBtn size="sm" variant="ghost" onClick={() => setDetalheId(detalheId === r.id ? null : r.id)}>📋</FupBtn>
+                        <FupBtn size="sm" variant="ghost" onClick={() => setEditModal({ ...r })}>✏️</FupBtn>
+                        <FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn>
+                      </div>
                     </td>
                   </tr>
+                  {detalheId === r.id && (
+                    <tr key={r.id + "_det"}>
+                      <td colSpan={8} style={{ padding: "0 10px 14px", background: FUP_C.bg }}>
+                        <div style={{ borderLeft: "3px solid #F43F5E", paddingLeft: 16, paddingTop: 10 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+                            <span style={{ color: "#F43F5E", fontWeight: 700, fontSize: 13 }}>Seguimento — {r.paciente}</span>
+                            <FupBtn size="sm" onClick={() => setFupModal(r.id)} style={{ background: "#F43F5E", border: "none" }}>+ Nova Ação</FupBtn>
+                          </div>
+                          {(r.followups || []).length > 0 && (r.followups || []).map((f, fi) => (
+                            <div key={f.id || fi} style={{ background: FUP_C.card, borderRadius: 8, padding: "7px 12px", border: `1px solid ${FUP_C.border}`, borderLeft: "3px solid #F43F5E", marginBottom: 6, fontSize: 12 }}>
+                              <span style={{ color: FUP_C.text, fontWeight: 600 }}>{"A" + (fi+1) + " · " + (f.data||"—") + " · " + (f.tipo||"")}</span>
+                              {f.resultado && <span style={{ color: FUP_C.teal, marginLeft: 12 }}>{f.resultado}</span>}
+                              {f.obs && <span style={{ color: FUP_C.textMuted, marginLeft: 12, fontStyle: "italic" }}>{"💬 " + f.obs}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
                 ))}
               </tbody>
             </table>
@@ -4102,6 +4159,32 @@ function PacientesReferidoresProject({ data, onChange }) {
         </div>
       )}
 
+      <FupModal open={!!editModal} onClose={() => setEditModal(null)} title="Editar Paciente">
+        {editModal && (<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <FupInput label="Paciente" value={editModal.paciente} onChange={(v) => setEditModal({ ...editModal, paciente: v })} />
+          <FupInput label="Médico Referidor" value={editModal.medicoReferidor} onChange={(v) => setEditModal({ ...editModal, medicoReferidor: v })} />
+          <FupInput label="Telefone" value={editModal.telefone} onChange={(v) => setEditModal({ ...editModal, telefone: v })} />
+          <FupInput label="Owner" value={editModal.owner} onChange={(v) => setEditModal({ ...editModal, owner: v })} />
+          <FupSelect label="Procedimento Fechado?" value={editModal.procedimentoFechado} onChange={(v) => setEditModal({ ...editModal, procedimentoFechado: v })} options={[{value:"Não",label:"Não"},{value:"Sim",label:"Sim"}]} />
+          <FupInput label="Obs" value={editModal.obs} onChange={(v) => setEditModal({ ...editModal, obs: v })} />
+          <div style={{ gridColumn: "span 2", display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <FupBtn variant="ghost" onClick={() => setEditModal(null)}>Cancelar</FupBtn>
+            <FupBtn onClick={() => saveEditP(editModal)} style={{ background: "#F43F5E", border: "none" }}>Salvar</FupBtn>
+          </div>
+        </div>)}
+      </FupModal>
+      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Registrar Nova Ação — Paciente">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
+          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Call","WhatsApp","E-mail","Visita presencial"].map(s=>({value:s,label:s}))} />
+          <FupInput label="Resultado / Status" value={fupForm.resultado} onChange={(v) => setFupForm({ ...fupForm, resultado: v })} />
+          <FupInput label="Observações" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
+          <div style={{ gridColumn: "span 2", display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
+            <FupBtn onClick={saveFupP} style={{ background: "#F43F5E", border: "none" }}>Registrar</FupBtn>
+          </div>
+        </div>
+      </FupModal>
       <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Paciente — Indicado por Referidor" width={720}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <FupInput label="Data de Entrada" type="date" value={form.dataEntrada} onChange={(v) => setForm({ ...form, dataEntrada: v })} />
