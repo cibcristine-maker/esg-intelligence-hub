@@ -3384,6 +3384,7 @@ function CursoBariatricosProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
   const [fupModal, setFupModal] = useState(null);
   const [editMedico, setEditMedico] = useState(null);
+  const [expandedMedico, setExpandedMedico] = useState(null);
   const [fupForm, setFupForm] = useState({
     data: "", tipo: "Visita", encaminhouMaterial: "Sim", possuiCRM: "Não",
     qtdContatosEnviados: "", respostas: "", avaliacoes: "", procedimentos: "",
@@ -3477,10 +3478,36 @@ function CursoBariatricosProject({ data, onChange }) {
                       {m.possuiCRM && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>CRM: <FupPill label={m.possuiCRM} color={m.possuiCRM === "Sim" ? "verde" : "vermelho"} /></span>}
                     </div>
                     {fups.length > 0 && (
-                      <div style={{ marginTop: 8, display: "flex", gap: 16 }}>
-                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Follow-ups: <b style={{ color: FUP_C.text }}>{fups.length}</b></span>
-                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoes || 0), 0)}</b></span>
-                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos || 0), 0)}</b></span>
+                      <div style={{ marginTop: 8 }}>
+                        <div style={{ display: "flex", gap: 16, marginBottom: 6 }}>
+                          <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Follow-ups: <b style={{ color: FUP_C.text }}>{fups.length}</b></span>
+                          <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoes || 0), 0)}</b></span>
+                          <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos || 0), 0)}</b></span>
+                          <button onClick={() => setExpandedMedico(expandedMedico === m.id ? null : m.id)} style={{ background: "none", border: "none", color: FUP_C.orange, fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0 }}>
+                            {expandedMedico === m.id ? "▼ Ocultar visitas" : "▶ Ver visitas"}
+                          </button>
+                        </div>
+                        {expandedMedico === m.id && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                            {fups.map((f, idx) => (
+                              <div key={f.id || idx} style={{ background: FUP_C.bg, borderRadius: 8, padding: "10px 14px", border: "1px solid " + FUP_C.border, borderLeft: "3px solid " + (f.risco === "Verde" ? FUP_C.green : f.risco === "Vermelho" ? FUP_C.red : f.risco === "Amarelo" ? FUP_C.yellow : FUP_C.orange) }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                                  <span style={{ color: FUP_C.text, fontWeight: 600, fontSize: 13 }}>{"Visita " + (idx+1) + " · " + (f.data || "Sem data") + " · " + (f.tipo || "")}</span>
+                                  {f.risco && <span style={{ color: f.risco === "Verde" ? FUP_C.green : f.risco === "Vermelho" ? FUP_C.red : FUP_C.yellow, fontSize: 11, fontWeight: 700 }}>{f.risco === "Verde" ? "🟢" : f.risco === "Amarelo" ? "🟡" : "🔴"} {f.risco}</span>}
+                                </div>
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px" }}>
+                                  {f.encaminhouMaterial && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Material: <b style={{ color: FUP_C.text }}>{f.encaminhouMaterial}</b></span>}
+                                  {f.possuiCRM && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>CRM: <b style={{ color: FUP_C.text }}>{f.possuiCRM}</b></span>}
+                                  {f.qtdContatosEnviados && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Contatos: <b style={{ color: FUP_C.blue }}>{f.qtdContatosEnviados}</b></span>}
+                                  {f.avaliacoes && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_C.teal }}>{f.avaliacoes}</b></span>}
+                                  {f.procedimentos && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{f.procedimentos}</b></span>}
+                                  {f.scoreImpl && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +f.scoreImpl >= 7 ? FUP_C.green : FUP_C.yellow }}>{f.scoreImpl}/10</b></span>}
+                                </div>
+                                {f.obs && <div style={{ color: FUP_C.textMuted, fontSize: 12, marginTop: 6, fontStyle: "italic" }}>💬 {f.obs}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -3576,6 +3603,7 @@ function CursoBariatricosProject({ data, onChange }) {
 function CursoEndoscopistasProject({ data, onChange }) {
   const [fupModal, setFupModal] = useState(null);
   const [editModal, setEditModal] = useState(false);
+  const [expandedEndo, setExpandedEndo] = useState(null);
   const [editMedico, setEditMedico] = useState(null);
   const [activeTab, setActiveTab] = useState("medicos");
   const [fupForm, setFupForm] = useState({
@@ -3644,7 +3672,28 @@ function CursoEndoscopistasProject({ data, onChange }) {
                         Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0)}</b>
                       </span>
                       {lastFup?.risco && <FupPill label={lastFup.risco} color={lastFup.risco.toLowerCase()} />}
+                      <button onClick={() => setExpandedEndo(expandedEndo === m.id ? null : m.id)} style={{ background: "none", border: "none", color: FUP_C.green, fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0 }}>
+                        {expandedEndo === m.id ? "▼ Ocultar visitas" : "▶ Ver " + fups.length + " visita(s)"}
+                      </button>
                     </div>
+                    {expandedEndo === m.id && fups.length > 0 && (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                        {fups.map((f, idx) => (
+                          <div key={f.id || idx} style={{ background: FUP_C.bg, borderRadius: 8, padding: "10px 14px", border: "1px solid " + FUP_C.border, borderLeft: "3px solid " + (f.risco === "Verde" ? FUP_C.green : f.risco === "Vermelho" ? FUP_C.red : FUP_C.yellow) }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                              <span style={{ color: FUP_C.text, fontWeight: 600, fontSize: 13 }}>{"Visita " + (idx+1) + " · " + (f.data || "Sem data") + " · " + (f.tipo || "")}</span>
+                              {f.risco && <span style={{ color: f.risco === "Verde" ? FUP_C.green : f.risco === "Vermelho" ? FUP_C.red : FUP_C.yellow, fontSize: 11, fontWeight: 700 }}>{f.risco === "Verde" ? "🟢" : f.risco === "Amarelo" ? "🟡" : "🔴"} {f.risco}</span>}
+                            </div>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px" }}>
+                              {f.procedimentos30d && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{f.procedimentos30d}</b></span>}
+                              {f.avaliacoesAgendadas && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_C.teal }}>{f.avaliacoesAgendadas}</b></span>}
+                              {f.scoreImpl && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +f.scoreImpl >= 7 ? FUP_C.green : FUP_C.yellow }}>{f.scoreImpl}/10</b></span>}
+                            </div>
+                            {f.obs && <div style={{ color: FUP_C.textMuted, fontSize: 12, marginTop: 6, fontStyle: "italic" }}>💬 {f.obs}</div>}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
                     <FupBtn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m, _idx: idx }); setEditModal(true); }}>✏️ Editar</FupBtn>
@@ -3936,6 +3985,7 @@ function PacientesReferidoresProject({ data, onChange }) {
 function ImersaoMarketingProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
   const [fupModal, setFupModal] = useState(null);
+  const [expandedImersao, setExpandedImersao] = useState(null);
   const [activeTab, setActiveTab] = useState("medicos");
   const [form, setForm] = useState({ nome: "", especialidade: "", cidade: "", email: "", instagram: "", site: "" });
   const [fupForm, setFupForm] = useState({
