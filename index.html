@@ -2885,9 +2885,8 @@ function EsgDayProject({ data, onChange }) {
     };
   }, { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
 
-  const conversaoMedia = totals.compareceram > 0
-    ? ((totals.procedimentos / totals.compareceram) * 100).toFixed(1)
-    : 0;
+  const conversaoMediaRaw = totals.compareceram > 0 ? (totals.procedimentos / totals.compareceram) * 100 : 0;
+  const conversaoMedia = conversaoMediaRaw > 100 ? "100+" : conversaoMediaRaw.toFixed(1);
   const roi = totals.custo > 0
     ? (((totals.receita - totals.custo) / totals.custo) * 100).toFixed(0)
     : "—";
@@ -4495,14 +4494,15 @@ function FupProjetos() {
       conv: (() => {
         const comp = state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0;
         const proc = state.esgDay?.reduce((a, r) => { const pv = (r.followups||[]).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); return a + (pv > 0 ? pv : (+r.procedimentos30d||0)); }, 0) || 0;
-        return comp > 0 ? ((proc / comp) * 100).toFixed(0) : 0;
+        const pct = comp > 0 ? ((proc / comp) * 100) : 0;
+        return pct > 100 ? "100+" : pct.toFixed(0);
       })(),
     },
     aulasRef: {
       medicos: (state.aulasReferidores?.eventos || []).reduce((a, ev) => a + (ev.referidores||[]).length, 0),
       comCRM: (state.aulasReferidores?.eventos || []).reduce((a, ev) => a + (ev.referidores||[]).filter((r) => r.possuiCRM === "Sim").length, 0),
-      indicacoes: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.indicacoesM1||0) + (+r.indicacoesM2||0) + (+r.indicacoesM3||0), a), 0),
-      procedimentos: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.procedimentosGerados||0), a), 0),
+      indicacoes: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.indicacoesM1||0) + (+r.indicacoesM2||0) + (+r.indicacoesM3||0) + (r.visitas||[]).reduce((c,v)=>c+(+v.indicacoes||0),0), a), 0),
+      procedimentos: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.procedimentosGerados||0) + (r.visitas||[]).reduce((c,v)=>c+(+v.procedimentos||0),0), a), 0),
     },
     leap: {
       leads: state.campanhaInterna?.length || 0,
