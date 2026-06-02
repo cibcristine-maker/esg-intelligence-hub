@@ -2880,7 +2880,7 @@ function EsgDayProject({ data, onChange }) {
       eventos: a.eventos + 1,
       compareceram: a.compareceram + (+r.compareceram || 0),
       procedimentos: a.procedimentos + procTotal,
-      receita: a.receita + (procTotal * (+r.ticketMedio || ESG_PRICE_USD)),
+      receita: a.receita + (procTotal * (+r.ticketMedio || 1680)),
       custo: a.custo + (+r.custoEvento || 0),
     };
   }, { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
@@ -2934,7 +2934,7 @@ function EsgDayProject({ data, onChange }) {
         <FupKPICard label="Compareceram" value={totals.compareceram} icon="👥" />
         <FupKPICard label="Procedimentos 30d" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
         <FupKPICard label="Conversão Média" value={`${conversaoMedia}%`} color={conversaoMedia >= 40 ? FUP_C.green : conversaoMedia >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
-        <FupKPICard label="Receita Total" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
+        <FupKPICard label="Receita Total" value={totals.receita > 0 ? `$ ${(totals.receita / 1000).toFixed(1)}k` : "—"} color={FUP_C.teal} icon="💰" />
         <FupKPICard label="ROI Médio" value={`${roi}%`} color={FUP_C.purple} sub="Custo vs Receita" icon="📈" />
       </div>
 
