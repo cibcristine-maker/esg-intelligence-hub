@@ -2874,9 +2874,8 @@ function EsgDayProject({ data, onChange }) {
   const records = data || [];
 
   const totals = records.reduce((a, r) => {
-    const procBase = +r.procedimentos30d || 0;
     const procVisitas = (r.followups||[]).reduce((s,f) => s + (+f.procedimentosFechados||0), 0);
-    const procTotal = procBase + procVisitas;
+    const procTotal = procVisitas > 0 ? procVisitas : (+r.procedimentos30d || 0);
     return {
       eventos: a.eventos + 1,
       compareceram: a.compareceram + (+r.compareceram || 0),
