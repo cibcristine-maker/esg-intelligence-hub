@@ -3334,6 +3334,21 @@ function AulasReferidoresProject({ data, onChange }) {
         </div>
       </FupModal>
 
+      {/* Modal Editar Referidor */}
+      <FupModal open={!!editRefModal} onClose={() => setEditRefModal(null)} title="Editar Referidor">
+        {editRefModal && (<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <FupInput label="Nome" value={editRefModal.ref.medico} onChange={(v) => setEditRefModal({ ...editRefModal, ref: { ...editRefModal.ref, medico: v } })} />
+          <FupInput label="Especialidade" value={editRefModal.ref.especialidade} onChange={(v) => setEditRefModal({ ...editRefModal, ref: { ...editRefModal.ref, especialidade: v } })} />
+          <FupSelect label="CRM?" value={editRefModal.ref.possuiCRM} onChange={(v) => setEditRefModal({ ...editRefModal, ref: { ...editRefModal.ref, possuiCRM: v } })} options={[{value:"Sim",label:"Sim"},{value:"Não",label:"Não"}]} />
+          <FupInput label="Ind. M1" type="number" value={editRefModal.ref.indicacoesM1} onChange={(v) => setEditRefModal({ ...editRefModal, ref: { ...editRefModal.ref, indicacoesM1: v } })} />
+          <FupInput label="Ind. M2" type="number" value={editRefModal.ref.indicacoesM2} onChange={(v) => setEditRefModal({ ...editRefModal, ref: { ...editRefModal.ref, indicacoesM2: v } })} />
+          <FupInput label="Procedimentos" type="number" value={editRefModal.ref.procedimentosGerados} onChange={(v) => setEditRefModal({ ...editRefModal, ref: { ...editRefModal.ref, procedimentosGerados: v } })} />
+          <div style={{ gridColumn: "span 2", display: "flex", justifyContent: "flex-end", gap: 12 }}>
+            <FupBtn variant="ghost" onClick={() => setEditRefModal(null)}>Cancelar</FupBtn>
+            <FupBtn onClick={() => saveEditRef(editRefModal)} style={{ background: FUP_C.blue, border: "none" }}>Salvar</FupBtn>
+          </div>
+        </div>)}
+      </FupModal>
       {/* Modal Nova Visita */}
       <FupModal open={!!visitaModal} onClose={() => setVisitaModal(null)} title="Nova Visita ao Referidor">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
