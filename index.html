@@ -520,7 +520,7 @@ function probBadge(prob) {
   return <span className={`badge ${map[prob] || "badge-sem"}`}>{prob || "—"}</span>;
 }
 
-function Toast({ msg, onHide }) {
+function FupToast({ msg, onHide }) {
   useEffect(() => { const t = setTimeout(onHide, 2800); return () => clearTimeout(t); }, []);
   return <div className="toast">✓ {msg}</div>;
 }
@@ -2815,7 +2815,7 @@ function Modal({ open, onClose, title, children, width = 680 }) {
 }
 
 const TOAST_DURATION = 2800;
-function Toast({ msg, type }) {
+function FupToast({ msg, type }) {
   const bg = type === "success" ? "#052D1A" : type === "error" ? "#2D0505" : "#051A2D";
   const border = type === "success" ? FUP_C.green : type === "error" ? FUP_C.red : FUP_C.blue;
   const icon = type === "success" ? "✓" : type === "error" ? "✗" : "ℹ";
