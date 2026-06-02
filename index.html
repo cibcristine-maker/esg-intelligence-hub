@@ -3915,14 +3915,6 @@ function PacientesReferidoresProject({ data, onChange }) {
                       <FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn>
                     </td>
                   </tr>
-                  {r.obs ? (
-                    <tr key={r.id+"_obs"}>
-                      <td colSpan={8} style={{ padding: "0 10px 8px", color: FUP_C.textMuted, fontSize: 12, fontStyle: "italic" }}>
-                        💬 {r.obs}
-                      </td>
-                    </tr>
-                  ) : null}
-                </>
                 ))}
               </tbody>
             </table>
