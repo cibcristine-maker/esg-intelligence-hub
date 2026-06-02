@@ -2573,1871 +2573,823 @@ const TABS = [
 ];
 
 // ════════════════════════════════════════════════════════════════
-// FUP PROJETOS — ESG Intelligence Hub v2.1
-// ════════════════════════════════════════════════════════════════
+// ── FUP PROJETOS ──────────────────────────────────────────────────────────────
 
+const FUP_KEY = "esg_fup_v3";
+const FUP_TEAL = "#00A693";
+const FUP_BG = "#0A0F14";
+const FUP_CARD = "#111820";
+const FUP_BORDER = "#1E2D3D";
+const FUP_TEXT = "#E8EDF2";
+const FUP_MUTED = "#7A9BB5";
+const FUP_DIM = "#4A6580";
+const FUP_GREEN = "#22C55E";
+const FUP_RED = "#EF4444";
+const FUP_BLUE = "#3B82F6";
+const FUP_YELLOW = "#EAB308";
+const FUP_ORANGE = "#F97316";
+const FUP_PURPLE = "#A855F7";
 
+function fupLoad() {
+  try { return JSON.parse(localStorage.getItem(FUP_KEY)) || {}; }
+  catch(e) { return {}; }
 }
-
-// ─── PALETTE ───────────────────────────────────────────────────────────────
-const FUP_C = {
-  teal: "#00A693",
-  tealDark: "#007A6C",
-  tealLight: "#00D4BC",
-  bg: "#0A0F14",
-  card: "#111820",
-  cardHover: "#16202B",
-  border: "#1E2D3D",
-  borderLight: "#263545",
-  text: "#E8EDF2",
-  textMuted: "#7A9BB5",
-  textDim: "#4A6580",
-  green: "#22C55E",
-  yellow: "#EAB308",
-  red: "#EF4444",
-  blue: "#3B82F6",
-  purple: "#A855F7",
-  orange: "#F97316",
-};
-
-// ─── STORAGE KEY ───────────────────────────────────────────────────────────
-const FUP_STORAGE_KEY = "esg_hub_fup_projetos_v2";
-
-// ─── INITIAL STATE ─────────────────────────────────────────────────────────
-const fupInitialState = {
-  esgDay: [],
-  aulasReferidores: { eventos: [] },
-  campanhaInterna: [],
-  cursoBariatricos: {
-    medicos: [
-      { id: 1, nome: "Daniela Castro Mattos Giron", email: "danielamattos@gmail.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 2, nome: "Rodrigo Dallegre Correa da Silva", email: "rodrigo.dallegre@icloud.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 3, nome: "Isabella Palomeque Mazzuccato Rossi", email: "isabellamazzuccato@hotmail.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 4, nome: "Gabriel Braga Pereira", email: "gabrielbraga@gmail.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 5, nome: "Rodrigo Nascimento Santana", email: "", cidade: "", crm: "", status: "Ativo" },
-      { id: 6, nome: "Gonzalo Vieira da Cunha Zigano", email: "gonzaloziruga@gmail.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 7, nome: "Fábiola De Angeli Ferreira", email: "biola_deangele@hotmail.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 8, nome: "Cristovam Miranda", email: "cristovammiranda@gmail.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 9, nome: "Eduardo Lemos de Souza Bastos", email: "eduardobastos2001@gmail.com", cidade: "", crm: "", status: "Ativo" },
-      { id: 10, nome: "Horácio Neto", email: "hjmacedoneto@gmail.com", cidade: "", crm: "", status: "Ativo" },
-    ],
-    followups: [],
-  },
-  cursoEndoscopistas: {
-    medicos: [
-      { id: 1, nome: "", email: "", cidade: "", crm: "", status: "Ativo" },
-      { id: 2, nome: "", email: "", cidade: "", crm: "", status: "Ativo" },
-      { id: 3, nome: "", email: "", cidade: "", crm: "", status: "Ativo" },
-    ],
-    followups: [],
-  },
-  pacientesReferidores: [],
-  imersaoMarketing: {
-    medicos: [],
-    acoes: [],
-  },
-};
-
-// ─── LOAD / SAVE ────────────────────────────────────────────────────────────
-function fupLoadData() {
-  try {
-    const raw = localStorage.getItem(FUP_STORAGE_KEY);
-    if (!raw) return fupInitialState;
-    const parsed = JSON.parse(raw);
-    // deep merge to preserve new fields
-    return {
-      ...fupInitialState,
-      ...parsed,
-      cursoBariatricos: {
-        ...fupInitialState.cursoBariatricos,
-        ...parsed.cursoBariatricos,
-        medicos: parsed.cursoBariatricos?.medicos?.length
-          ? parsed.cursoBariatricos.medicos
-          : fupInitialState.cursoBariatricos.medicos,
-      },
-      cursoEndoscopistas: {
-        ...fupInitialState.cursoEndoscopistas,
-        ...parsed.cursoEndoscopistas,
-      },
-      imersaoMarketing: {
-        ...fupInitialState.imersaoMarketing,
-        ...parsed.imersaoMarketing,
-      },
-    };
-  } catch (e) {
-    console.error("Load error:", e);
-    return fupInitialState;
-  }
+function fupSave(d) {
+  try { localStorage.setItem(FUP_KEY, JSON.stringify(d)); return true; }
+  catch(e) { return false; }
 }
+function fupId() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 
-function fupSaveData(data) {
-  try {
-    localStorage.setItem(FUP_STORAGE_KEY, JSON.stringify(data));
-    return true;
-  } catch (e) {
-    console.error("Save error:", e);
-    return false;
-  }
-}
-
-// ─── HELPERS ────────────────────────────────────────────────────────────────
-const fupUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
-
-function FupKPICard({ label, value, sub, color = FUP_C.teal, icon }) {
-  return (
-    <div style={{
-      background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12,
-      padding: "20px 24px", flex: 1, minWidth: 140,
-    }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-        <div>
-          <div style={{ color: FUP_C.textMuted, fontSize: 11, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>{label}</div>
-          <div style={{ color, fontSize: 32, fontWeight: 800, lineHeight: 1 }}>{value}</div>
-          {sub && <div style={{ color: FUP_C.textDim, fontSize: 12, marginTop: 6 }}>{sub}</div>}
-        </div>
-        {icon && <div style={{ fontSize: 24, opacity: 0.4 }}>{icon}</div>}
-      </div>
-    </div>
+function FupField({ label, value, onChange, type, options }) {
+  const s = { background: "#0D1620", border: "1px solid " + FUP_BORDER, borderRadius: 8, padding: "8px 12px", color: FUP_TEXT, fontSize: 13, width: "100%", fontFamily: "inherit", colorScheme: "dark" };
+  return React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 4, flex: 1 } },
+    React.createElement("label", { style: { color: FUP_MUTED, fontSize: 11, fontWeight: 600 } }, label),
+    options
+      ? React.createElement("select", { value: value, onChange: e => onChange(e.target.value), style: s },
+          options.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))
+        )
+      : React.createElement("input", { type: type || "text", value: value, onChange: e => onChange(e.target.value), style: s })
   );
 }
 
-function FupSectionTitle({ children, accent = FUP_C.teal }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-      <div style={{ width: 4, height: 24, background: accent, borderRadius: 2 }} />
-      <h3 style={{ color: FUP_C.text, fontSize: 16, fontWeight: 700, margin: 0 }}>{children}</h3>
-    </div>
+function FupRow({ children }) {
+  return React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap" } }, children);
+}
+
+function FupCard({ children, style }) {
+  return React.createElement("div", { style: Object.assign({ background: FUP_CARD, border: "1px solid " + FUP_BORDER, borderRadius: 12, padding: 20 }, style) }, children);
+}
+
+function FupKPI({ label, value, color }) {
+  return React.createElement("div", { style: { background: FUP_CARD, border: "1px solid " + FUP_BORDER, borderRadius: 10, padding: "16px 20px", flex: 1, minWidth: 120 } },
+    React.createElement("div", { style: { color: FUP_MUTED, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 } }, label),
+    React.createElement("div", { style: { color: color || FUP_TEAL, fontSize: 26, fontWeight: 800 } }, value)
   );
 }
 
-function FupPill({ label, color }) {
-  const map = {
-    verde: { bg: "#052D1A", color: FUP_C.green, border: "#0D4A2A" },
-    amarelo: { bg: "#2D2200", color: FUP_C.yellow, border: "#4A3800" },
-    vermelho: { bg: "#2D0505", color: FUP_C.red, border: "#4A0D0D" },
-    azul: { bg: "#051A2D", color: FUP_C.blue, border: "#0D2D4A" },
-    roxo: { bg: "#1A0533", color: FUP_C.purple, border: "#2D0D4A" },
-    cinza: { bg: "#1A1F26", color: FUP_C.textMuted, border: FUP_C.border },
-  };
-  const s = map[color?.toLowerCase()] || map.cinza;
-  return (
-    <span style={{
-      background: s.bg, color: s.color, border: `1px solid ${s.border}`,
-      padding: "2px 10px", borderRadius: 20, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap",
-    }}>{label}</span>
-  );
+function FupBtn({ label, onClick, color, small }) {
+  return React.createElement("button", {
+    onClick: onClick,
+    style: { background: color || FUP_TEAL, color: color === "transparent" ? FUP_TEAL : "#fff", border: color === "transparent" ? "1px solid " + FUP_TEAL : "none", borderRadius: 8, padding: small ? "6px 14px" : "9px 18px", fontSize: small ? 12 : 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }
+  }, label);
 }
 
-function FupInput({ label, value, onChange, type = "text", placeholder, required, style }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
-      {label && <label style={{ color: FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}{required && <span style={{ color: FUP_C.red }}> *</span>}</label>}
-      <input
-        type={type}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        style={{
-          background: "#0D1620", border: `1px solid ${FUP_C.border}`, borderRadius: 8,
-          padding: "10px 14px", color: FUP_C.text, fontSize: 13, outline: "none",
-          transition: "border-color 0.2s", colorScheme: "dark",
-        }}
-        onFocus={(e) => (e.target.style.borderColor = FUP_C.teal)}
-        onBlur={(e) => (e.target.style.borderColor = FUP_C.border)}
-        onInput={(e) => { if (type === "date") e.target.style.colorScheme = "dark"; }}
-      />
-    </div>
-  );
-}
-
-function FupSelect({ label, value, onChange, options, style }) {
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
-      {label && <label style={{ color: FUP_C.textMuted, fontSize: 12, fontWeight: 600 }}>{label}</label>}
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        style={{
-          background: "#0D1620", border: `1px solid ${FUP_C.border}`, borderRadius: 8,
-          padding: "10px 14px", color: FUP_C.text, fontSize: 13, outline: "none",
-        }}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
-function FupBtn({ children, onClick, variant = "primary", size = "md", style }) {
-  const styles = {
-    primary: { background: FUP_C.teal, color: "#fff", border: "none" },
-    ghost: { background: "transparent", color: FUP_C.teal, border: `1px solid ${FUP_C.teal}` },
-    danger: { background: "transparent", color: FUP_C.red, border: `1px solid ${FUP_C.red}` },
-  };
-  const sizes = {
-    sm: { padding: "6px 14px", fontSize: 12 },
-    md: { padding: "10px 20px", fontSize: 13 },
-    lg: { padding: "12px 28px", fontSize: 14 },
-  };
-  return (
-    <button onClick={onClick} style={{
-      ...styles[variant], ...sizes[size],
-      borderRadius: 8, fontWeight: 600, cursor: "pointer",
-      transition: "opacity 0.2s", ...style,
-    }}
-      onMouseEnter={(e) => (e.target.style.opacity = "0.8")}
-      onMouseLeave={(e) => (e.target.style.opacity = "1")}
-    >{children}</button>
-  );
-}
-
-function FupModal({ open, onClose, title, children, width = 680 }) {
+function FupModal({ open, onClose, title, children }) {
   if (!open) return null;
-  return (
-    <div style={{
-      position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000,
-      display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
-    }} onClick={onClose}>
-      <div style={{
-        background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 16,
-        width: "100%", maxWidth: width, maxHeight: "90vh", overflowY: "auto",
-        padding: 28,
-      }} onClick={(e) => e.stopPropagation()}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24 }}>
-          <h2 style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700, margin: 0 }}>{title}</h2>
-          <button onClick={onClose} style={{ background: "none", border: "none", color: FUP_C.textMuted, fontSize: 20, cursor: "pointer" }}>✕</button>
-        </div>
-        {children}
-      </div>
-    </div>
+  return React.createElement("div", {
+    style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 },
+    onClick: onClose
+  },
+    React.createElement("div", {
+      style: { background: FUP_CARD, border: "1px solid " + FUP_BORDER, borderRadius: 16, width: "100%", maxWidth: 640, maxHeight: "90vh", overflowY: "auto", padding: 28 },
+      onClick: e => e.stopPropagation()
+    },
+      React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 } },
+        React.createElement("h2", { style: { color: FUP_TEXT, fontSize: 17, fontWeight: 700, margin: 0 } }, title),
+        React.createElement("button", { onClick: onClose, style: { background: "none", border: "none", color: FUP_MUTED, fontSize: 20, cursor: "pointer" } }, "✕")
+      ),
+      children
+    )
   );
 }
 
-const FUP_TOAST_DUR = 2800;
-function FupProjToast({ msg, type }) {
-  const bg = type === "success" ? "#052D1A" : type === "error" ? "#2D0505" : "#051A2D";
-  const border = type === "success" ? FUP_C.green : type === "error" ? FUP_C.red : FUP_C.blue;
-  const icon = type === "success" ? "✓" : type === "error" ? "✗" : "ℹ";
-  return (
-    <div style={{
-      position: "fixed", bottom: 28, right: 28, zIndex: 9999,
-      background: bg, border: `1px solid ${border}`, borderRadius: 12,
-      padding: "14px 20px", display: "flex", gap: 12, alignItems: "center",
-      color: FUP_C.text, fontSize: 14, boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
-      animation: "slideIn 0.3s ease",
-    }}>
-      <span style={{ color: border, fontWeight: 700, fontSize: 16 }}>{icon}</span>
-      {msg}
-    </div>
-  );
-}
-
-// ─── PROJECT CARDS (LANDING) ─────────────────────────────────────────────────
-const FUP_PROJECTS = [
-  { id: "esgDay", label: "ESG Day", icon: "🎯", desc: "Eventos em clínicas com pacientes elegíveis. Seguimento de comparecimento, fechamento e ROI.", color: FUP_C.teal },
-  { id: "aulasReferidores", label: "Aulas Referidores", icon: "📚", desc: "Capacitação de médicos referidores. KPIs de engajamento, indicações e conversão.", color: FUP_C.blue },
-  { id: "campanhaInterna", label: "Campanha Indicação Interna", icon: "🔗", desc: "Campanha Leap Plus — colaboradores indicando pacientes para procedimentos.", color: FUP_C.purple },
-  { id: "cursoBariatricos", label: "Curso IAS — Cirurgiões Bariátricos", icon: "🏥", desc: "10 cirurgiões capacitados. Seguimento pós-curso, ativação do CRM e geração de ESGs.", color: FUP_C.orange },
-  { id: "cursoEndoscopistas", label: "Curso IAS — Endoscopistas", icon: "🔬", desc: "3 médicos endoscopistas. Capacitação para execução. KPIs de ativação e produção.", color: FUP_C.green },
-  { id: "pacientesReferidores", label: "Pacientes Indicados — Referidores", icon: "👥", desc: "Funil de pacientes indicados por médicos referidores. SLA de contato e conversão.", color: "#F43F5E" },
-  { id: "imersaoMarketing", label: "Imersão Marketing", icon: "📡", desc: "Visibilidade digital dos médicos parceiros. KPIs de GEO, presença online e conversão.", color: FUP_C.yellow },
-];
-
-// ════════════════════════════════════════════════════════════════════════════
-// ESG DAY
-// ════════════════════════════════════════════════════════════════════════════
+// ── ESG DAY ─────────────────────────────────────────────────────────────────
 function EsgDayProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({
-    clinica: "", cidade: "", data: "", responsavel: "", medico: "",
-    pacientesElegiveis: "", convidados: "", confirmados: "", compareceram: "",
-    procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "",
-  });
-  const [activeTab, setActiveTab] = useState("form");
-
+  const [tab, setTab] = useState("lista");
+  const [form, setForm] = useState({ clinica: "", cidade: "", data: "", responsavel: "", medico: "", convidados: "", compareceram: "", procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "" });
   const records = data || [];
+  const sf = k => v => setForm(f => Object.assign({}, f, {[k]: v}));
 
   const totals = records.reduce((a, r) => ({
     eventos: a.eventos + 1,
     compareceram: a.compareceram + (+r.compareceram || 0),
     procedimentos: a.procedimentos + (+r.procedimentos30d || 0),
     receita: a.receita + ((+r.procedimentos30d || 0) * (+r.ticketMedio || 0)),
-    custo: a.custo + (+r.custoEvento || 0),
-  }), { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
+  }), { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0 });
 
-  const conversaoMedia = totals.compareceram > 0
-    ? ((totals.procedimentos / totals.compareceram) * 100).toFixed(1)
-    : 0;
-  const roi = totals.custo > 0
-    ? (((totals.receita - totals.custo) / totals.custo) * 100).toFixed(0)
-    : "—";
+  const conv = totals.compareceram > 0 ? ((totals.procedimentos / totals.compareceram) * 100).toFixed(0) : 0;
 
   const save = () => {
-    const newRec = { ...form, id: fupUid() };
-    onChange([...records, newRec]);
+    onChange([...records, Object.assign({}, form, { id: fupId() })]);
     setModal(false);
-    setForm({ clinica: "", cidade: "", data: "", responsavel: "", medico: "", pacientesElegiveis: "", convidados: "", confirmados: "", compareceram: "", procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "" });
+    setForm({ clinica: "", cidade: "", data: "", responsavel: "", medico: "", convidados: "", compareceram: "", procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "" });
   };
 
-  const del = (id) => onChange(records.filter((r) => r.id !== id));
-
-  const chartData = records.map((r) => ({
-    name: r.clinica || "—",
-    Convidados: +r.convidados || 0,
-    Compareceram: +r.compareceram || 0,
-    Fechados: +r.procedimentos30d || 0,
-  }));
-
-  const roiData = records
-    .filter((r) => +r.custoEvento > 0)
-    .map((r) => {
-      const rec = (+r.procedimentos30d || 0) * (+r.ticketMedio || 0);
-      const custo = +r.custoEvento;
-      return { name: r.clinica, ROI: +((((rec - custo) / custo) * 100).toFixed(0)) };
-    });
-
-  return (
-    <div>
-      {/* KPIs */}
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <FupKPICard label="Total Eventos" value={totals.eventos} icon="🎯" />
-        <FupKPICard label="Compareceram" value={totals.compareceram} icon="👥" />
-        <FupKPICard label="Procedimentos 30d" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
-        <FupKPICard label="Conversão Média" value={`${conversaoMedia}%`} color={conversaoMedia >= 40 ? FUP_C.green : conversaoMedia >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" icon="📊" />
-        <FupKPICard label="Receita Total" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
-        <FupKPICard label="ROI Médio" value={`${roi}%`} color={FUP_C.purple} sub="Custo vs Receita" icon="📈" />
-      </div>
-
-      {/* Tabs */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {["form", "dashboard"].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_C.teal : "transparent",
-            color: activeTab === t ? "#fff" : FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_C.teal : FUP_C.border}`,
-          }}>{t === "form" ? "📋 Registros" : "📊 Dashboard"}</button>
-        ))}
-        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Evento</FupBtn>
-      </div>
-
-      {activeTab === "form" ? (
-        <div>
-          {records.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
-              <div style={{ fontSize: 40, marginBottom: 12 }}>🎯</div>
-              <div>Nenhum evento cadastrado ainda.</div>
-              <div style={{ fontSize: 12, marginTop: 6 }}>Clique em "+ Novo Evento" para adicionar.</div>
-            </div>
-          ) : (
-            <div style={{ overflowX: "auto" }}>
-              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-                <thead>
-                  <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                    {["Clínica", "Cidade", "Data", "Responsável", "Compareceram", "Fechados", "Receita", "ROI", ""].map((h) => (
-                      <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11, letterSpacing: "0.06em" }}>{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {records.map((r) => {
-                    const rec = (+r.procedimentos30d || 0) * (+r.ticketMedio || 0);
-                    const custo = +r.custoEvento || 0;
-                    const roi = custo > 0 ? (((rec - custo) / custo) * 100).toFixed(0) + "%" : "—";
-                    return (
-                      <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}`, transition: "background 0.15s" }}
-                        onMouseEnter={(e) => (e.currentTarget.style.background = FUP_C.cardHover)}
-                        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}>
-                        <td style={{ padding: "12px 12px", color: FUP_C.text, fontWeight: 600 }}>{r.clinica || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.cidade || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.data || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.responsavel || "—"}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_C.text, textAlign: "center" }}>{r.compareceram || 0}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_C.green, textAlign: "center", fontWeight: 700 }}>{r.procedimentos30d || 0}</td>
-                        <td style={{ padding: "12px 12px", color: FUP_C.teal }}>{rec > 0 ? `R$ ${(rec / 1000).toFixed(0)}k` : "—"}</td>
-                        <td style={{ padding: "12px 12px" }}>
-                          <FupPill label={roi} color={roi !== "—" && +roi >= 0 ? "verde" : "vermelho"} />
-                        </td>
-                        <td style={{ padding: "12px 12px" }}>
-                          <FupBtn variant="danger" size="sm" onClick={() => del(r.id)}>✕</FupBtn>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <FupSectionTitle>Funil por Clínica</FupSectionTitle>
-            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
-          </div>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <FupSectionTitle>ROI por Clínica (%)</FupSectionTitle>
-            {roiData.length > 0 ? (
-              <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
-            ) : <div style={{ color: FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Adicione eventos com custo para ver o ROI.</div>}
-          </div>
-          {/* SLAs */}
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <FupSectionTitle>📋 Rota de KPIs e SLAs — ESG Day</FupSectionTitle>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-              {[
-                { kpi: "Taxa de Comparecimento", meta: "≥ 50% dos convidados", freq: "Por evento", alerta: "< 40% = revisar convite/CRM" },
-                { kpi: "Taxa de Conversão 30d", meta: "≥ 40% dos que vieram", freq: "D+30 do evento", alerta: "< 25% = revisar seleção pacientes" },
-                { kpi: "Custo por Comparecimento", meta: "< R$ 500", freq: "Pós-evento", alerta: "Otimizar logística" },
-                { kpi: "ROI do Evento", meta: "≥ 50%", freq: "D+45 do evento", alerta: "ROI < 0 = evento ineficiente" },
-                { kpi: "Follow-up D+7", meta: "100% dos compareceram", freq: "Semanal pós-evento", alerta: "Não feito = lead perdido" },
-                { kpi: "Follow-up D+30", meta: "100% sem fechamento", freq: "D+30 do evento", alerta: "Relembrar proposta" },
-              ].map((s, i) => (
-                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
-                  <div style={{ color: FUP_C.teal, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Modal Novo Evento */}
-      <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Evento ESG Day">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Clínica" value={form.clinica} onChange={(v) => setForm({ ...form, clinica: v })} required />
-          <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
-          <FupInput label="Data do Evento" type="date" value={form.data} onChange={(v) => setForm({ ...form, data: v })} />
-          <FupInput label="Responsável (Account)" value={form.responsavel} onChange={(v) => setForm({ ...form, responsavel: v })} />
-          <FupInput label="Médico" value={form.medico} onChange={(v) => setForm({ ...form, medico: v })} />
-          <FupInput label="Pacientes Elegíveis (CRM)" type="number" value={form.pacientesElegiveis} onChange={(v) => setForm({ ...form, pacientesElegiveis: v })} />
-          <FupInput label="Convidados" type="number" value={form.convidados} onChange={(v) => setForm({ ...form, convidados: v })} />
-          <FupInput label="Confirmados" type="number" value={form.confirmados} onChange={(v) => setForm({ ...form, confirmados: v })} />
-          <FupInput label="Compareceram" type="number" value={form.compareceram} onChange={(v) => setForm({ ...form, compareceram: v })} />
-          <FupInput label="Procedimentos Fechados (30d)" type="number" value={form.procedimentos30d} onChange={(v) => setForm({ ...form, procedimentos30d: v })} />
-          <FupInput label="Ticket Médio (R$)" type="number" value={form.ticketMedio} onChange={(v) => setForm({ ...form, ticketMedio: v })} />
-          <FupInput label="Custo do Evento (R$)" type="number" value={form.custoEvento} onChange={(v) => setForm({ ...form, custoEvento: v })} />
-          <div style={{ gridColumn: "span 2" }}>
-            <FupInput label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
-          <FupBtn onClick={save}>Salvar Evento</FupBtn>
-        </div>
-      </FupModal>
-    </div>
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 } },
+      React.createElement(FupKPI, { label: "Eventos", value: totals.eventos }),
+      React.createElement(FupKPI, { label: "Compareceram", value: totals.compareceram }),
+      React.createElement(FupKPI, { label: "Procedimentos", value: totals.procedimentos, color: FUP_GREEN }),
+      React.createElement(FupKPI, { label: "Conversão", value: conv + "%", color: conv >= 40 ? FUP_GREEN : conv >= 25 ? FUP_YELLOW : FUP_RED }),
+      React.createElement(FupKPI, { label: "Receita", value: totals.receita > 0 ? "R$ " + (totals.receita/1000).toFixed(0) + "k" : "—", color: FUP_TEAL })
+    ),
+    React.createElement("div", { style: { display: "flex", gap: 8, marginBottom: 20 } },
+      React.createElement(FupBtn, { label: "📋 Eventos", onClick: () => setTab("lista"), color: tab === "lista" ? FUP_TEAL : "transparent", small: true }),
+      React.createElement(FupBtn, { label: "📊 KPIs", onClick: () => setTab("kpis"), color: tab === "kpis" ? FUP_TEAL : "transparent", small: true }),
+      React.createElement("div", { style: { marginLeft: "auto" } },
+        React.createElement(FupBtn, { label: "+ Novo Evento", onClick: () => setModal(true) })
+      )
+    ),
+    tab === "lista"
+      ? records.length === 0
+        ? React.createElement("div", { style: { textAlign: "center", padding: 48, color: FUP_DIM } }, "Nenhum evento. Clique em + Novo Evento.")
+        : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+            records.map(r => React.createElement(FupCard, { key: r.id },
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+                React.createElement("div", null,
+                  React.createElement("div", { style: { color: FUP_TEXT, fontWeight: 700, fontSize: 15 } }, r.clinica || "—"),
+                  React.createElement("div", { style: { color: FUP_MUTED, fontSize: 12, marginTop: 4 } }, (r.data || "") + " · " + (r.cidade || "") + " · " + (r.responsavel || "")),
+                  React.createElement("div", { style: { display: "flex", gap: 20, marginTop: 8 } },
+                    React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Compareceram: ", React.createElement("b", { style: { color: FUP_TEXT } }, r.compareceram || 0)),
+                    React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Procedimentos: ", React.createElement("b", { style: { color: FUP_GREEN } }, r.procedimentos30d || 0)),
+                    React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Obs: ", r.obs || "—")
+                  )
+                ),
+                React.createElement(FupBtn, { label: "✕", onClick: () => onChange(records.filter(x => x.id !== r.id)), color: FUP_RED, small: true })
+              )
+            ))
+          )
+      : React.createElement(FupCard, null,
+          React.createElement("div", { style: { color: FUP_TEXT, fontWeight: 700, marginBottom: 16 } }, "📋 KPIs e SLAs — ESG Day"),
+          [
+            { k: "Taxa de Comparecimento", m: "≥ 50% dos convidados", f: "Por evento" },
+            { k: "Taxa de Conversão 30d", m: "≥ 40% dos que vieram", f: "D+30 do evento" },
+            { k: "ROI do Evento", m: "≥ 50%", f: "D+45 do evento" },
+            { k: "Follow-up D+7", m: "100% dos compareceram", f: "Semanal pós-evento" },
+            { k: "Follow-up D+30", m: "100% sem fechamento", f: "D+30 do evento" },
+          ].map((s, i) => React.createElement("div", { key: i, style: { padding: "10px 14px", background: FUP_BG, borderRadius: 8, marginBottom: 8, border: "1px solid " + FUP_BORDER } },
+            React.createElement("div", { style: { color: FUP_TEAL, fontSize: 12, fontWeight: 700 } }, s.k),
+            React.createElement("div", { style: { color: FUP_TEXT, fontSize: 13 } }, "Meta: " + s.m),
+            React.createElement("div", { style: { color: FUP_MUTED, fontSize: 11 } }, "Freq: " + s.f)
+          ))
+        ),
+    React.createElement(FupModal, { open: modal, onClose: () => setModal(false), title: "Novo Evento ESG Day" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Clínica *", value: form.clinica, onChange: sf("clinica") }), React.createElement(FupField, { label: "Cidade", value: form.cidade, onChange: sf("cidade") })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Data", value: form.data, onChange: sf("data"), type: "date" }), React.createElement(FupField, { label: "Responsável", value: form.responsavel, onChange: sf("responsavel") })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Convidados", value: form.convidados, onChange: sf("convidados"), type: "number" }), React.createElement(FupField, { label: "Compareceram", value: form.compareceram, onChange: sf("compareceram"), type: "number" })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Procedimentos 30d", value: form.procedimentos30d, onChange: sf("procedimentos30d"), type: "number" }), React.createElement(FupField, { label: "Ticket Médio R$", value: form.ticketMedio, onChange: sf("ticketMedio"), type: "number" })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Custo Evento R$", value: form.custoEvento, onChange: sf("custoEvento"), type: "number" }), React.createElement(FupField, { label: "Obs", value: form.obs, onChange: sf("obs") })),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setModal(false), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Salvar", onClick: save })
+        )
+      )
+    )
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// AULAS REFERIDORES
-// ════════════════════════════════════════════════════════════════════════════
+// ── AULAS REFERIDORES ────────────────────────────────────────────────────────
 function AulasReferidoresProject({ data, onChange }) {
-  const [activeTab, setActiveTab] = useState("eventos");
-  const [eventoModal, setEventoModal] = useState(false);
-  const [refModal, setRefModal] = useState(null); // eventoId
-  const [eventoForm, setEventoForm] = useState({
-    nome: "", dataEvento: "", cidade: "", medicoExecutor: "", local: "", obs: "",
-  });
-  const [refForm, setRefForm] = useState({
-    medico: "", especialidade: "", possuiCRM: "Não", indicacoesM1: "", indicacoesM2: "", indicacoesM3: "", procedimentosGerados: "", obs: "",
-  });
+  const [evModal, setEvModal] = useState(false);
+  const [refModal, setRefModal] = useState(null);
+  const [evForm, setEvForm] = useState({ nome: "", dataEvento: "", cidade: "", medicoExecutor: "", local: "", obs: "" });
+  const [refForm, setRefForm] = useState({ medico: "", especialidade: "", possuiCRM: "Não", indicacoesM1: "", indicacoesM2: "", indicacoesM3: "", procedimentosGerados: "", obs: "" });
+  const sf = (f, setF) => k => v => setF(prev => Object.assign({}, prev, {[k]: v}));
+  const sfE = sf(evForm, setEvForm);
+  const sfR = sf(refForm, setRefForm);
 
-  const eventos = data?.eventos || [];
-  const updateEventos = (e) => onChange({ eventos: e });
+  const eventos = (data && data.eventos) ? data.eventos : [];
+  const upd = evs => onChange({ eventos: evs });
 
-  const saveEvento = () => {
-    updateEventos([...eventos, { ...eventoForm, id: fupUid(), referidores: [] }]);
-    setEventoModal(false);
-    setEventoForm({ nome: "", dataEvento: "", cidade: "", medicoExecutor: "", local: "", obs: "" });
+  const totalRefs = eventos.reduce((a, ev) => a + (ev.referidores || []).length, 0);
+  const totalProced = eventos.reduce((a, ev) => (ev.referidores || []).reduce((b, r) => b + (+r.procedimentosGerados || 0), a), 0);
+
+  const saveEv = () => {
+    upd([...eventos, Object.assign({}, evForm, { id: fupId(), referidores: [] })]);
+    setEvModal(false);
+    setEvForm({ nome: "", dataEvento: "", cidade: "", medicoExecutor: "", local: "", obs: "" });
   };
 
-  const saveReferidor = () => {
-    const updated = eventos.map((ev) =>
-      ev.id === refModal
-        ? { ...ev, referidores: [...(ev.referidores || []), { ...refForm, id: fupUid() }] }
-        : ev
-    );
-    updateEventos(updated);
+  const saveRef = () => {
+    upd(eventos.map(ev => ev.id === refModal ? Object.assign({}, ev, { referidores: [...(ev.referidores || []), Object.assign({}, refForm, { id: fupId() })] }) : ev));
     setRefModal(null);
     setRefForm({ medico: "", especialidade: "", possuiCRM: "Não", indicacoesM1: "", indicacoesM2: "", indicacoesM3: "", procedimentosGerados: "", obs: "" });
   };
 
-  const delEvento = (id) => updateEventos(eventos.filter((e) => e.id !== id));
-  const delRef = (evId, refId) => updateEventos(eventos.map((ev) => ev.id === evId ? { ...ev, referidores: (ev.referidores||[]).filter((r) => r.id !== refId) } : ev));
-
-  const totals = {
-    eventos: eventos.length,
-    referidores: eventos.reduce((a, ev) => a + (ev.referidores||[]).length, 0),
-    comCRM: eventos.reduce((a, ev) => a + (ev.referidores||[]).filter((r) => r.possuiCRM === "Sim").length, 0),
-    indicacoes: eventos.reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.indicacoesM1||0) + (+r.indicacoesM2||0) + (+r.indicacoesM3||0), a), 0),
-    procedimentos: eventos.reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.procedimentosGerados||0), a), 0),
-  };
-
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <FupKPICard label="Eventos Realizados" value={totals.eventos} icon="📚" />
-        <FupKPICard label="Referidores Treinados" value={totals.referidores} color={FUP_C.blue} />
-        <FupKPICard label="Com CRM" value={totals.comCRM} color={FUP_C.teal} />
-        <FupKPICard label="Indicações" value={totals.indicacoes} />
-        <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {["eventos", "dashboard"].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_C.blue : "transparent",
-            color: activeTab === t ? "#fff" : FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_C.blue : FUP_C.border}`,
-          }}>{t === "eventos" ? "📋 Eventos" : "📊 Dashboard"}</button>
-        ))}
-        <FupBtn onClick={() => setEventoModal(true)} style={{ marginLeft: "auto" }}>+ Novo Evento</FupBtn>
-      </div>
-
-      {activeTab === "eventos" ? (
-        eventos.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>📚</div>
-            <div>Nenhum evento cadastrado. Clique em "+ Novo Evento".</div>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            {eventos.map((ev) => (
-              <div key={ev.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                  <div>
-                    <div style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15 }}>{ev.nome || "Evento sem nome"}</div>
-                    <div style={{ display: "flex", gap: 16, marginTop: 4, flexWrap: "wrap" }}>
-                      {ev.dataEvento && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📅 {ev.dataEvento}</span>}
-                      {ev.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {ev.cidade}</span>}
-                      {ev.medicoExecutor && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>👨‍⚕️ {ev.medicoExecutor}</span>}
-                      <span style={{ color: FUP_C.blue, fontSize: 12 }}>{(ev.referidores||[]).length} referidor(es)</span>
-                    </div>
-                  </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <FupBtn size="sm" onClick={() => setRefModal(ev.id)} style={{ background: FUP_C.blue, border: "none" }}>+ Referidor</FupBtn>
-                    <FupBtn size="sm" variant="danger" onClick={() => delEvento(ev.id)}>✕</FupBtn>
-                  </div>
-                </div>
-                {(ev.referidores||[]).length > 0 && (
-                  <div style={{ overflowX: "auto" }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-                      <thead>
-                        <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                          {["Médico Referidor", "Especialidade", "CRM?", "Ind. M1", "Ind. M2", "Ind. M3", "Proced.", ""].map((h) => (
-                            <th key={h} style={{ padding: "8px 10px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
-                          ))}
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {(ev.referidores||[]).map((r) => (
-                          <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, fontWeight: 600 }}>{r.medico || "—"}</td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.textMuted }}>{r.especialidade || "—"}</td>
-                            <td style={{ padding: "8px 10px" }}><FupPill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM1 || 0}</td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM2 || 0}</td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{r.indicacoesM3 || 0}</td>
-                            <td style={{ padding: "8px 10px", color: FUP_C.green, fontWeight: 700, textAlign: "center" }}>{r.procedimentosGerados || 0}</td>
-                            <td style={{ padding: "8px 10px" }}><FupBtn variant="danger" size="sm" onClick={() => delRef(ev.id, r.id)}>✕</FupBtn></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 } },
+      React.createElement(FupKPI, { label: "Eventos", value: eventos.length }),
+      React.createElement(FupKPI, { label: "Referidores", value: totalRefs, color: FUP_BLUE }),
+      React.createElement(FupKPI, { label: "Procedimentos", value: totalProced, color: FUP_GREEN })
+    ),
+    React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginBottom: 16 } },
+      React.createElement(FupBtn, { label: "+ Novo Evento", onClick: () => setEvModal(true) })
+    ),
+    eventos.length === 0
+      ? React.createElement("div", { style: { textAlign: "center", padding: 48, color: FUP_DIM } }, "Nenhum evento cadastrado.")
+      : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+          eventos.map(ev => React.createElement(FupCard, { key: ev.id },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 } },
+              React.createElement("div", null,
+                React.createElement("div", { style: { color: FUP_TEXT, fontWeight: 700, fontSize: 15 } }, ev.nome || "Evento"),
+                React.createElement("div", { style: { color: FUP_MUTED, fontSize: 12, marginTop: 4 } },
+                  (ev.dataEvento || "") + (ev.cidade ? " · " + ev.cidade : "") + (ev.medicoExecutor ? " · Dr(a). " + ev.medicoExecutor : "")
+                ),
+                React.createElement("div", { style: { color: FUP_BLUE, fontSize: 12, marginTop: 4 } }, (ev.referidores || []).length + " referidor(es)")
+              ),
+              React.createElement("div", { style: { display: "flex", gap: 8 } },
+                React.createElement(FupBtn, { label: "+ Referidor", onClick: () => setRefModal(ev.id), color: FUP_BLUE, small: true }),
+                React.createElement(FupBtn, { label: "✕", onClick: () => upd(eventos.filter(e => e.id !== ev.id)), color: FUP_RED, small: true })
+              )
+            ),
+            (ev.referidores || []).length > 0 && React.createElement("table", { style: { width: "100%", borderCollapse: "collapse", fontSize: 12 } },
+              React.createElement("thead", null,
+                React.createElement("tr", { style: { borderBottom: "1px solid " + FUP_BORDER } },
+                  ["Médico", "Especialidade", "CRM", "M1", "M2", "M3", "Proced.", ""].map(h =>
+                    React.createElement("th", { key: h, style: { padding: "6px 8px", textAlign: "left", color: FUP_MUTED, fontWeight: 600 } }, h)
+                  )
+                )
+              ),
+              React.createElement("tbody", null,
+                (ev.referidores || []).map(r => React.createElement("tr", { key: r.id, style: { borderBottom: "1px solid " + FUP_BORDER } },
+                  React.createElement("td", { style: { padding: "8px", color: FUP_TEXT, fontWeight: 600 } }, r.medico || "—"),
+                  React.createElement("td", { style: { padding: "8px", color: FUP_MUTED } }, r.especialidade || "—"),
+                  React.createElement("td", { style: { padding: "8px" } }, React.createElement("span", { style: { color: r.possuiCRM === "Sim" ? FUP_GREEN : FUP_RED, fontWeight: 600, fontSize: 11 } }, r.possuiCRM)),
+                  React.createElement("td", { style: { padding: "8px", textAlign: "center" } }, r.indicacoesM1 || 0),
+                  React.createElement("td", { style: { padding: "8px", textAlign: "center" } }, r.indicacoesM2 || 0),
+                  React.createElement("td", { style: { padding: "8px", textAlign: "center" } }, r.indicacoesM3 || 0),
+                  React.createElement("td", { style: { padding: "8px", textAlign: "center", color: FUP_GREEN, fontWeight: 700 } }, r.procedimentosGerados || 0),
+                  React.createElement("td", { style: { padding: "8px" } }, React.createElement(FupBtn, { label: "✕", onClick: () => upd(eventos.map(e => e.id === ev.id ? Object.assign({}, e, { referidores: (e.referidores || []).filter(x => x.id !== r.id) }) : e)), color: FUP_RED, small: true }))
+                ))
+              )
+            )
+          ))
+        ),
+    React.createElement(FupModal, { open: evModal, onClose: () => setEvModal(false), title: "Cadastrar Evento" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupField, { label: "Nome do Evento *", value: evForm.nome, onChange: sfE("nome") }),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Data", value: evForm.dataEvento, onChange: sfE("dataEvento"), type: "date" }), React.createElement(FupField, { label: "Cidade", value: evForm.cidade, onChange: sfE("cidade") })),
+        React.createElement(FupField, { label: "Médico Executor (ministra a aula)", value: evForm.medicoExecutor, onChange: sfE("medicoExecutor") }),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Local", value: evForm.local, onChange: sfE("local") }), React.createElement(FupField, { label: "Obs", value: evForm.obs, onChange: sfE("obs") })),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setEvModal(false), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Salvar Evento", onClick: saveEv })
         )
-      ) : (
-        <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-          <FupSectionTitle accent={FUP_C.blue}>📋 KPIs e SLAs — Aulas Referidores</FupSectionTitle>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-            {[
-              { kpi: "Indicações por Referidor/mês", meta: "≥ 2", freq: "Mensal", alerta: "< 1 = visita de reativação" },
-              { kpi: "CRM Estruturado", meta: "100% dos treinados", freq: "30d pós-aula", alerta: "Sem CRM = baixa rastreabilidade" },
-              { kpi: "Devolutiva ao Referidor", meta: "≤ 7 dias após consulta", freq: "Por paciente", alerta: "Sem devolutiva = desmotiva indicação" },
-              { kpi: "Taxa Conv. Indicação→Proced.", meta: "≥ 30%", freq: "Trimestral", alerta: "< 20% = revisar perfil indicado" },
-              { kpi: "Visita de follow-up", meta: "Mensal (M1, M2, M3)", freq: "Mensal", alerta: "Sem visita = engagement cai 60%" },
-              { kpi: "NPS do Referidor", meta: "≥ 8", freq: "Trimestral", alerta: "< 7 = risco de perder canal" },
-            ].map((s, i) => (
-              <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
-                <div style={{ color: FUP_C.blue, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Modal Novo Evento */}
-      <FupModal open={eventoModal} onClose={() => setEventoModal(false)} title="Cadastrar Evento — Aula Referidores">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Nome do Evento" value={eventoForm.nome} onChange={(v) => setEventoForm({ ...eventoForm, nome: v })} required style={{ gridColumn: "span 2" }} />
-          <FupInput label="Data do Evento" type="date" value={eventoForm.dataEvento} onChange={(v) => setEventoForm({ ...eventoForm, dataEvento: v })} />
-          <FupInput label="Cidade" value={eventoForm.cidade} onChange={(v) => setEventoForm({ ...eventoForm, cidade: v })} />
-          <FupInput label="Médico Executor (ministra a aula)" value={eventoForm.medicoExecutor} onChange={(v) => setEventoForm({ ...eventoForm, medicoExecutor: v })} style={{ gridColumn: "span 2" }} />
-          <FupInput label="Local" value={eventoForm.local} onChange={(v) => setEventoForm({ ...eventoForm, local: v })} />
-          <FupInput label="Observações" value={eventoForm.obs} onChange={(v) => setEventoForm({ ...eventoForm, obs: v })} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setEventoModal(false)}>Cancelar</FupBtn>
-          <FupBtn onClick={saveEvento}>Salvar Evento</FupBtn>
-        </div>
-      </FupModal>
-
-      {/* Modal Adicionar Referidor */}
-      <FupModal open={!!refModal} onClose={() => setRefModal(null)} title="Adicionar Médico Referidor ao Evento">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Nome do Médico Referidor" value={refForm.medico} onChange={(v) => setRefForm({ ...refForm, medico: v })} required style={{ gridColumn: "span 2" }} />
-          <FupInput label="Especialidade" value={refForm.especialidade} onChange={(v) => setRefForm({ ...refForm, especialidade: v })} />
-          <FupSelect label="Possui CRM?" value={refForm.possuiCRM} onChange={(v) => setRefForm({ ...refForm, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <FupInput label="Indicações Mês 1" type="number" value={refForm.indicacoesM1} onChange={(v) => setRefForm({ ...refForm, indicacoesM1: v })} />
-          <FupInput label="Indicações Mês 2" type="number" value={refForm.indicacoesM2} onChange={(v) => setRefForm({ ...refForm, indicacoesM2: v })} />
-          <FupInput label="Indicações Mês 3" type="number" value={refForm.indicacoesM3} onChange={(v) => setRefForm({ ...refForm, indicacoesM3: v })} />
-          <FupInput label="Procedimentos Gerados" type="number" value={refForm.procedimentosGerados} onChange={(v) => setRefForm({ ...refForm, procedimentosGerados: v })} />
-          <div style={{ gridColumn: "span 2" }}>
-            <FupInput label="Observações" value={refForm.obs} onChange={(v) => setRefForm({ ...refForm, obs: v })} />
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setRefModal(null)}>Cancelar</FupBtn>
-          <FupBtn onClick={saveReferidor} style={{ background: FUP_C.blue, border: "none" }}>Adicionar Referidor</FupBtn>
-        </div>
-      </FupModal>
-    </div>
+      )
+    ),
+    React.createElement(FupModal, { open: !!refModal, onClose: () => setRefModal(null), title: "Adicionar Referidor" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Médico Referidor *", value: refForm.medico, onChange: sfR("medico") }), React.createElement(FupField, { label: "Especialidade", value: refForm.especialidade, onChange: sfR("especialidade") })),
+        React.createElement(FupRow, null,
+          React.createElement(FupField, { label: "Possui CRM?", value: refForm.possuiCRM, onChange: sfR("possuiCRM"), options: [{v:"Sim",l:"Sim"},{v:"Não",l:"Não"}] }),
+          React.createElement(FupField, { label: "Indicações M1", value: refForm.indicacoesM1, onChange: sfR("indicacoesM1"), type: "number" })
+        ),
+        React.createElement(FupRow, null,
+          React.createElement(FupField, { label: "Indicações M2", value: refForm.indicacoesM2, onChange: sfR("indicacoesM2"), type: "number" }),
+          React.createElement(FupField, { label: "Indicações M3", value: refForm.indicacoesM3, onChange: sfR("indicacoesM3"), type: "number" })
+        ),
+        React.createElement(FupRow, null,
+          React.createElement(FupField, { label: "Procedimentos Gerados", value: refForm.procedimentosGerados, onChange: sfR("procedimentosGerados"), type: "number" }),
+          React.createElement(FupField, { label: "Obs", value: refForm.obs, onChange: sfR("obs") })
+        ),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setRefModal(null), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Adicionar", onClick: saveRef, color: FUP_BLUE })
+        )
+      )
+    )
   );
 }
+
+// ── CAMPANHA INTERNA ─────────────────────────────────────────────────────────
 function CampanhaInternaProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({
-    dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "",
-    telefoneIndicador: "", area: "", statusFunil: "Novo Lead",
-    procedimento: "", origem: "Convenção", conversao: "Não",
-    valorProcedimento: "", motivoPerda: "", obs: "",
-  });
-  const [activeTab, setActiveTab] = useState("form");
+  const [form, setForm] = useState({ dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "", area: "", statusFunil: "Novo Lead", procedimento: "", conversao: "Não", valorProcedimento: "", obs: "" });
+  const sf = k => v => setForm(f => Object.assign({}, f, {[k]: v}));
   const records = data || [];
-
-  const funilOrder = ["Novo Lead", "Tentativa 1", "Tentativa 2", "Contato Realizado", "Avaliação Agendada", "Avaliação Realizada", "Procedimento Agendado", "Procedimento Realizado", "Perdido"];
-  const funil = funilOrder.map((s) => ({ status: s, count: records.filter((r) => r.statusFunil === s).length }));
+  const statusOpts = ["Novo Lead","Tentativa 1","Tentativa 2","Contato Realizado","Avaliação Agendada","Avaliação Realizada","Procedimento Realizado","Perdido"];
 
   const totals = {
     total: records.length,
-    contatados: records.filter((r) => !["Novo Lead", "Tentativa 1", "Tentativa 2"].includes(r.statusFunil) && r.statusFunil !== "Perdido").length,
-    convertidos: records.filter((r) => r.conversao === "Sim").length,
-    perdidos: records.filter((r) => r.statusFunil === "Perdido").length,
-    receita: records.filter((r) => r.conversao === "Sim").reduce((a, r) => a + (+r.valorProcedimento || 0), 0),
+    convertidos: records.filter(r => r.conversao === "Sim").length,
+    perdidos: records.filter(r => r.statusFunil === "Perdido").length,
+    receita: records.filter(r => r.conversao === "Sim").reduce((a, r) => a + (+r.valorProcedimento || 0), 0)
   };
-  const txConv = totals.total > 0 ? ((totals.convertidos / totals.total) * 100).toFixed(1) : 0;
+  const conv = totals.total > 0 ? ((totals.convertidos / totals.total) * 100).toFixed(0) : 0;
 
   const save = () => {
-    onChange([...records, { ...form, id: fupUid() }]);
+    onChange([...records, Object.assign({}, form, { id: fupId() })]);
     setModal(false);
-    setForm({ dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "", telefoneIndicador: "", area: "", statusFunil: "Novo Lead", procedimento: "", origem: "Convenção", conversao: "Não", valorProcedimento: "", motivoPerda: "", obs: "" });
+    setForm({ dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "", area: "", statusFunil: "Novo Lead", procedimento: "", conversao: "Não", valorProcedimento: "", obs: "" });
   };
 
-  const updateStatus = (id, statusFunil) => onChange(records.map((r) => r.id === id ? { ...r, statusFunil } : r));
-
-  const statusColor = { "Novo Lead": "azul", "Contato Realizado": "amarelo", "Avaliação Realizada": "roxo", "Procedimento Realizado": "verde", "Perdido": "vermelho" };
-
-  const areaData = Object.entries(
-    records.reduce((a, r) => { a[r.area || "Outros"] = (a[r.area || "Outros"] || 0) + 1; return a; }, {})
-  ).map(([name, value]) => ({ name, value }));
-
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <FupKPICard label="Leads Totais" value={totals.total} icon="🔗" />
-        <FupKPICard label="Contatados" value={totals.contatados} icon="📞" />
-        <FupKPICard label="Convertidos" value={totals.convertidos} color={FUP_C.green} icon="✓" />
-        <FupKPICard label="Taxa Conversão" value={`${txConv}%`} color={txConv >= 40 ? FUP_C.green : txConv >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: ≥ 40%" />
-        <FupKPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
-        <FupKPICard label="Receita Gerada" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {["form", "dashboard"].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_C.purple : "transparent",
-            color: activeTab === t ? "#fff" : FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_C.purple : FUP_C.border}`,
-          }}>{t === "form" ? "📋 Leads" : "📊 Dashboard"}</button>
-        ))}
-        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.purple }}>+ Novo Lead</FupBtn>
-      </div>
-
-      {activeTab === "form" ? (
-        records.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>🔗</div>
-            <div>Nenhum lead registrado.</div>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                  {["Data", "Paciente", "Indicador", "Área", "Status", "Procedimento", "Conversão", ""].map((h) => (
-                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.dataLead || "—"}</td>
-                    <td style={{ padding: "12px", color: FUP_C.text, fontWeight: 600 }}>{r.nomePaciente || "—"}</td>
-                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.colaboradorIndicador || "—"}</td>
-                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.area || "—"}</td>
-                    <td style={{ padding: "12px" }}>
-                      <select value={r.statusFunil} onChange={(e) => updateStatus(r.id, e.target.value)}
-                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 11, padding: "4px 8px" }}>
-                        {funilOrder.map((s) => <option key={s}>{s}</option>)}
-                      </select>
-                    </td>
-                    <td style={{ padding: "12px", color: FUP_C.textMuted }}>{r.procedimento || "—"}</td>
-                    <td style={{ padding: "12px" }}><FupPill label={r.conversao} color={r.conversao === "Sim" ? "verde" : "cinza"} /></td>
-                    <td style={{ padding: "12px" }}><FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn></td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 } },
+      React.createElement(FupKPI, { label: "Leads", value: totals.total }),
+      React.createElement(FupKPI, { label: "Convertidos", value: totals.convertidos, color: FUP_GREEN }),
+      React.createElement(FupKPI, { label: "Conversão", value: conv + "%", color: conv >= 40 ? FUP_GREEN : FUP_YELLOW }),
+      React.createElement(FupKPI, { label: "Perdidos", value: totals.perdidos, color: FUP_RED }),
+      React.createElement(FupKPI, { label: "Receita", value: totals.receita > 0 ? "R$ " + (totals.receita/1000).toFixed(0) + "k" : "—", color: FUP_TEAL })
+    ),
+    React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginBottom: 16 } },
+      React.createElement(FupBtn, { label: "+ Novo Lead", onClick: () => setModal(true), color: FUP_PURPLE })
+    ),
+    records.length === 0
+      ? React.createElement("div", { style: { textAlign: "center", padding: 48, color: FUP_DIM } }, "Nenhum lead registrado.")
+      : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
+          records.map(r => React.createElement(FupCard, { key: r.id },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center" } },
+              React.createElement("div", null,
+                React.createElement("div", { style: { color: FUP_TEXT, fontWeight: 700 } }, r.nomePaciente || "—"),
+                React.createElement("div", { style: { color: FUP_MUTED, fontSize: 12, marginTop: 4 } }, "Indicador: " + (r.colaboradorIndicador || "—") + " · Área: " + (r.area || "—")),
+                React.createElement("div", { style: { display: "flex", gap: 12, marginTop: 8, flexWrap: "wrap" } },
+                  React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Status: ",
+                    React.createElement("select", {
+                      value: r.statusFunil,
+                      onChange: e => onChange(records.map(x => x.id === r.id ? Object.assign({}, x, { statusFunil: e.target.value }) : x)),
+                      style: { background: FUP_BG, border: "1px solid " + FUP_BORDER, borderRadius: 6, color: FUP_TEXT, fontSize: 11, padding: "2px 6px", fontFamily: "inherit" }
+                    },
+                      statusOpts.map(s => React.createElement("option", { key: s, value: s }, s))
+                    )
+                  ),
+                  React.createElement("span", { style: { color: r.conversao === "Sim" ? FUP_GREEN : FUP_MUTED, fontSize: 12, fontWeight: 600 } }, r.conversao === "Sim" ? "✓ Convertido" : "Em andamento")
+                )
+              ),
+              React.createElement(FupBtn, { label: "✕", onClick: () => onChange(records.filter(x => x.id !== r.id)), color: FUP_RED, small: true })
+            )
+          ))
+        ),
+    React.createElement(FupModal, { open: modal, onClose: () => setModal(false), title: "Novo Lead — Campanha Interna" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Data", value: form.dataLead, onChange: sf("dataLead"), type: "date" }), React.createElement(FupField, { label: "Nome do Paciente", value: form.nomePaciente, onChange: sf("nomePaciente") })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Colaborador Indicador *", value: form.colaboradorIndicador, onChange: sf("colaboradorIndicador") }), React.createElement(FupField, { label: "Área", value: form.area, onChange: sf("area") })),
+        React.createElement(FupRow, null,
+          React.createElement(FupField, { label: "Status", value: form.statusFunil, onChange: sf("statusFunil"), options: statusOpts.map(s => ({v:s,l:s})) }),
+          React.createElement(FupField, { label: "Conversão?", value: form.conversao, onChange: sf("conversao"), options: [{v:"Não",l:"Não"},{v:"Sim",l:"Sim"}] })
+        ),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Valor R$", value: form.valorProcedimento, onChange: sf("valorProcedimento"), type: "number" }), React.createElement(FupField, { label: "Obs", value: form.obs, onChange: sf("obs") })),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setModal(false), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Salvar Lead", onClick: save, color: FUP_PURPLE })
         )
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <FupSectionTitle accent={FUP_C.purple}>Funil de Conversão</FupSectionTitle>
-            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
-          </div>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <FupSectionTitle accent={FUP_C.purple}>Leads por Área</FupSectionTitle>
-            {areaData.length > 0 ? (
-              <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
-            ) : <div style={{ color: FUP_C.textDim, textAlign: "center", paddingTop: 80 }}>Sem dados ainda.</div>}
-          </div>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <FupSectionTitle accent={FUP_C.purple}>📋 KPIs e SLAs — Campanha Indicação Interna (Leap Plus)</FupSectionTitle>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-              {[
-                { kpi: "1º Contato (IS)", meta: "≤ 30 min após lead entrar", freq: "Por lead", alerta: "Sem contato = perda imediata" },
-                { kpi: "Taxa de Contato Ativo", meta: "≥ 85%", freq: "Semanal", alerta: "< 75% = problema operacional" },
-                { kpi: "Taxa de Agendamento", meta: "60–70% dos leads", freq: "Semanal", alerta: "< 50% = revisar script" },
-                { kpi: "Taxa de Comparecimento", meta: "≥ 75%", freq: "Por semana", alerta: "< 60% = reforço D-1/Dia" },
-                { kpi: "Conversão Final", meta: "40–50%", freq: "Mensal", alerta: "< 25% = revisar perfil/script" },
-                { kpi: "CPA (Custo/Paciente)", meta: "R$ < 500 por convertido", freq: "Mensal", alerta: "Alto CPA = ajustar incentivo" },
-                { kpi: "Leads/mês", meta: "≥ 12 indicações ativas", freq: "Mensal", alerta: "< 8 = campanha fraca" },
-                { kpi: "Reunião Operacional IS", meta: "Semanal (30 min)", freq: "Semanal", alerta: "Sem reunião = gargalos ocultos" },
-                { kpi: "Reunião Estratégica", meta: "Mensal (60 min)", freq: "Mensal", alerta: "Avaliar ROI e tendências" },
-              ].map((s, i) => (
-                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
-                  <div style={{ color: FUP_C.purple, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Lead — Indicação Interna">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Data do Lead" type="date" value={form.dataLead} onChange={(v) => setForm({ ...form, dataLead: v })} />
-          <FupInput label="Nome do Paciente" value={form.nomePaciente} onChange={(v) => setForm({ ...form, nomePaciente: v })} />
-          <FupInput label="Telefone Paciente" value={form.telefone} onChange={(v) => setForm({ ...form, telefone: v })} />
-          <FupInput label="Colaborador Indicador" value={form.colaboradorIndicador} onChange={(v) => setForm({ ...form, colaboradorIndicador: v })} required />
-          <FupInput label="Telefone Indicador" value={form.telefoneIndicador} onChange={(v) => setForm({ ...form, telefoneIndicador: v })} />
-          <FupInput label="Área (PI, IC, Uro, etc.)" value={form.area} onChange={(v) => setForm({ ...form, area: v })} />
-          <FupSelect label="Status do Funil" value={form.statusFunil} onChange={(v) => setForm({ ...form, statusFunil: v })} options={funilOrder.map((s) => ({ value: s, label: s }))} />
-          <FupSelect label="Origem" value={form.origem} onChange={(v) => setForm({ ...form, origem: v })} options={["Convenção", "Online", "Outro"].map((s) => ({ value: s, label: s }))} />
-          <FupInput label="Procedimento" value={form.procedimento} onChange={(v) => setForm({ ...form, procedimento: v })} />
-          <FupSelect label="Conversão?" value={form.conversao} onChange={(v) => setForm({ ...form, conversao: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }]} />
-          <FupInput label="Valor Procedimento (R$)" type="number" value={form.valorProcedimento} onChange={(v) => setForm({ ...form, valorProcedimento: v })} />
-          <FupInput label="Motivo Perda (se perdido)" value={form.motivoPerda} onChange={(v) => setForm({ ...form, motivoPerda: v })} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
-          <FupBtn onClick={save} style={{ background: FUP_C.purple }}>Salvar Lead</FupBtn>
-        </div>
-      </FupModal>
-    </div>
+      )
+    )
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// CURSO BARIATRICOS
-// ════════════════════════════════════════════════════════════════════════════
+// ── MÉDICO CARD COM FUPS ─────────────────────────────────────────────────────
+function FupMedicoCard({ medico, fups, accentColor, onAddFup, onEdit, onDelete }) {
+  const [expanded, setExpanded] = useState(false);
+  const lastFup = fups[fups.length - 1];
+  const riscoColor = { Verde: FUP_GREEN, Amarelo: FUP_YELLOW, Vermelho: FUP_RED };
+
+  return React.createElement(FupCard, null,
+    React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start" } },
+      React.createElement("div", { style: { flex: 1 } },
+        React.createElement("div", { style: { display: "flex", alignItems: "center", gap: 10, marginBottom: 4 } },
+          React.createElement("span", { style: { color: FUP_TEXT, fontWeight: 700, fontSize: 15 } }, medico.nome || "Médico sem nome"),
+          lastFup && lastFup.risco && React.createElement("span", { style: { color: riscoColor[lastFup.risco] || FUP_MUTED, fontSize: 11, fontWeight: 700 } },
+            (lastFup.risco === "Verde" ? "🟢 " : lastFup.risco === "Amarelo" ? "🟡 " : "🔴 ") + lastFup.risco
+          )
+        ),
+        React.createElement("div", { style: { color: FUP_MUTED, fontSize: 12 } },
+          (medico.email ? "📧 " + medico.email : "") + (medico.cidade ? " · 📍 " + medico.cidade : "")
+        ),
+        fups.length > 0 && React.createElement("div", { style: { display: "flex", gap: 16, marginTop: 8, flexWrap: "wrap" } },
+          React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Follow-ups: ", React.createElement("b", { style: { color: FUP_TEXT } }, fups.length)),
+          lastFup && lastFup.scoreImpl && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Score: ", React.createElement("b", { style: { color: +lastFup.scoreImpl >= 7 ? FUP_GREEN : +lastFup.scoreImpl >= 4 ? FUP_YELLOW : FUP_RED } }, lastFup.scoreImpl + "/10")),
+          React.createElement("button", {
+            onClick: () => setExpanded(!expanded),
+            style: { background: "none", border: "none", color: accentColor || FUP_TEAL, fontSize: 12, fontWeight: 600, cursor: "pointer", padding: 0 }
+          }, expanded ? "▼ Ocultar visitas" : "▶ Ver " + fups.length + " visita(s)")
+        ),
+        expanded && fups.length > 0 && React.createElement("div", { style: { marginTop: 12, display: "flex", flexDirection: "column", gap: 8 } },
+          fups.map((f, idx) => React.createElement("div", {
+            key: f.id || idx,
+            style: { background: FUP_BG, borderRadius: 8, padding: "10px 14px", border: "1px solid " + FUP_BORDER, borderLeft: "3px solid " + (riscoColor[f.risco] || accentColor || FUP_TEAL) }
+          },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", marginBottom: 6 } },
+              React.createElement("span", { style: { color: FUP_TEXT, fontWeight: 600, fontSize: 13 } }, "Visita " + (idx+1) + " · " + (f.data || "Sem data")),
+              f.risco && React.createElement("span", { style: { color: riscoColor[f.risco] || FUP_MUTED, fontSize: 11, fontWeight: 700 } }, f.risco)
+            ),
+            React.createElement("div", { style: { display: "flex", flexWrap: "wrap", gap: "4px 16px" } },
+              f.tipo && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Tipo: ", f.tipo),
+              f.scoreImpl && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Score: ", React.createElement("b", { style: { color: +f.scoreImpl >= 7 ? FUP_GREEN : FUP_YELLOW } }, f.scoreImpl + "/10")),
+              f.procedimentos && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Proced.: ", React.createElement("b", { style: { color: FUP_GREEN } }, f.procedimentos)),
+              f.procedimentos30d && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Proced.: ", React.createElement("b", { style: { color: FUP_GREEN } }, f.procedimentos30d)),
+              f.avaliacoes && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Aval.: ", React.createElement("b", { style: { color: FUP_TEAL } }, f.avaliacoes)),
+              f.geoScore && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "GEO: ", React.createElement("b", { style: { color: FUP_YELLOW } }, f.geoScore + "/10")),
+              f.leadsOrganicos && React.createElement("span", { style: { color: FUP_MUTED, fontSize: 12 } }, "Leads: ", React.createElement("b", { style: { color: FUP_TEAL } }, f.leadsOrganicos))
+            ),
+            f.obs && React.createElement("div", { style: { color: FUP_MUTED, fontSize: 12, marginTop: 6, fontStyle: "italic" } }, "💬 " + f.obs)
+          ))
+        )
+      ),
+      React.createElement("div", { style: { display: "flex", gap: 8, flexShrink: 0 } },
+        onEdit && React.createElement(FupBtn, { label: "✏️", onClick: onEdit, color: "transparent", small: true }),
+        React.createElement(FupBtn, { label: "+ FUP", onClick: onAddFup, color: accentColor || FUP_TEAL, small: true }),
+        onDelete && React.createElement(FupBtn, { label: "✕", onClick: onDelete, color: FUP_RED, small: true })
+      )
+    )
+  );
+}
+
+// ── CURSO BARIATRICOS ────────────────────────────────────────────────────────
+const BARI_MEDICOS_INIT = [
+  { id: 1, nome: "Daniela Castro Mattos Giron", email: "danielamattos@gmail.com", cidade: "" },
+  { id: 2, nome: "Rodrigo Dallegre Correa da Silva", email: "rodrigo.dallegre@icloud.com", cidade: "" },
+  { id: 3, nome: "Isabella Palomeque Mazzuccato Rossi", email: "isabellamazzuccato@hotmail.com", cidade: "" },
+  { id: 4, nome: "Gabriel Braga Pereira", email: "gabrielbraga@gmail.com", cidade: "" },
+  { id: 5, nome: "Rodrigo Nascimento Santana", email: "", cidade: "" },
+  { id: 6, nome: "Gonzalo Vieira da Cunha Zigano", email: "gonzaloziruga@gmail.com", cidade: "" },
+  { id: 7, nome: "Fábiola De Angeli Ferreira", email: "biola_deangele@hotmail.com", cidade: "" },
+  { id: 8, nome: "Cristovam Miranda", email: "cristovammiranda@gmail.com", cidade: "" },
+  { id: 9, nome: "Eduardo Lemos de Souza Bastos", email: "eduardobastos2001@gmail.com", cidade: "" },
+  { id: 10, nome: "Horácio Neto", email: "hjmacedoneto@gmail.com", cidade: "" },
+];
+
 function CursoBariatricosProject({ data, onChange }) {
-  const [activeTab, setActiveTab] = useState("medicos");
-  const [modal, setModal] = useState(false);
   const [fupModal, setFupModal] = useState(null);
-  const [editMedico, setEditMedico] = useState(null);
-  const [fupForm, setFupForm] = useState({
-    data: "", tipo: "Visita", encaminhouMaterial: "Sim", possuiCRM: "Não",
-    qtdContatosEnviados: "", respostas: "", avaliacoes: "", procedimentos: "",
-    scoreImpl: "", risco: "Verde", obs: "",
-  });
+  const [fupForm, setFupForm] = useState({ data: "", tipo: "Visita presencial", encaminhouMaterial: "Sim", possuiCRM: "Não", qtdContatos: "", avaliacoes: "", procedimentos: "", scoreImpl: "", risco: "Verde", obs: "" });
+  const sfF = k => v => setFupForm(f => Object.assign({}, f, {[k]: v}));
 
-  const medicos = data?.medicos || fupInitialState.cursoBariatricos.medicos;
-  const followups = data?.followups || [];
-
-  const update = (updated) => onChange({ medicos: updated, followups });
-  const updateFUPs = (updated) => onChange({ medicos, followups: updated });
+  const medicos = (data && data.medicos && data.medicos.length) ? data.medicos : BARI_MEDICOS_INIT;
+  const followups = (data && data.followups) ? data.followups : [];
+  const updFups = fups => onChange({ medicos, followups: fups });
 
   const totals = {
-    ativos: medicos.filter((m) => m.status === "Ativo").length,
-    comCRM: medicos.filter((m) => m.possuiCRM === "Sim").length,
-    materialEnviado: followups.filter((f) => f.encaminhouMaterial === "Sim").length,
-    totalProcedimentos: followups.reduce((a, f) => a + (+f.procedimentos || 0), 0),
-    totalAvaliacoes: followups.reduce((a, f) => a + (+f.avaliacoes || 0), 0),
-    mediaScore: followups.length > 0
-      ? (followups.reduce((a, f) => a + (+f.scoreImpl || 0), 0) / followups.length).toFixed(1)
-      : 0,
+    procedimentos: followups.reduce((a, f) => a + (+f.procedimentos || 0), 0),
+    avaliacoes: followups.reduce((a, f) => a + (+f.avaliacoes || 0), 0),
+    score: followups.filter(f => f.scoreImpl).length > 0 ? (followups.filter(f => f.scoreImpl).reduce((a, f) => a + (+f.scoreImpl || 0), 0) / followups.filter(f => f.scoreImpl).length).toFixed(1) : "—"
   };
 
-  const saveFUP = () => {
-    updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
+  const saveFup = () => {
+    updFups([...followups, Object.assign({}, fupForm, { medicoId: fupModal, id: fupId() })]);
     setFupModal(null);
-    setFupForm({ data: "", tipo: "Visita", encaminhouMaterial: "Sim", possuiCRM: "Não", qtdContatosEnviados: "", respostas: "", avaliacoes: "", procedimentos: "", scoreImpl: "", risco: "Verde", obs: "" });
+    setFupForm({ data: "", tipo: "Visita presencial", encaminhouMaterial: "Sim", possuiCRM: "Não", qtdContatos: "", avaliacoes: "", procedimentos: "", scoreImpl: "", risco: "Verde", obs: "" });
   };
 
-  const saveMedico = () => {
-    update(medicos.map((m) => m.id === editMedico.id ? editMedico : m));
-    setModal(false);
-  };
-
-  const medicoFups = (id) => followups.filter((f) => f.medicoId === id);
-
-  const radarData = medicos.slice(0, 5).map((m) => {
-    const fups = medicoFups(m.id);
-    return {
-      name: m.nome.split(" ")[0],
-      CRM: m.possuiCRM === "Sim" ? 10 : 0,
-      Material: fups.some((f) => f.encaminhouMaterial === "Sim") ? 10 : 0,
-      Score: fups.length > 0 ? +fups[fups.length - 1].scoreImpl || 0 : 0,
-      Procedimentos: Math.min((fups.reduce((a, f) => a + (+f.procedimentos || 0), 0)) * 2, 10),
-    };
-  });
-
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <FupKPICard label="Cirurgiões Capacitados" value={medicos.length} icon="🏥" />
-        <FupKPICard label="Ativos" value={totals.ativos} color={FUP_C.orange} />
-        <FupKPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} sub={`${((totals.comCRM / medicos.length) * 100).toFixed(0)}%`} />
-        <FupKPICard label="Material Enviado" value={totals.materialEnviado} sub="follow-ups" color={FUP_C.green} />
-        <FupKPICard label="Avaliações Geradas" value={totals.totalAvaliacoes} color={FUP_C.teal} />
-        <FupKPICard label="Procedimentos ESG" value={totals.totalProcedimentos} color={FUP_C.green} icon="✓" />
-        <FupKPICard label="Score Médio Impl." value={totals.mediaScore + "/10"} color={totals.mediaScore >= 7 ? FUP_C.green : totals.mediaScore >= 4 ? FUP_C.yellow : FUP_C.red} />
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {["medicos", "dashboard"].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_C.orange : "transparent",
-            color: activeTab === t ? "#fff" : FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_C.orange : FUP_C.border}`,
-          }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
-        ))}
-      </div>
-
-      {activeTab === "medicos" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {medicos.map((m) => {
-            const fups = medicoFups(m.id);
-            const lastFup = fups[fups.length - 1];
-            const risco = lastFup?.risco || "—";
-            const score = lastFup?.scoreImpl || "—";
-            const riscoColor = { Verde: "verde", Amarelo: "amarelo", Vermelho: "vermelho" };
-            return (
-              <div key={m.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                  <div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 4 }}>
-                      <span style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15 }}>{m.nome}</span>
-                      {risco !== "—" && <FupPill label={risco} color={riscoColor[risco] || "cinza"} />}
-                      {score !== "—" && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +score >= 7 ? FUP_C.green : +score >= 4 ? FUP_C.yellow : FUP_C.red }}>{score}/10</b></span>}
-                    </div>
-                    <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-                      <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📧 {m.email || "—"}</span>
-                      {m.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
-                      {m.possuiCRM && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>CRM: <FupPill label={m.possuiCRM} color={m.possuiCRM === "Sim" ? "verde" : "vermelho"} /></span>}
-                    </div>
-                    {fups.length > 0 && (
-                      <div style={{ marginTop: 8, display: "flex", gap: 16 }}>
-                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Follow-ups: <b style={{ color: FUP_C.text }}>{fups.length}</b></span>
-                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoes || 0), 0)}</b></span>
-                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos || 0), 0)}</b></span>
-                      </div>
-                    )}
-                  </div>
-                  <div style={{ display: "flex", gap: 8, flexShrink: 0 }}>
-                    <FupBtn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m }); setModal(true); }}>✏️ Editar</FupBtn>
-                    <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.orange, border: "none" }}>+ FUP</FupBtn>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <FupSectionTitle accent={FUP_C.orange}>Radar de Performance por Médico</FupSectionTitle>
-            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
-          </div>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <FupSectionTitle accent={FUP_C.orange}>📋 KPIs e SLAs — Curso IAS Cirurgiões Bariátricos</FupSectionTitle>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-              {[
-                { kpi: "Encaminhou material pós-curso", meta: "100% em D+1", freq: "Imediato", alerta: "Não enviou = oportunidade perdida no CRM" },
-                { kpi: "Possui CRM estruturado", meta: "100% em D+30", freq: "M1", alerta: "Sem CRM = impraticável rastrear pacientes" },
-                { kpi: "Qtd contatos disparados pelo CRM", meta: "≥ 50 em D+30", freq: "M1", alerta: "< 20 = não está ativando a base" },
-                { kpi: "Avaliações ESG agendadas", meta: "≥ 5 em M1", freq: "Mensal", alerta: "0 avaliações M1 = risco alto de abandono" },
-                { kpi: "Procedimentos ESG realizados", meta: "≥ 2 em M1, ≥ 5 em M3", freq: "Mensal", alerta: "0 em M2 = intervenção urgente" },
-                { kpi: "Score de Implementação", meta: "≥ 7 em M3", freq: "Por visita", alerta: "Score < 4 após M2 = revisar suporte" },
-                { kpi: "Visita de follow-up account", meta: "M1, M2, M3 (mensal)", freq: "Mensal", alerta: "Sem visita = engagement cai" },
-                { kpi: "Risco semáforo", meta: "Verde em M3", freq: "Por visita", alerta: "Vermelho = escalar para gestão" },
-                { kpi: "Devolutiva de status ao médico", meta: "Quinzenal", freq: "Quinzenal", alerta: "Médico sem feedback = desengaja" },
-              ].map((s, i) => (
-                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
-                  <div style={{ color: FUP_C.orange, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Medico Modal */}
-      <FupModal open={modal && !!editMedico} onClose={() => setModal(false)} title="Editar Médico">
-        {editMedico && (
-          <>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <FupInput label="Nome" value={editMedico.nome} onChange={(v) => setEditMedico({ ...editMedico, nome: v })} style={{ gridColumn: "span 2" }} />
-              <FupInput label="Email" value={editMedico.email} onChange={(v) => setEditMedico({ ...editMedico, email: v })} />
-              <FupInput label="Cidade" value={editMedico.cidade || ""} onChange={(v) => setEditMedico({ ...editMedico, cidade: v })} />
-              <FupInput label="CRM" value={editMedico.crm || ""} onChange={(v) => setEditMedico({ ...editMedico, crm: v })} />
-              <FupSelect label="Possui CRM Estruturado?" value={editMedico.possuiCRM || "Não"} onChange={(v) => setEditMedico({ ...editMedico, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-              <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
-              <FupBtn onClick={saveMedico} style={{ background: FUP_C.orange }}>Salvar</FupBtn>
-            </div>
-          </>
-        )}
-      </FupModal>
-
-      {/* FUP Modal */}
-      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title={`Registrar Follow-up — ${medicos.find((m) => m.id === fupModal)?.nome?.split(" ")[0] || ""}`}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Data da Visita" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
-          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita presencial", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
-          <FupSelect label="Encaminhou material pós-curso?" value={fupForm.encaminhouMaterial} onChange={(v) => setFupForm({ ...fupForm, encaminhouMaterial: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <FupSelect label="Possui CRM?" value={fupForm.possuiCRM} onChange={(v) => setFupForm({ ...fupForm, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }, { value: "Não", label: "Não" }]} />
-          <FupInput label="Contatos disparados pelo CRM" type="number" value={fupForm.qtdContatosEnviados} onChange={(v) => setFupForm({ ...fupForm, qtdContatosEnviados: v })} />
-          <FupInput label="Respostas recebidas" type="number" value={fupForm.respostas} onChange={(v) => setFupForm({ ...fupForm, respostas: v })} />
-          <FupInput label="Avaliações ESG agendadas" type="number" value={fupForm.avaliacoes} onChange={(v) => setFupForm({ ...fupForm, avaliacoes: v })} />
-          <FupInput label="Procedimentos ESG realizados" type="number" value={fupForm.procedimentos} onChange={(v) => setFupForm({ ...fupForm, procedimentos: v })} />
-          <FupInput label="Score Implementação (0–10)" type="number" value={fupForm.scoreImpl} onChange={(v) => setFupForm({ ...fupForm, scoreImpl: v })} />
-          <FupSelect label="Risco (Semáforo)" value={fupForm.risco} onChange={(v) => setFupForm({ ...fupForm, risco: v })} options={["Verde", "Amarelo", "Vermelho"].map((s) => ({ value: s, label: s }))} />
-          <div style={{ gridColumn: "span 2" }}>
-            <FupInput label="Observações / Próxima Ação" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
-          <FupBtn onClick={saveFUP} style={{ background: FUP_C.orange }}>Registrar FUP</FupBtn>
-        </div>
-      </FupModal>
-    </div>
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 } },
+      React.createElement(FupKPI, { label: "Cirurgiões", value: medicos.length }),
+      React.createElement(FupKPI, { label: "Procedimentos", value: totals.procedimentos, color: FUP_GREEN }),
+      React.createElement(FupKPI, { label: "Avaliações", value: totals.avaliacoes, color: FUP_TEAL }),
+      React.createElement(FupKPI, { label: "Score Médio", value: totals.score + (totals.score !== "—" ? "/10" : ""), color: FUP_ORANGE })
+    ),
+    React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+      medicos.map(m => React.createElement(FupMedicoCard, {
+        key: m.id,
+        medico: m,
+        fups: followups.filter(f => f.medicoId === m.id),
+        accentColor: FUP_ORANGE,
+        onAddFup: () => setFupModal(m.id)
+      }))
+    ),
+    React.createElement(FupModal, { open: !!fupModal, onClose: () => setFupModal(null), title: "Registrar Follow-up" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Data", value: fupForm.data, onChange: sfF("data"), type: "date" }), React.createElement(FupField, { label: "Tipo", value: fupForm.tipo, onChange: sfF("tipo"), options: [{v:"Visita presencial",l:"Visita presencial"},{v:"Call",l:"Call"},{v:"WhatsApp",l:"WhatsApp"}] })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Enviou material?", value: fupForm.encaminhouMaterial, onChange: sfF("encaminhouMaterial"), options: [{v:"Sim",l:"Sim"},{v:"Não",l:"Não"}] }), React.createElement(FupField, { label: "Possui CRM?", value: fupForm.possuiCRM, onChange: sfF("possuiCRM"), options: [{v:"Sim",l:"Sim"},{v:"Parcial",l:"Parcial"},{v:"Não",l:"Não"}] })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Contatos CRM disparados", value: fupForm.qtdContatos, onChange: sfF("qtdContatos"), type: "number" }), React.createElement(FupField, { label: "Avaliações ESG agendadas", value: fupForm.avaliacoes, onChange: sfF("avaliacoes"), type: "number" })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Procedimentos ESG realizados", value: fupForm.procedimentos, onChange: sfF("procedimentos"), type: "number" }), React.createElement(FupField, { label: "Score Impl. (0-10)", value: fupForm.scoreImpl, onChange: sfF("scoreImpl"), type: "number" })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Risco", value: fupForm.risco, onChange: sfF("risco"), options: [{v:"Verde",l:"🟢 Verde"},{v:"Amarelo",l:"🟡 Amarelo"},{v:"Vermelho",l:"🔴 Vermelho"}] }), React.createElement(FupField, { label: "Obs", value: fupForm.obs, onChange: sfF("obs") })),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setFupModal(null), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Registrar FUP", onClick: saveFup, color: FUP_ORANGE })
+        )
+      )
+    )
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// CURSO ENDOSCOPISTAS
-// ════════════════════════════════════════════════════════════════════════════
+// ── CURSO ENDOSCOPISTAS ──────────────────────────────────────────────────────
 function CursoEndoscopistasProject({ data, onChange }) {
   const [fupModal, setFupModal] = useState(null);
-  const [editModal, setEditModal] = useState(false);
-  const [editMedico, setEditMedico] = useState(null);
-  const [activeTab, setActiveTab] = useState("medicos");
-  const [fupForm, setFupForm] = useState({
-    data: "", tipo: "Visita presencial", realizandoProcedimentos: "Sim",
-    procedimentos30d: "", avaliacoesAgendadas: "", possuiCRM: "Não",
-    scoreImpl: "", risco: "Verde", obs: "",
-  });
+  const [editModal, setEditModal] = useState(null);
+  const [fupForm, setFupForm] = useState({ data: "", tipo: "Visita presencial", procedimentos30d: "", avaliacoesAgendadas: "", possuiCRM: "Não", scoreImpl: "", risco: "Verde", obs: "" });
+  const sfF = k => v => setFupForm(f => Object.assign({}, f, {[k]: v}));
 
-  const medicos = data?.medicos || fupInitialState.cursoEndoscopistas.medicos;
-  const followups = data?.followups || [];
-
-  const update = (m) => onChange({ medicos: m, followups });
-  const updateFUPs = (f) => onChange({ medicos, followups: f });
+  const initMedicos = [
+    { id: "e1", nome: "", email: "", cidade: "", possuiCRM: "Não" },
+    { id: "e2", nome: "", email: "", cidade: "", possuiCRM: "Não" },
+    { id: "e3", nome: "", email: "", cidade: "", possuiCRM: "Não" },
+  ];
+  const medicos = (data && data.medicos) ? data.medicos : initMedicos;
+  const followups = (data && data.followups) ? data.followups : [];
+  const updM = m => onChange({ medicos: m, followups });
+  const updF = f => onChange({ medicos, followups: f });
 
   const totals = {
-    totalProced: followups.reduce((a, f) => a + (+f.procedimentos30d || 0), 0),
-    totalAval: followups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0),
-    comCRM: medicos.filter((m) => m.possuiCRM === "Sim").length,
+    procedimentos: followups.reduce((a, f) => a + (+f.procedimentos30d || 0), 0),
+    avaliacoes: followups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0),
   };
 
-  const saveFUP = () => {
-    updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
+  const saveFup = () => {
+    updF([...followups, Object.assign({}, fupForm, { medicoId: fupModal, id: fupId() })]);
     setFupModal(null);
-    setFupForm({ data: "", tipo: "Visita presencial", realizandoProcedimentos: "Sim", procedimentos30d: "", avaliacoesAgendadas: "", possuiCRM: "Não", scoreImpl: "", risco: "Verde", obs: "" });
+    setFupForm({ data: "", tipo: "Visita presencial", procedimentos30d: "", avaliacoesAgendadas: "", possuiCRM: "Não", scoreImpl: "", risco: "Verde", obs: "" });
   };
 
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <FupKPICard label="Endoscopistas" value={medicos.length} icon="🔬" />
-        <FupKPICard label="Procedimentos Total" value={totals.totalProced} color={FUP_C.green} icon="✓" />
-        <FupKPICard label="Avaliações Geradas" value={totals.totalAval} color={FUP_C.teal} />
-        <FupKPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} />
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {["medicos", "dashboard"].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_C.green : "transparent",
-            color: activeTab === t ? "#fff" : FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_C.green : FUP_C.border}`,
-          }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
-        ))}
-      </div>
-
-      {activeTab === "medicos" ? (
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {medicos.map((m, idx) => {
-            const fups = followups.filter((f) => f.medicoId === m.id);
-            const lastFup = fups[fups.length - 1];
-            return (
-              <div key={m.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <div style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>
-                      {m.nome || `Endoscopista ${idx + 1}`}
-                    </div>
-                    <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                      {m.email && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📧 {m.email}</span>}
-                      {m.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
-                      <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>
-                        Procedimentos: <b style={{ color: FUP_C.green }}>{fups.reduce((a, f) => a + (+f.procedimentos30d || 0), 0)}</b>
-                      </span>
-                      <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>
-                        Avaliações: <b style={{ color: FUP_C.teal }}>{fups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0)}</b>
-                      </span>
-                      {lastFup?.risco && <FupPill label={lastFup.risco} color={lastFup.risco.toLowerCase()} />}
-                    </div>
-
-                  </div>
-                  <div style={{ display: "flex", gap: 8 }}>
-                    <FupBtn size="sm" variant="ghost" onClick={() => { setEditMedico({ ...m, _idx: idx }); setEditModal(true); }}>✏️ Editar</FupBtn>
-                    <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.green, border: "none" }}>+ FUP</FupBtn>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-          <FupSectionTitle accent={FUP_C.green}>📋 KPIs e SLAs — Curso IAS Endoscopistas</FupSectionTitle>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-            {[
-              { kpi: "Primeiro ESG autônomo", meta: "D+60 pós-curso", freq: "M2", alerta: "0 em D+60 = necessita supervisão" },
-              { kpi: "Procedimentos/mês", meta: "≥ 2 em M1, ≥ 4 em M3", freq: "Mensal", alerta: "0 em M1 = risco de não adoção" },
-              { kpi: "Avaliações geradas", meta: "≥ 5 em M1", freq: "Mensal", alerta: "Sem avaliações = sem pipeline" },
-              { kpi: "Score Implementação", meta: "≥ 7 em M3", freq: "Por visita", alerta: "< 4 em M2 = intervenção técnica" },
-              { kpi: "Visita account", meta: "Mensal (M1, M2, M3)", freq: "Mensal", alerta: "Sem visita = abandono técnico" },
-              { kpi: "CRM estruturado", meta: "Sim em M1", freq: "M1", alerta: "Sem CRM = sem rastreabilidade" },
-            ].map((s, i) => (
-              <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
-                <div style={{ color: FUP_C.green, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Registrar Follow-up — Endoscopista">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
-          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita presencial", "Call", "WhatsApp"].map((s) => ({ value: s, label: s }))} />
-          <FupSelect label="Realizando procedimentos?" value={fupForm.realizandoProcedimentos} onChange={(v) => setFupForm({ ...fupForm, realizandoProcedimentos: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <FupSelect label="Possui CRM?" value={fupForm.possuiCRM} onChange={(v) => setFupForm({ ...fupForm, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-          <FupInput label="Procedimentos ESG (30d)" type="number" value={fupForm.procedimentos30d} onChange={(v) => setFupForm({ ...fupForm, procedimentos30d: v })} />
-          <FupInput label="Avaliações Agendadas" type="number" value={fupForm.avaliacoesAgendadas} onChange={(v) => setFupForm({ ...fupForm, avaliacoesAgendadas: v })} />
-          <FupInput label="Score Implementação (0–10)" type="number" value={fupForm.scoreImpl} onChange={(v) => setFupForm({ ...fupForm, scoreImpl: v })} />
-          <FupSelect label="Risco" value={fupForm.risco} onChange={(v) => setFupForm({ ...fupForm, risco: v })} options={["Verde", "Amarelo", "Vermelho"].map((s) => ({ value: s, label: s }))} />
-          <div style={{ gridColumn: "span 2" }}>
-            <FupInput label="Observações" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
-          <FupBtn onClick={saveFUP} style={{ background: FUP_C.green }}>Registrar FUP</FupBtn>
-        </div>
-      </FupModal>
-
-      <FupModal open={editModal && !!editMedico} onClose={() => setEditModal(false)} title="Editar Endoscopista">
-        {editMedico && (
-          <>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-              <FupInput label="Nome" value={editMedico.nome} onChange={(v) => setEditMedico({ ...editMedico, nome: v })} style={{ gridColumn: "span 2" }} />
-              <FupInput label="Email" value={editMedico.email} onChange={(v) => setEditMedico({ ...editMedico, email: v })} />
-              <FupInput label="Cidade" value={editMedico.cidade || ""} onChange={(v) => setEditMedico({ ...editMedico, cidade: v })} />
-              <FupSelect label="Possui CRM?" value={editMedico.possuiCRM || "Não"} onChange={(v) => setEditMedico({ ...editMedico, possuiCRM: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
-            </div>
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-              <FupBtn variant="ghost" onClick={() => setEditModal(false)}>Cancelar</FupBtn>
-              <FupBtn onClick={() => {
-                const updated = [...medicos];
-                updated[editMedico._idx] = { ...editMedico };
-                update(updated);
-                setEditModal(false);
-              }} style={{ background: FUP_C.green }}>Salvar</FupBtn>
-            </div>
-          </>
-        )}
-      </FupModal>
-    </div>
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 } },
+      React.createElement(FupKPI, { label: "Endoscopistas", value: medicos.filter(m => m.nome).length }),
+      React.createElement(FupKPI, { label: "Procedimentos", value: totals.procedimentos, color: FUP_GREEN }),
+      React.createElement(FupKPI, { label: "Avaliações", value: totals.avaliacoes, color: FUP_TEAL })
+    ),
+    React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+      medicos.map((m, idx) => React.createElement(FupMedicoCard, {
+        key: m.id,
+        medico: Object.assign({}, m, { nome: m.nome || ("Endoscopista " + (idx+1)) }),
+        fups: followups.filter(f => f.medicoId === m.id),
+        accentColor: FUP_GREEN,
+        onAddFup: () => setFupModal(m.id),
+        onEdit: () => setEditModal(m.id)
+      }))
+    ),
+    React.createElement(FupModal, { open: !!fupModal, onClose: () => setFupModal(null), title: "Registrar Follow-up — Endoscopista" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Data", value: fupForm.data, onChange: sfF("data"), type: "date" }), React.createElement(FupField, { label: "Tipo", value: fupForm.tipo, onChange: sfF("tipo"), options: [{v:"Visita presencial",l:"Visita presencial"},{v:"Call",l:"Call"},{v:"WhatsApp",l:"WhatsApp"}] })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Procedimentos 30d", value: fupForm.procedimentos30d, onChange: sfF("procedimentos30d"), type: "number" }), React.createElement(FupField, { label: "Avaliações agendadas", value: fupForm.avaliacoesAgendadas, onChange: sfF("avaliacoesAgendadas"), type: "number" })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Score (0-10)", value: fupForm.scoreImpl, onChange: sfF("scoreImpl"), type: "number" }), React.createElement(FupField, { label: "Risco", value: fupForm.risco, onChange: sfF("risco"), options: [{v:"Verde",l:"🟢 Verde"},{v:"Amarelo",l:"🟡 Amarelo"},{v:"Vermelho",l:"🔴 Vermelho"}] })),
+        React.createElement(FupField, { label: "Obs", value: fupForm.obs, onChange: sfF("obs") }),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setFupModal(null), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Registrar FUP", onClick: saveFup, color: FUP_GREEN })
+        )
+      )
+    ),
+    React.createElement(FupModal, { open: !!editModal, onClose: () => setEditModal(null), title: "Editar Endoscopista" },
+      editModal && React.createElement(function() {
+        const m = medicos.find(x => x.id === editModal) || {};
+        const [ef, setEf] = useState({ nome: m.nome || "", email: m.email || "", cidade: m.cidade || "" });
+        return React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+          React.createElement(FupField, { label: "Nome", value: ef.nome, onChange: v => setEf(f => Object.assign({}, f, { nome: v })) }),
+          React.createElement(FupRow, null, React.createElement(FupField, { label: "Email", value: ef.email, onChange: v => setEf(f => Object.assign({}, f, { email: v })) }), React.createElement(FupField, { label: "Cidade", value: ef.cidade, onChange: v => setEf(f => Object.assign({}, f, { cidade: v })) })),
+          React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+            React.createElement(FupBtn, { label: "Cancelar", onClick: () => setEditModal(null), color: "transparent", small: true }),
+            React.createElement(FupBtn, { label: "Salvar", onClick: () => { updM(medicos.map(x => x.id === editModal ? Object.assign({}, x, ef) : x)); setEditModal(null); }, color: FUP_GREEN })
+          )
+        );
+      }, null)
+    )
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// PACIENTES REFERIDORES
-// ════════════════════════════════════════════════════════════════════════════
+// ── PACIENTES REFERIDORES ────────────────────────────────────────────────────
 function PacientesReferidoresProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState({
-    dataEntrada: "", paciente: "", telefone: "", medicoReferidor: "",
-    clinicaReferidor: "", cidade: "", owner: "",
-    statusContato: "Novo Lead", dataContato1: "", tempoPrimContato: "",
-    statusAgendamento: "Não agendado", dataAgendamento: "", dataConsulta: "",
-    statusComparecimento: "Pendente", statusFunil: "Em andamento",
-    procedimentoFechado: "Não", dataProcedimento: "", obs: "",
-  });
-  const [activeTab, setActiveTab] = useState("funil");
+  const [form, setForm] = useState({ dataEntrada: "", paciente: "", telefone: "", medicoReferidor: "", clinicaReferidor: "", cidade: "", owner: "", tempoPrimContato: "", statusContato: "Novo Lead", statusAgendamento: "Não agendado", dataConsulta: "", statusComparecimento: "Pendente", procedimentoFechado: "Não", obs: "" });
+  const sf = k => v => setForm(f => Object.assign({}, f, {[k]: v}));
   const records = data || [];
-
-  const statusContatoOptions = ["Novo Lead", "Tentativa 1", "Tentativa 2", "Tentativa 3", "Contato Realizado", "Não Atende", "Não Quer Contato"];
-  const statusAgendOptions = ["Não agendado", "Agendado", "Confirmado", "Remarcado", "Cancelado"];
-  const statusCompOptions = ["Pendente", "Compareceu", "Faltou", "Remarcou"];
-  const statusFunilOptions = ["Em andamento", "Aguardando retorno", "Perdido", "Convertido"];
 
   const totals = {
     total: records.length,
-    contatados: records.filter((r) => r.statusContato === "Contato Realizado").length,
-    agendados: records.filter((r) => ["Agendado", "Confirmado"].includes(r.statusAgendamento)).length,
-    compareceram: records.filter((r) => r.statusComparecimento === "Compareceu").length,
-    procedimentos: records.filter((r) => r.procedimentoFechado === "Sim").length,
-    perdidos: records.filter((r) => r.statusFunil === "Perdido").length,
+    contatados: records.filter(r => r.statusContato === "Contato Realizado").length,
+    compareceram: records.filter(r => r.statusComparecimento === "Compareceu").length,
+    procedimentos: records.filter(r => r.procedimentoFechado === "Sim").length,
+    perdidos: records.filter(r => r.statusFunil === "Perdido").length
   };
-
-  const convRate = totals.total > 0 ? ((totals.procedimentos / totals.total) * 100).toFixed(1) : 0;
-  const slaOk = records.filter((r) => +r.tempoPrimContato <= 30 && r.tempoPrimContato !== "").length;
-
-  const funilData = [
-    { stage: "Leads Recebidos", value: totals.total },
-    { stage: "Contatados", value: totals.contatados },
-    { stage: "Agendados", value: totals.agendados },
-    { stage: "Compareceram", value: totals.compareceram },
-    { stage: "Procedimentos", value: totals.procedimentos },
-  ];
+  const conv = totals.total > 0 ? ((totals.procedimentos / totals.total) * 100).toFixed(0) : 0;
 
   const save = () => {
-    onChange([...records, { ...form, id: fupUid() }]);
+    onChange([...records, Object.assign({}, form, { id: fupId() })]);
     setModal(false);
-    setForm({ dataEntrada: "", paciente: "", telefone: "", medicoReferidor: "", clinicaReferidor: "", cidade: "", owner: "", statusContato: "Novo Lead", dataContato1: "", tempoPrimContato: "", statusAgendamento: "Não agendado", dataAgendamento: "", dataConsulta: "", statusComparecimento: "Pendente", statusFunil: "Em andamento", procedimentoFechado: "Não", dataProcedimento: "", obs: "" });
+    setForm({ dataEntrada: "", paciente: "", telefone: "", medicoReferidor: "", clinicaReferidor: "", cidade: "", owner: "", tempoPrimContato: "", statusContato: "Novo Lead", statusAgendamento: "Não agendado", dataConsulta: "", statusComparecimento: "Pendente", procedimentoFechado: "Não", obs: "" });
   };
 
-  const update = (id, field, val) => onChange(records.map((r) => r.id === id ? { ...r, [field]: val } : r));
+  const upd = (id, k, v) => onChange(records.map(r => r.id === id ? Object.assign({}, r, {[k]: v}) : r));
 
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <FupKPICard label="Leads Totais" value={totals.total} icon="👥" />
-        <FupKPICard label="Contatados" value={totals.contatados} color={FUP_C.blue} sub={`SLA ≤30min: ${slaOk}`} />
-        <FupKPICard label="Agendados" value={totals.agendados} color={FUP_C.teal} />
-        <FupKPICard label="Compareceram" value={totals.compareceram} color={FUP_C.purple} />
-        <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
-        <FupKPICard label="Conversão" value={`${convRate}%`} color={convRate >= 40 ? FUP_C.green : convRate >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: 40–50%" />
-        <FupKPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
-      </div>
+  const contatoOpts = ["Novo Lead","Tentativa 1","Tentativa 2","Tentativa 3","Contato Realizado","Não Atende"].map(s => ({v:s,l:s}));
+  const agendOpts = ["Não agendado","Agendado","Confirmado","Remarcado","Cancelado"].map(s => ({v:s,l:s}));
+  const compOpts = ["Pendente","Compareceu","Faltou","Remarcou"].map(s => ({v:s,l:s}));
 
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {["funil", "dashboard"].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? "#F43F5E" : "transparent",
-            color: activeTab === t ? "#fff" : FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? "#F43F5E" : FUP_C.border}`,
-          }}>{t === "funil" ? "📋 Pacientes" : "📊 Dashboard"}</button>
-        ))}
-        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: "#F43F5E", border: "none" }}>+ Novo Paciente</FupBtn>
-      </div>
-
-      {activeTab === "funil" ? (
-        records.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>👥</div>
-            <div>Nenhum paciente registrado.</div>
-          </div>
-        ) : (
-          <div style={{ overflowX: "auto" }}>
-            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
-              <thead>
-                <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                  {["Paciente", "Referidor", "Owner", "Contato", "Agendamento", "Comparec.", "Proced.", ""].map((h) => (
-                    <th key={h} style={{ padding: "10px 10px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11 }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {records.map((r) => (
-                  <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                    <td style={{ padding: "10px", color: FUP_C.text, fontWeight: 600 }}>
-                      <div>{r.paciente || "—"}</div>
-                      <div style={{ color: FUP_C.textMuted, fontSize: 11 }}>{r.cidade}</div>
-                    </td>
-                    <td style={{ padding: "10px", color: FUP_C.textMuted }}>{r.medicoReferidor || "—"}</td>
-                    <td style={{ padding: "10px", color: FUP_C.textMuted }}>{r.owner || "—"}</td>
-                    <td style={{ padding: "10px" }}>
-                      <select value={r.statusContato} onChange={(e) => update(r.id, "statusContato", e.target.value)}
-                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
-                        {statusContatoOptions.map((s) => <option key={s}>{s}</option>)}
-                      </select>
-                    </td>
-                    <td style={{ padding: "10px" }}>
-                      <select value={r.statusAgendamento} onChange={(e) => update(r.id, "statusAgendamento", e.target.value)}
-                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
-                        {statusAgendOptions.map((s) => <option key={s}>{s}</option>)}
-                      </select>
-                    </td>
-                    <td style={{ padding: "10px" }}>
-                      <select value={r.statusComparecimento} onChange={(e) => update(r.id, "statusComparecimento", e.target.value)}
-                        style={{ background: FUP_C.bg, border: `1px solid ${FUP_C.border}`, borderRadius: 6, color: FUP_C.text, fontSize: 10, padding: "3px 6px" }}>
-                        {statusCompOptions.map((s) => <option key={s}>{s}</option>)}
-                      </select>
-                    </td>
-                    <td style={{ padding: "10px" }}>
-                      <FupPill label={r.procedimentoFechado === "Sim" ? "Sim ✓" : "Não"} color={r.procedimentoFechado === "Sim" ? "verde" : "cinza"} />
-                    </td>
-                    <td style={{ padding: "10px", display: "flex", gap: 6 }}>
-                      <FupBtn size="sm" variant="ghost" onClick={() => {
-                        const updated = records.map((x) => x.id === r.id ? { ...x, procedimentoFechado: x.procedimentoFechado === "Sim" ? "Não" : "Sim" } : x);
-                        onChange(updated);
-                      }}>{r.procedimentoFechado === "Sim" ? "↩" : "✓ Fechado"}</FupBtn>
-                      <FupBtn variant="danger" size="sm" onClick={() => onChange(records.filter((x) => x.id !== r.id))}>✕</FupBtn>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 } },
+      React.createElement(FupKPI, { label: "Leads", value: totals.total }),
+      React.createElement(FupKPI, { label: "Contatados", value: totals.contatados, color: FUP_BLUE }),
+      React.createElement(FupKPI, { label: "Compareceram", value: totals.compareceram, color: FUP_PURPLE }),
+      React.createElement(FupKPI, { label: "Procedimentos", value: totals.procedimentos, color: FUP_GREEN }),
+      React.createElement(FupKPI, { label: "Conversão", value: conv + "%", color: conv >= 40 ? FUP_GREEN : conv >= 25 ? FUP_YELLOW : FUP_RED })
+    ),
+    React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginBottom: 16 } },
+      React.createElement(FupBtn, { label: "+ Novo Paciente", onClick: () => setModal(true), color: "#F43F5E" })
+    ),
+    records.length === 0
+      ? React.createElement("div", { style: { textAlign: "center", padding: 48, color: FUP_DIM } }, "Nenhum paciente registrado.")
+      : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 8 } },
+          records.map(r => React.createElement(FupCard, { key: r.id },
+            React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start" } },
+              React.createElement("div", { style: { flex: 1 } },
+                React.createElement("div", { style: { color: FUP_TEXT, fontWeight: 700 } }, r.paciente || "—"),
+                React.createElement("div", { style: { color: FUP_MUTED, fontSize: 12, marginTop: 4 } }, "Referidor: " + (r.medicoReferidor || "—") + (r.cidade ? " · " + r.cidade : "")),
+                React.createElement("div", { style: { display: "flex", gap: 10, marginTop: 8, flexWrap: "wrap" } },
+                  React.createElement("select", { value: r.statusContato, onChange: e => upd(r.id, "statusContato", e.target.value), style: { background: FUP_BG, border: "1px solid " + FUP_BORDER, borderRadius: 6, color: FUP_TEXT, fontSize: 11, padding: "2px 6px", fontFamily: "inherit" } }, contatoOpts.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))),
+                  React.createElement("select", { value: r.statusAgendamento, onChange: e => upd(r.id, "statusAgendamento", e.target.value), style: { background: FUP_BG, border: "1px solid " + FUP_BORDER, borderRadius: 6, color: FUP_TEXT, fontSize: 11, padding: "2px 6px", fontFamily: "inherit" } }, agendOpts.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))),
+                  React.createElement("select", { value: r.statusComparecimento, onChange: e => upd(r.id, "statusComparecimento", e.target.value), style: { background: FUP_BG, border: "1px solid " + FUP_BORDER, borderRadius: 6, color: FUP_TEXT, fontSize: 11, padding: "2px 6px", fontFamily: "inherit" } }, compOpts.map(o => React.createElement("option", { key: o.v, value: o.v }, o.l))),
+                  React.createElement("span", { style: { color: r.procedimentoFechado === "Sim" ? FUP_GREEN : FUP_MUTED, fontSize: 12, fontWeight: 600, cursor: "pointer" }, onClick: () => upd(r.id, "procedimentoFechado", r.procedimentoFechado === "Sim" ? "Não" : "Sim") }, r.procedimentoFechado === "Sim" ? "✓ Fechado" : "◯ Aberto")
+                )
+              ),
+              React.createElement(FupBtn, { label: "✕", onClick: () => onChange(records.filter(x => x.id !== r.id)), color: FUP_RED, small: true })
+            )
+          ))
+        ),
+    React.createElement(FupModal, { open: modal, onClose: () => setModal(false), title: "Registrar Paciente — Indicado por Referidor" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Data Entrada", value: form.dataEntrada, onChange: sf("dataEntrada"), type: "date" }), React.createElement(FupField, { label: "Nome do Paciente *", value: form.paciente, onChange: sf("paciente") })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Médico Referidor *", value: form.medicoReferidor, onChange: sf("medicoReferidor") }), React.createElement(FupField, { label: "Cidade", value: form.cidade, onChange: sf("cidade") })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Owner (Inside Sales)", value: form.owner, onChange: sf("owner") }), React.createElement(FupField, { label: "Tempo 1º Contato (min)", value: form.tempoPrimContato, onChange: sf("tempoPrimContato"), type: "number" })),
+        React.createElement(FupField, { label: "Obs", value: form.obs, onChange: sf("obs") }),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setModal(false), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Salvar", onClick: save, color: "#F43F5E" })
         )
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-            <FupSectionTitle accent="#F43F5E">Funil Completo</FupSectionTitle>
-            <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
-          </div>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 1" }}>
-            <FupSectionTitle accent="#F43F5E">📋 SLAs Operacionais (Playbook)</FupSectionTitle>
-            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {[
-                { label: "1ª Tentativa de Contato", meta: "≤ 15–30 min após entrada", color: "#F43F5E" },
-                { label: "Tentativas no 1º dia", meta: "3 tentativas (canal + horário variados)", color: FUP_C.orange },
-                { label: "Janela total de prospecção", meta: "72 horas com múltiplas tentativas", color: FUP_C.yellow },
-                { label: "Confirmação de consulta", meta: "48h antes e no dia anterior", color: FUP_C.teal },
-                { label: "Registro no CRM", meta: "Imediato após cada interação", color: FUP_C.blue },
-                { label: "Devolutiva ao referidor", meta: "Por marco: agendamento + comparecimento", color: FUP_C.purple },
-              ].map((s, i) => (
-                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: FUP_C.bg, borderRadius: 8, border: `1px solid ${FUP_C.border}` }}>
-                  <span style={{ color: s.color, fontSize: 12, fontWeight: 600 }}>{s.label}</span>
-                  <span style={{ color: FUP_C.text, fontSize: 12 }}>{s.meta}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <FupSectionTitle accent="#F43F5E">📋 KPIs — Pacientes Indicados por Referidores</FupSectionTitle>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-              {[
-                { kpi: "SLA 1º Contato", meta: "≤ 30 min (ideal ≤ 15 min)", freq: "Por lead", alerta: "> 2h = conversão cai 60%" },
-                { kpi: "Taxa de Contato Ativo", meta: "≥ 85%", freq: "Semanal", alerta: "< 75% = problema operacional" },
-                { kpi: "Taxa de Agendamento", meta: "60–70%", freq: "Semanal", alerta: "< 50% = revisar script" },
-                { kpi: "Taxa de Comparecimento", meta: "≥ 75%", freq: "Por semana", alerta: "< 60% = confirmar D-1 e dia" },
-                { kpi: "Conversão Consulta→Proced.", meta: "40–50%", freq: "Mensal", alerta: "< 25% = rever elegibilidade" },
-                { kpi: "Devolutiva ao Referidor", meta: "≤ 7 dias por marco", freq: "Por evento", alerta: "Sem devolutiva = perde canal" },
-              ].map((s, i) => (
-                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
-                  <div style={{ color: "#F43F5E", fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Paciente — Indicado por Referidor" width={720}>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Data de Entrada" type="date" value={form.dataEntrada} onChange={(v) => setForm({ ...form, dataEntrada: v })} />
-          <FupInput label="Nome do Paciente" value={form.paciente} onChange={(v) => setForm({ ...form, paciente: v })} required />
-          <FupInput label="Telefone" value={form.telefone} onChange={(v) => setForm({ ...form, telefone: v })} />
-          <FupInput label="Médico Referidor" value={form.medicoReferidor} onChange={(v) => setForm({ ...form, medicoReferidor: v })} required />
-          <FupInput label="Clínica Referidor" value={form.clinicaReferidor} onChange={(v) => setForm({ ...form, clinicaReferidor: v })} />
-          <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
-          <FupInput label="Owner (Inside Sales)" value={form.owner} onChange={(v) => setForm({ ...form, owner: v })} />
-          <FupInput label="Tempo 1º Contato (min)" type="number" value={form.tempoPrimContato} onChange={(v) => setForm({ ...form, tempoPrimContato: v })} />
-          <FupSelect label="Status Contato" value={form.statusContato} onChange={(v) => setForm({ ...form, statusContato: v })} options={statusContatoOptions.map((s) => ({ value: s, label: s }))} />
-          <FupSelect label="Status Agendamento" value={form.statusAgendamento} onChange={(v) => setForm({ ...form, statusAgendamento: v })} options={statusAgendOptions.map((s) => ({ value: s, label: s }))} />
-          <FupInput label="Data Consulta" type="date" value={form.dataConsulta} onChange={(v) => setForm({ ...form, dataConsulta: v })} />
-          <FupSelect label="Comparecimento" value={form.statusComparecimento} onChange={(v) => setForm({ ...form, statusComparecimento: v })} options={statusCompOptions.map((s) => ({ value: s, label: s }))} />
-          <FupSelect label="Procedimento Fechado?" value={form.procedimentoFechado} onChange={(v) => setForm({ ...form, procedimentoFechado: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }]} />
-          <div style={{ gridColumn: "span 2" }}>
-            <FupInput label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
-          </div>
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
-          <FupBtn onClick={save} style={{ background: "#F43F5E", border: "none" }}>Salvar Paciente</FupBtn>
-        </div>
-      </FupModal>
-    </div>
+      )
+    )
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// IMERSÃO MARKETING
-// ════════════════════════════════════════════════════════════════════════════
+// ── IMERSÃO MARKETING ────────────────────────────────────────────────────────
 function ImersaoMarketingProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
   const [fupModal, setFupModal] = useState(null);
-  const [activeTab, setActiveTab] = useState("medicos");
   const [form, setForm] = useState({ nome: "", especialidade: "", cidade: "", email: "", instagram: "", site: "" });
-  const [fupForm, setFupForm] = useState({
-    data: "", tipo: "Visita", instagramAtivo: "Sim", seguidores: "", postsMes: "",
-    geoScore: "", llmVisivelChatGPT: "Não", llmVisivelGoogle: "Não",
-    leadsOrganicos: "", procedimentosGerados: "", acoesConcluidas: "", obs: "",
-  });
+  const [fupForm, setFupForm] = useState({ data: "", geoScore: "", seguidores: "", leadsOrganicos: "", procedimentosGerados: "", obs: "" });
+  const sf = k => v => setForm(f => Object.assign({}, f, {[k]: v}));
+  const sfF = k => v => setFupForm(f => Object.assign({}, f, {[k]: v}));
 
-  const medicos = data?.medicos || [];
-  const acoes = data?.acoes || [];
-
-  const updateM = (m) => onChange({ medicos: m, acoes });
-  const updateA = (a) => onChange({ medicos, acoes: a });
+  const medicos = (data && data.medicos) ? data.medicos : [];
+  const acoes = (data && data.acoes) ? data.acoes : [];
+  const updM = m => onChange({ medicos: m, acoes });
+  const updA = a => onChange({ medicos, acoes: a });
 
   const totals = {
-    medicos: medicos.length,
-    comSite: medicos.filter((m) => m.site).length,
-    comInsta: medicos.filter((m) => m.instagram).length,
-    leadsGerados: acoes.reduce((a, f) => a + (+f.leadsOrganicos || 0), 0),
+    leads: acoes.reduce((a, f) => a + (+f.leadsOrganicos || 0), 0),
     procedimentos: acoes.reduce((a, f) => a + (+f.procedimentosGerados || 0), 0),
-    mediaGEO: acoes.length > 0 ? (acoes.reduce((a, f) => a + (+f.geoScore || 0), 0) / acoes.length).toFixed(1) : 0,
+    geo: acoes.filter(f => f.geoScore).length > 0 ? (acoes.filter(f => f.geoScore).reduce((a, f) => a + (+f.geoScore || 0), 0) / acoes.filter(f => f.geoScore).length).toFixed(1) : "—"
   };
 
   const saveMedico = () => {
-    updateM([...medicos, { ...form, id: fupUid() }]);
+    updM([...medicos, Object.assign({}, form, { id: fupId() })]);
     setModal(false);
     setForm({ nome: "", especialidade: "", cidade: "", email: "", instagram: "", site: "" });
   };
 
-  const saveFUP = () => {
-    updateA([...acoes, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
+  const saveFup = () => {
+    updA([...acoes, Object.assign({}, fupForm, { medicoId: fupModal, id: fupId() })]);
     setFupModal(null);
-    setFupForm({ data: "", tipo: "Visita", instagramAtivo: "Sim", seguidores: "", postsMes: "", geoScore: "", llmVisivelChatGPT: "Não", llmVisivelGoogle: "Não", leadsOrganicos: "", procedimentosGerados: "", acoesConcluidas: "", obs: "" });
+    setFupForm({ data: "", geoScore: "", seguidores: "", leadsOrganicos: "", procedimentosGerados: "", obs: "" });
   };
 
-  const geoData = medicos.map((m) => {
-    const mAcoes = acoes.filter((a) => a.medicoId === m.id);
-    const last = mAcoes[mAcoes.length - 1];
-    return { name: m.nome.split(" ")[0] || "—", GEO: +last?.geoScore || 0, Leads: +last?.leadsOrganicos || 0, Proced: +last?.procedimentosGerados || 0 };
-  });
-
-  return (
-    <div>
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
-        <FupKPICard label="Médicos" value={totals.medicos} icon="📡" />
-        <FupKPICard label="Com Site" value={totals.comSite} color={FUP_C.blue} />
-        <FupKPICard label="Com Instagram" value={totals.comInsta} color={FUP_C.purple} />
-        <FupKPICard label="Leads Orgânicos" value={totals.leadsGerados} color={FUP_C.teal} />
-        <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} />
-        <FupKPICard label="GEO Score Médio" value={totals.mediaGEO + "/10"} color={totals.mediaGEO >= 6 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 6" />
-      </div>
-
-      <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
-        {["medicos", "dashboard"].map((t) => (
-          <button key={t} onClick={() => setActiveTab(t)} style={{
-            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
-            background: activeTab === t ? FUP_C.yellow : "transparent",
-            color: activeTab === t ? "#000" : FUP_C.textMuted,
-            border: `1px solid ${activeTab === t ? FUP_C.yellow : FUP_C.border}`,
-          }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
-        ))}
-        <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.yellow, color: "#000", border: "none" }}>+ Novo Médico</FupBtn>
-      </div>
-
-      {activeTab === "medicos" ? (
-        medicos.length === 0 ? (
-          <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>📡</div>
-            <div>Adicione médicos que participaram da Imersão Marketing.</div>
-          </div>
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-            {medicos.map((m) => {
-              const mAcoes = acoes.filter((a) => a.medicoId === m.id);
-              const last = mAcoes[mAcoes.length - 1];
-              return (
-                <div key={m.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <div style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 4 }}>{m.nome}</div>
-                      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-                        {m.especialidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>🩺 {m.especialidade}</span>}
-                        {m.cidade && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📍 {m.cidade}</span>}
-                        {m.instagram && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📸 @{m.instagram}</span>}
-                        {last?.geoScore && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>GEO: <b style={{ color: FUP_C.yellow }}>{last.geoScore}/10</b></span>}
-                        {last?.leadsOrganicos && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Leads: <b style={{ color: FUP_C.teal }}>{last.leadsOrganicos}</b></span>}
-                      </div>
-                    </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                      <FupBtn size="sm" variant="danger" onClick={() => updateM(medicos.filter((x) => x.id !== m.id))}>✕</FupBtn>
-                      <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</FupBtn>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+  return React.createElement("div", null,
+    React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 24 } },
+      React.createElement(FupKPI, { label: "Médicos", value: medicos.length }),
+      React.createElement(FupKPI, { label: "GEO Médio", value: totals.geo + (totals.geo !== "—" ? "/10" : ""), color: FUP_YELLOW }),
+      React.createElement(FupKPI, { label: "Leads Orgânicos", value: totals.leads, color: FUP_TEAL }),
+      React.createElement(FupKPI, { label: "Procedimentos", value: totals.procedimentos, color: FUP_GREEN })
+    ),
+    React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", marginBottom: 16 } },
+      React.createElement(FupBtn, { label: "+ Novo Médico", onClick: () => setModal(true), color: FUP_YELLOW })
+    ),
+    medicos.length === 0
+      ? React.createElement("div", { style: { textAlign: "center", padding: 48, color: FUP_DIM } }, "Adicione médicos que participaram da Imersão Marketing.")
+      : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+          medicos.map(m => React.createElement(FupMedicoCard, {
+            key: m.id,
+            medico: m,
+            fups: acoes.filter(a => a.medicoId === m.id),
+            accentColor: FUP_YELLOW,
+            onAddFup: () => setFupModal(m.id),
+            onDelete: () => updM(medicos.filter(x => x.id !== m.id))
+          }))
+        ),
+    React.createElement(FupModal, { open: modal, onClose: () => setModal(false), title: "Adicionar Médico — Imersão Marketing" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupField, { label: "Nome *", value: form.nome, onChange: sf("nome") }),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Especialidade", value: form.especialidade, onChange: sf("especialidade") }), React.createElement(FupField, { label: "Cidade", value: form.cidade, onChange: sf("cidade") })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Email", value: form.email, onChange: sf("email") }), React.createElement(FupField, { label: "Instagram (sem @)", value: form.instagram, onChange: sf("instagram") })),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setModal(false), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Adicionar", onClick: saveMedico, color: FUP_YELLOW })
         )
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-          {geoData.length > 0 && (
-            <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-              <FupSectionTitle accent={FUP_C.yellow}>GEO Score, Leads e Procedimentos por Médico</FupSectionTitle>
-              <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
-            </div>
-          )}
-          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
-            <FupSectionTitle accent={FUP_C.yellow}>📋 KPIs — Imersão Marketing (GEO + Visibilidade Digital)</FupSectionTitle>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
-              {[
-                { kpi: "GEO Score do Médico", meta: "≥ 6/10 em M3", freq: "Mensal", alerta: "< 4 = risco de invisibilidade em IA" },
-                { kpi: "Presença em ChatGPT/Gemini", meta: "Mencionado em 3+ queries", freq: "Mensal", alerta: "Não mencionado = Schema/conteúdo incompleto" },
-                { kpi: "Posts/mês (Instagram)", meta: "≥ 12 (3/semana)", freq: "Mensal", alerta: "< 8 = algoritmo penaliza alcance" },
-                { kpi: "Leads orgânicos gerados", meta: "≥ 5/mês em M2", freq: "Mensal", alerta: "0 em M2 = estratégia sem efeito" },
-                { kpi: "Conversão leads digitais", meta: "20–30%", freq: "Mensal", alerta: "< 15% = qualidade do lead ruim" },
-                { kpi: "Procedimentos digitais", meta: "≥ 2/mês em M3", freq: "Mensal", alerta: "0 em M3 = ROI não justificado" },
-                { kpi: "Follow-up account", meta: "Quinzenal (M1), Mensal (M2+)", freq: "Quinzenal/Mensal", alerta: "Sem FUP = perde momentum" },
-                { kpi: "Schema Markup implementado", meta: "FAQ + Person + Medical em D+30", freq: "M1", alerta: "Sem schema = GEO score não sobe" },
-                { kpi: "NPS do médico sobre a imersão", meta: "≥ 8 em M3", freq: "Trimestral", alerta: "< 7 = reposicionar suporte" },
-              ].map((s, i) => (
-                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
-                  <div style={{ color: FUP_C.yellow, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
-                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
-                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
-                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <FupModal open={modal} onClose={() => setModal(false)} title="Adicionar Médico — Imersão Marketing">
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Nome" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} required style={{ gridColumn: "span 2" }} />
-          <FupInput label="Especialidade" value={form.especialidade} onChange={(v) => setForm({ ...form, especialidade: v })} />
-          <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
-          <FupInput label="Email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} />
-          <FupInput label="Instagram (sem @)" value={form.instagram} onChange={(v) => setForm({ ...form, instagram: v })} />
-          <FupInput label="Site" value={form.site} onChange={(v) => setForm({ ...form, site: v })} style={{ gridColumn: "span 2" }} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setModal(false)}>Cancelar</FupBtn>
-          <FupBtn onClick={saveMedico} style={{ background: FUP_C.yellow, color: "#000" }}>Adicionar</FupBtn>
-        </div>
-      </FupModal>
-
-      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Follow-up — Imersão Marketing">
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
-          <FupInput label="GEO Score (0–10)" type="number" value={fupForm.geoScore} onChange={(v) => setFupForm({ ...fupForm, geoScore: v })} />
-          <FupInput label="Seguidores" type="number" value={fupForm.seguidores} onChange={(v) => setFupForm({ ...fupForm, seguidores: v })} />
-          <FupInput label="Leads Orgânicos" type="number" value={fupForm.leadsOrganicos} onChange={(v) => setFupForm({ ...fupForm, leadsOrganicos: v })} />
-          <FupInput label="Procedimentos Gerados" type="number" value={fupForm.procedimentosGerados} onChange={(v) => setFupForm({ ...fupForm, procedimentosGerados: v })} />
-          <FupInput label="Observações" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
-        </div>
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
-          <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
-          <FupBtn onClick={saveFUP} style={{ background: FUP_C.yellow, color: "#000" }}>Registrar FUP</FupBtn>
-        </div>
-      </FupModal>
-    </div>
+      )
+    ),
+    React.createElement(FupModal, { open: !!fupModal, onClose: () => setFupModal(null), title: "Follow-up — Imersão Marketing" },
+      React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 12 } },
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Data", value: fupForm.data, onChange: sfF("data"), type: "date" }), React.createElement(FupField, { label: "GEO Score (0-10)", value: fupForm.geoScore, onChange: sfF("geoScore"), type: "number" })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Seguidores", value: fupForm.seguidores, onChange: sfF("seguidores"), type: "number" }), React.createElement(FupField, { label: "Leads Orgânicos", value: fupForm.leadsOrganicos, onChange: sfF("leadsOrganicos"), type: "number" })),
+        React.createElement(FupRow, null, React.createElement(FupField, { label: "Procedimentos Gerados", value: fupForm.procedimentosGerados, onChange: sfF("procedimentosGerados"), type: "number" }), React.createElement(FupField, { label: "Obs", value: fupForm.obs, onChange: sfF("obs") })),
+        React.createElement("div", { style: { display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 } },
+          React.createElement(FupBtn, { label: "Cancelar", onClick: () => setFupModal(null), color: "transparent", small: true }),
+          React.createElement(FupBtn, { label: "Registrar FUP", onClick: saveFup, color: FUP_YELLOW })
+        )
+      )
+    )
   );
 }
 
-// ════════════════════════════════════════════════════════════════════════════
-// MAIN APP
-// ════════════════════════════════════════════════════════════════════════════
+// ── LANDING PAGE ─────────────────────────────────────────────────────────────
+const FUP_PROJETOS_LIST = [
+  { id: "esgDay",              label: "ESG Day",                        icon: "🎯", color: FUP_TEAL,   desc: "Eventos em clínicas com pacientes elegíveis." },
+  { id: "aulasReferidores",    label: "Aulas Referidores",              icon: "📚", color: FUP_BLUE,   desc: "Capacitação de médicos referidores." },
+  { id: "campanhaInterna",     label: "Campanha Indicação Interna",     icon: "🔗", color: FUP_PURPLE, desc: "Colaboradores indicando pacientes." },
+  { id: "cursoBariatricos",    label: "Curso IAS — Cirurgiões",         icon: "🏥", color: FUP_ORANGE, desc: "10 cirurgiões capacitados para ESG." },
+  { id: "cursoEndoscopistas",  label: "Curso IAS — Endoscopistas",      icon: "🔬", color: FUP_GREEN,  desc: "3 endoscopistas capacitados para execução." },
+  { id: "pacientesReferidores",label: "Pacientes — Referidores",        icon: "👥", color: "#F43F5E",  desc: "Funil de pacientes indicados por médicos." },
+  { id: "imersaoMarketing",    label: "Imersão Marketing",              icon: "📡", color: FUP_YELLOW, desc: "Visibilidade digital e GEO dos médicos." },
+];
+
 function FupProjetos() {
   const [activeProject, setActiveProject] = useState(null);
-  const [state, setState] = useState(() => fupLoadData());
-  const [toast, setToast] = useState(null);
-  const [saveTimer, setSaveTimer] = useState(null);
+  const [state, setState] = useState(function() { return fupLoad(); });
+  const [saved, setSaved] = useState(null);
 
-  // Auto-save with debounce
-  const persistData = useCallback((newState) => {
-    if (saveTimer) clearTimeout(saveTimer);
-    const timer = setTimeout(() => {
-      const ok = fupSaveData(newState);
-      setToast({ msg: ok ? "✓ Dados salvos automaticamente" : "Erro ao salvar", type: ok ? "success" : "error" });
-      setTimeout(() => setToast(null), FUP_TOAST_DUR);
-    }, 600);
-    setSaveTimer(timer);
-  }, [saveTimer]);
-
-  const updateProject = (key, value) => {
-    const newState = { ...state, [key]: value };
-    setState(newState);
-    persistData(newState);
+  const update = function(key, value) {
+    const ns = Object.assign({}, state, {[key]: value});
+    setState(ns);
+    const ok = fupSave(ns);
+    setSaved(ok ? "✓ Salvo" : "Erro");
+    setTimeout(function() { setSaved(null); }, 2000);
   };
 
-  // Per-project stats for landing overview
-  const pStats = {
-    esgDay: {
-      eventos: state.esgDay?.length || 0,
-      compareceram: state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0,
-      procedimentos: state.esgDay?.reduce((a, r) => a + (+r.procedimentos30d || 0), 0) || 0,
-      receita: state.esgDay?.reduce((a, r) => a + ((+r.procedimentos30d || 0) * (+r.ticketMedio || 0)), 0) || 0,
-      conv: (() => {
-        const comp = state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0;
-        const proc = state.esgDay?.reduce((a, r) => a + (+r.procedimentos30d || 0), 0) || 0;
-        return comp > 0 ? ((proc / comp) * 100).toFixed(0) : 0;
-      })(),
-    },
-    aulasRef: {
-      medicos: (state.aulasReferidores?.eventos || []).reduce((a, ev) => a + (ev.referidores||[]).length, 0),
-      comCRM: (state.aulasReferidores?.eventos || []).reduce((a, ev) => a + (ev.referidores||[]).filter((r) => r.possuiCRM === "Sim").length, 0),
-      indicacoes: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.indicacoesM1||0) + (+r.indicacoesM2||0) + (+r.indicacoesM3||0), a), 0),
-      procedimentos: (state.aulasReferidores?.eventos || []).reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.procedimentosGerados||0), a), 0),
-    },
-    leap: {
-      leads: state.campanhaInterna?.length || 0,
-      contatados: state.campanhaInterna?.filter((r) => !["Novo Lead","Tentativa 1","Tentativa 2"].includes(r.statusFunil) && r.statusFunil !== "Perdido").length || 0,
-      convertidos: state.campanhaInterna?.filter((r) => r.conversao === "Sim").length || 0,
-      perdidos: state.campanhaInterna?.filter((r) => r.statusFunil === "Perdido").length || 0,
-    },
-    bariatricos: {
-      medicos: state.cursoBariatricos?.medicos?.length || 0,
-      fups: state.cursoBariatricos?.followups?.length || 0,
-      procedimentos: (state.cursoBariatricos?.followups || []).reduce((a, f) => a + (+f.procedimentos || 0), 0),
-      scoreMedio: (() => {
-        const fups = (state.cursoBariatricos?.followups || []).filter((f) => f.scoreImpl);
-        return fups.length > 0 ? (fups.reduce((a, f) => a + (+f.scoreImpl || 0), 0) / fups.length).toFixed(1) : "—";
-      })(),
-      riscosVermelhos: (state.cursoBariatricos?.followups || []).filter((f) => f.risco === "Vermelho").length,
-    },
-    endoscopistas: {
-      medicos: state.cursoEndoscopistas?.medicos?.filter((m) => m.nome).length || 0,
-      fups: state.cursoEndoscopistas?.followups?.length || 0,
-      procedimentos: (state.cursoEndoscopistas?.followups || []).reduce((a, f) => a + (+f.procedimentos30d || 0), 0),
-      avaliacoes: (state.cursoEndoscopistas?.followups || []).reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0),
-    },
-    pacRef: {
-      leads: state.pacientesReferidores?.length || 0,
-      compareceram: state.pacientesReferidores?.filter((r) => r.statusComparecimento === "Compareceu").length || 0,
-      procedimentos: state.pacientesReferidores?.filter((r) => r.procedimentoFechado === "Sim").length || 0,
-      perdidos: state.pacientesReferidores?.filter((r) => r.statusFunil === "Perdido").length || 0,
-      conv: (() => {
-        const t = state.pacientesReferidores?.length || 0;
-        const p = state.pacientesReferidores?.filter((r) => r.procedimentoFechado === "Sim").length || 0;
-        return t > 0 ? ((p / t) * 100).toFixed(0) : 0;
-      })(),
-    },
-    imersao: {
-      medicos: state.imersaoMarketing?.medicos?.length || 0,
-      fups: state.imersaoMarketing?.acoes?.length || 0,
-      leadsOrganicos: (state.imersaoMarketing?.acoes || []).reduce((a, f) => a + (+f.leadsOrganicos || 0), 0),
-      procedimentos: (state.imersaoMarketing?.acoes || []).reduce((a, f) => a + (+f.procedimentosGerados || 0), 0),
-      geoMedio: (() => {
-        const fups = (state.imersaoMarketing?.acoes || []).filter((f) => f.geoScore);
-        return fups.length > 0 ? (fups.reduce((a, f) => a + (+f.geoScore || 0), 0) / fups.length).toFixed(1) : "—";
-      })(),
-    },
+  const getCount = function(id) {
+    const d = state[id];
+    if (!d) return 0;
+    if (Array.isArray(d)) return d.length;
+    if (d.eventos) return d.eventos.length;
+    if (d.medicos) return d.medicos.filter(function(m) { return m.nome; }).length;
+    return 0;
   };
 
-  // Grand totals
-  const aggStats = {
-    totalProcedimentos: pStats.esgDay.procedimentos + pStats.aulasRef.procedimentos + pStats.leap.convertidos + pStats.bariatricos.procedimentos + pStats.endoscopistas.procedimentos + pStats.pacRef.procedimentos + pStats.imersao.procedimentos,
-    totalLeads: pStats.leap.leads + pStats.pacRef.leads,
-    totalMedicos: pStats.aulasRef.medicos + pStats.bariatricos.medicos + pStats.endoscopistas.medicos + pStats.imersao.medicos,
-    totalEventos: pStats.esgDay.eventos,
-    receitaESG: pStats.esgDay.receita,
+  const components = {
+    esgDay:               React.createElement(EsgDayProject, { data: state.esgDay, onChange: function(v) { update("esgDay", v); } }),
+    aulasReferidores:     React.createElement(AulasReferidoresProject, { data: state.aulasReferidores, onChange: function(v) { update("aulasReferidores", v); } }),
+    campanhaInterna:      React.createElement(CampanhaInternaProject, { data: state.campanhaInterna, onChange: function(v) { update("campanhaInterna", v); } }),
+    cursoBariatricos:     React.createElement(CursoBariatricosProject, { data: state.cursoBariatricos, onChange: function(v) { update("cursoBariatricos", v); } }),
+    cursoEndoscopistas:   React.createElement(CursoEndoscopistasProject, { data: state.cursoEndoscopistas, onChange: function(v) { update("cursoEndoscopistas", v); } }),
+    pacientesReferidores: React.createElement(PacientesReferidoresProject, { data: state.pacientesReferidores, onChange: function(v) { update("pacientesReferidores", v); } }),
+    imersaoMarketing:     React.createElement(ImersaoMarketingProject, { data: state.imersaoMarketing, onChange: function(v) { update("imersaoMarketing", v); } }),
   };
 
-  const projectComponents = {
-    esgDay: <EsgDayProject data={state.esgDay} onChange={(v) => updateProject("esgDay", v)} />,
-    aulasReferidores: <AulasReferidoresProject data={state.aulasReferidores} onChange={(v) => updateProject("aulasReferidores", v)} />,
-    campanhaInterna: <CampanhaInternaProject data={state.campanhaInterna} onChange={(v) => updateProject("campanhaInterna", v)} />,
-    cursoBariatricos: <CursoBariatricosProject data={state.cursoBariatricos} onChange={(v) => updateProject("cursoBariatricos", v)} />,
-    cursoEndoscopistas: <CursoEndoscopistasProject data={state.cursoEndoscopistas} onChange={(v) => updateProject("cursoEndoscopistas", v)} />,
-    pacientesReferidores: <PacientesReferidoresProject data={state.pacientesReferidores} onChange={(v) => updateProject("pacientesReferidores", v)} />,
-    imersaoMarketing: <ImersaoMarketingProject data={state.imersaoMarketing} onChange={(v) => updateProject("imersaoMarketing", v)} />,
-  };
+  const active = FUP_PROJETOS_LIST.find(function(p) { return p.id === activeProject; });
 
-  const activeProjectMeta = FUP_PROJECTS.find((p) => p.id === activeProject);
+  if (activeProject) {
+    return React.createElement("div", { style: { color: FUP_TEXT } },
+      React.createElement("div", { style: { padding: "12px 20px 0" } },
+        React.createElement("button", {
+          onClick: function() { setActiveProject(null); },
+          style: { background: "transparent", border: "1px solid " + FUP_BORDER, borderRadius: 8, color: FUP_MUTED, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600, fontFamily: "inherit" }
+        }, "← Voltar para Projetos")
+      ),
+      React.createElement("div", { style: { padding: "20px 20px 0", marginBottom: 20, borderTop: "3px solid " + (active ? active.color : FUP_TEAL), marginTop: 16 } },
+        React.createElement("div", { style: { fontSize: 28 } }, active ? active.icon : ""),
+        React.createElement("div", { style: { color: FUP_TEXT, fontSize: 20, fontWeight: 800 } }, active ? active.label : ""),
+        React.createElement("div", { style: { color: FUP_MUTED, fontSize: 13 } }, active ? active.desc : "")
+      ),
+      React.createElement("div", { style: { padding: "0 20px 20px" } }, components[activeProject]),
+      saved && React.createElement("div", { style: { position: "fixed", bottom: 20, right: 20, background: FUP_CARD, border: "1px solid " + FUP_BORDER, borderRadius: 10, padding: "10px 18px", color: FUP_GREEN, fontWeight: 600, fontSize: 13 } }, saved)
+    );
+  }
 
-  return (
-    <div style={{ color: FUP_C.text, fontFamily: "inherit" }}>
+  // Landing
+  const allProced = (state.esgDay || []).reduce(function(a, r) { return a + (+r.procedimentos30d || 0); }, 0)
+    + (state.aulasReferidores && state.aulasReferidores.eventos ? state.aulasReferidores.eventos.reduce(function(a, ev) { return (ev.referidores || []).reduce(function(b, r) { return b + (+r.procedimentosGerados || 0); }, a); }, 0) : 0)
+    + (state.campanhaInterna || []).filter(function(r) { return r.conversao === "Sim"; }).length
+    + (state.pacientesReferidores || []).filter(function(r) { return r.procedimentoFechado === "Sim"; }).length
+    + ((state.cursoBariatricos && state.cursoBariatricos.followups) ? state.cursoBariatricos.followups.reduce(function(a, f) { return a + (+f.procedimentos || 0); }, 0) : 0)
+    + ((state.cursoEndoscopistas && state.cursoEndoscopistas.followups) ? state.cursoEndoscopistas.followups.reduce(function(a, f) { return a + (+f.procedimentos30d || 0); }, 0) : 0)
+    + ((state.imersaoMarketing && state.imersaoMarketing.acoes) ? state.imersaoMarketing.acoes.reduce(function(a, f) { return a + (+f.procedimentosGerados || 0); }, 0) : 0);
 
-      {/* HEADER */}
-      {activeProject && (
-        <div style={{ padding: "12px 20px 0 20px" }}>
-          <button onClick={() => setActiveProject(null)} style={{
-            background: "transparent", border: `1px solid ${FUP_C.border}`, borderRadius: 8,
-            color: FUP_C.textMuted, padding: "6px 14px", cursor: "pointer", fontSize: 13, fontWeight: 600,
-          }}>← Voltar para Projetos</button>
-        </div>
-      )}
-
-      <div style={{ padding: "32px" }}>
-        {!activeProject ? (
-          <>
-            {/* ── GRAND TOTAL BAR ── */}
-            <div style={{
-              background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 14,
-              padding: "18px 24px", marginBottom: 24,
-              display: "flex", gap: 0, flexWrap: "wrap", overflow: "hidden",
-            }}>
-              <div style={{ color: FUP_C.textDim, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", width: "100%", marginBottom: 14 }}>
-                Consolidado — Todos os 7 Projetos
-              </div>
-              {[
-                { label: "Procedimentos Totais", value: aggStats.totalProcedimentos, color: FUP_C.green, icon: "✓" },
-                { label: "Leads em Funil", value: aggStats.totalLeads, color: FUP_C.purple, icon: "👥" },
-                { label: "Médicos Engajados", value: aggStats.totalMedicos, color: FUP_C.blue, icon: "👨‍⚕️" },
-                { label: "Eventos Realizados", value: aggStats.totalEventos, color: FUP_C.teal, icon: "🎯" },
-                { label: "Receita ESG Day", value: aggStats.receitaESG > 0 ? `R$ ${(aggStats.receitaESG/1000).toFixed(0)}k` : "—", color: FUP_C.teal, icon: "💰" },
-              ].map((s, i) => (
-                <div key={i} style={{
-                  flex: 1, minWidth: 120, padding: "0 20px",
-                  borderLeft: i > 0 ? `1px solid ${FUP_C.border}` : "none",
-                }}>
-                  <div style={{ color: FUP_C.textDim, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", marginBottom: 6 }}>{s.label}</div>
-                  <div style={{ color: s.color, fontSize: 26, fontWeight: 800, lineHeight: 1 }}>{s.value}</div>
-                </div>
-              ))}
-            </div>
-
-            {/* ── PER-PROJECT SNAPSHOT STRIP ── */}
-            <div style={{ marginBottom: 28 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
-                <div style={{ width: 4, height: 20, background: FUP_C.teal, borderRadius: 2 }} />
-                <span style={{ color: FUP_C.textMuted, fontSize: 13, fontWeight: 600 }}>Visão Rápida por Projeto</span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 10 }}>
-                {/* ESG Day */}
-                <div onClick={() => setActiveProject("esgDay")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.teal}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_C.teal, fontSize: 13, fontWeight: 700 }}>🎯 ESG Day</span>
-                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.esgDay.eventos} eventos</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COMPARECERAM</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.compareceram}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCEDIMENTOS</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONVERSÃO</div><div style={{ color: +pStats.esgDay.conv >= 40 ? FUP_C.green : +pStats.esgDay.conv >= 25 ? FUP_C.yellow : FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.conv}%</div></div>
-                  </div>
-                </div>
-                {/* Aulas Referidores */}
-                <div onClick={() => setActiveProject("aulasReferidores")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.blue}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_C.blue, fontSize: 13, fontWeight: 700 }}>📚 Aulas Referidores</span>
-                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.aulasRef.medicos} médicos</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COM CRM</div><div style={{ color: FUP_C.blue, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.comCRM}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>INDICAÇÕES</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.indicacoes}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.aulasRef.procedimentos}</div></div>
-                  </div>
-                </div>
-                {/* Leap Plus */}
-                <div onClick={() => setActiveProject("campanhaInterna")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.purple}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_C.purple, fontSize: 13, fontWeight: 700 }}>🔗 Campanha Interna</span>
-                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.leap.leads} leads</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONTATADOS</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.leap.contatados}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONVERTIDOS</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.leap.convertidos}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PERDIDOS</div><div style={{ color: FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.leap.perdidos}</div></div>
-                  </div>
-                </div>
-                {/* Curso Bariatricos */}
-                <div onClick={() => setActiveProject("cursoBariatricos")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.orange}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_C.orange, fontSize: 13, fontWeight: 700 }}>🏥 Cirurgiões Bariátricos</span>
-                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.bariatricos.medicos} médicos</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>FUPs</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.fups}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>SCORE MÉD.</div><div style={{ color: pStats.bariatricos.scoreMedio >= 7 ? FUP_C.green : pStats.bariatricos.scoreMedio >= 4 ? FUP_C.yellow : FUP_C.textDim, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.scoreMedio}</div></div>
-                    {pStats.bariatricos.riscosVermelhos > 0 && <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>⚠ RISCO</div><div style={{ color: FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.bariatricos.riscosVermelhos}</div></div>}
-                  </div>
-                </div>
-                {/* Curso Endoscopistas */}
-                <div onClick={() => setActiveProject("cursoEndoscopistas")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.green}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_C.green, fontSize: 13, fontWeight: 700 }}>🔬 Endoscopistas</span>
-                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.endoscopistas.medicos} médicos</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>FUPs</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.fups}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>AVALIAÇÕES</div><div style={{ color: FUP_C.teal, fontSize: 18, fontWeight: 700 }}>{pStats.endoscopistas.avaliacoes}</div></div>
-                  </div>
-                </div>
-                {/* Pacientes Referidores */}
-                <div onClick={() => setActiveProject("pacientesReferidores")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: "3px solid #F43F5E" }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: "#F43F5E", fontSize: 13, fontWeight: 700 }}>👥 Pac. Referidores</span>
-                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.pacRef.leads} leads</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COMPAREC.</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.compareceram}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONV.</div><div style={{ color: +pStats.pacRef.conv >= 40 ? FUP_C.green : +pStats.pacRef.conv >= 25 ? FUP_C.yellow : FUP_C.textDim, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.conv}%</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PERDIDOS</div><div style={{ color: FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.pacRef.perdidos}</div></div>
-                  </div>
-                </div>
-                {/* Imersão Marketing */}
-                <div onClick={() => setActiveProject("imersaoMarketing")} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 16, cursor: "pointer", borderLeft: `3px solid ${FUP_C.yellow}` }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
-                    <span style={{ color: FUP_C.yellow, fontSize: 13, fontWeight: 700 }}>📡 Imersão Marketing</span>
-                    <span style={{ color: FUP_C.textDim, fontSize: 11 }}>{pStats.imersao.medicos} médicos</span>
-                  </div>
-                  <div style={{ display: "flex", gap: 16 }}>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>GEO MÉD.</div><div style={{ color: FUP_C.yellow, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.geoMedio}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>LEADS ORG.</div><div style={{ color: FUP_C.teal, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.leadsOrganicos}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCED.</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.imersao.procedimentos}</div></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* PROJECT GRID */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-                <div style={{ width: 4, height: 24, background: FUP_C.teal, borderRadius: 2 }} />
-                <h2 style={{ color: FUP_C.text, fontSize: 20, fontWeight: 700 }}>Projetos em Andamento</h2>
-                <span style={{ color: FUP_C.textDim, fontSize: 13, marginLeft: 4 }}>{FUP_PROJECTS.length} projetos</span>
-              </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: 16 }}>
-                {FUP_PROJECTS.map((p) => {
-                  // get record count for badge
-                  let count = 0;
-                  if (p.id === "esgDay") count = state.esgDay?.length || 0;
-                  else if (p.id === "aulasReferidores") count = state.aulasReferidores?.length || 0;
-                  else if (p.id === "campanhaInterna") count = state.campanhaInterna?.length || 0;
-                  else if (p.id === "cursoBariatricos") count = state.cursoBariatricos?.medicos?.length || 0;
-                  else if (p.id === "cursoEndoscopistas") count = state.cursoEndoscopistas?.medicos?.filter((m) => m.nome).length || 0;
-                  else if (p.id === "pacientesReferidores") count = state.pacientesReferidores?.length || 0;
-                  else if (p.id === "imersaoMarketing") count = state.imersaoMarketing?.medicos?.length || 0;
-
-                  return (
-                    <div key={p.id}
-                      onClick={() => setActiveProject(p.id)}
-                      style={{
-                        background: FUP_C.card, border: `1px solid ${FUP_C.border}`,
-                        borderRadius: 14, padding: 24, cursor: "pointer",
-                        transition: "all 0.2s", position: "relative", overflow: "hidden",
-                      }}
-                      onMouseEnter={(e) => {
-                        e.currentTarget.style.border = `1px solid ${p.color}44`;
-                        e.currentTarget.style.background = FUP_C.cardHover;
-                        e.currentTarget.style.transform = "translateY(-2px)";
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.border = `1px solid ${FUP_C.border}`;
-                        e.currentTarget.style.background = FUP_C.card;
-                        e.currentTarget.style.transform = "translateY(0)";
-                      }}
-                    >
-                      {/* accent bar */}
-                      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 3, background: p.color, borderRadius: "14px 14px 0 0" }} />
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                        <div style={{ fontSize: 28 }}>{p.icon}</div>
-                        <div style={{
-                          background: `${p.color}22`, border: `1px solid ${p.color}44`,
-                          color: p.color, fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
-                        }}>{count} registros</div>
-                      </div>
-                      <div style={{ color: FUP_C.text, fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{p.label}</div>
-                      <div style={{ color: FUP_C.textMuted, fontSize: 12, lineHeight: 1.5 }}>{p.desc}</div>
-                      <div style={{ marginTop: 16, display: "flex", justifyContent: "flex-end" }}>
-                        <span style={{ color: p.color, fontSize: 12, fontWeight: 600 }}>Acessar →</span>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </>
-        ) : (
-          <div>
-            {/* Project header */}
-            <div style={{
-              background: FUP_C.card, border: `1px solid ${FUP_C.border}`,
-              borderRadius: 14, padding: "20px 24px", marginBottom: 24,
-              borderTop: `3px solid ${activeProjectMeta?.color}`,
-            }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <span style={{ fontSize: 28 }}>{activeProjectMeta?.icon}</span>
-                <div>
-                  <div style={{ color: activeProjectMeta?.color, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Projeto Ativo</div>
-                  <div style={{ color: FUP_C.text, fontSize: 22, fontWeight: 800 }}>{activeProjectMeta?.label}</div>
-                  <div style={{ color: FUP_C.textMuted, fontSize: 13, marginTop: 2 }}>{activeProjectMeta?.desc}</div>
-                </div>
-              </div>
-            </div>
-            {projectComponents[activeProject]}
-          </div>
-        )}
-      </div>
-
-      {toast && <FupProjToast msg={toast.msg} type={toast.type} />}
-    </div>
+  return React.createElement("div", { style: { color: FUP_TEXT } },
+    React.createElement("div", { style: { background: FUP_CARD, border: "1px solid " + FUP_BORDER, borderRadius: 14, padding: "18px 24px", margin: "0 0 24px" } },
+      React.createElement("div", { style: { color: FUP_DIM, fontSize: 11, fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 14 } }, "Consolidado — Todos os 7 Projetos"),
+      React.createElement("div", { style: { display: "flex", gap: 0, flexWrap: "wrap" } },
+        [
+          { label: "Procedimentos Totais", value: allProced, color: FUP_GREEN },
+          { label: "Leads em Funil", value: (state.campanhaInterna || []).length + (state.pacientesReferidores || []).length, color: FUP_PURPLE },
+          { label: "Médicos Engajados", value: ((state.aulasReferidores && state.aulasReferidores.eventos ? state.aulasReferidores.eventos.reduce(function(a, ev) { return a + (ev.referidores || []).length; }, 0) : 0) + ((state.cursoBariatricos && state.cursoBariatricos.medicos) ? state.cursoBariatricos.medicos.length : 10) + ((state.cursoEndoscopistas && state.cursoEndoscopistas.medicos) ? state.cursoEndoscopistas.medicos.filter(function(m) { return m.nome; }).length : 0) + ((state.imersaoMarketing && state.imersaoMarketing.medicos) ? state.imersaoMarketing.medicos.length : 0)), color: FUP_BLUE },
+          { label: "Eventos ESG Day", value: (state.esgDay || []).length, color: FUP_TEAL },
+        ].map(function(s, i) {
+          return React.createElement("div", { key: i, style: { flex: 1, minWidth: 110, padding: "0 16px", borderLeft: i > 0 ? "1px solid " + FUP_BORDER : "none" } },
+            React.createElement("div", { style: { color: FUP_DIM, fontSize: 10, fontWeight: 600, letterSpacing: "0.08em", marginBottom: 6 } }, s.label),
+            React.createElement("div", { style: { color: s.color, fontSize: 26, fontWeight: 800 } }, s.value)
+          );
+        })
+      )
+    ),
+    React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 14 } },
+      FUP_PROJETOS_LIST.map(function(p) {
+        return React.createElement("div", {
+          key: p.id,
+          onClick: function() { setActiveProject(p.id); },
+          style: { background: FUP_CARD, border: "1px solid " + FUP_BORDER, borderRadius: 14, padding: 22, cursor: "pointer", borderTop: "3px solid " + p.color }
+        },
+          React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 } },
+            React.createElement("span", { style: { fontSize: 26 } }, p.icon),
+            React.createElement("span", { style: { background: p.color + "22", color: p.color, border: "1px solid " + p.color + "44", fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20 } }, getCount(p.id) + " registros")
+          ),
+          React.createElement("div", { style: { color: FUP_TEXT, fontWeight: 700, fontSize: 15, marginBottom: 6 } }, p.label),
+          React.createElement("div", { style: { color: FUP_MUTED, fontSize: 12, lineHeight: 1.5 } }, p.desc),
+          React.createElement("div", { style: { marginTop: 14, textAlign: "right" } },
+            React.createElement("span", { style: { color: p.color, fontSize: 12, fontWeight: 600 } }, "Acessar →")
+          )
+        );
+      })
+    ),
+    saved && React.createElement("div", { style: { position: "fixed", bottom: 20, right: 20, background: FUP_CARD, border: "1px solid " + FUP_BORDER, borderRadius: 10, padding: "10px 18px", color: FUP_GREEN, fontWeight: 600, fontSize: 13 } }, saved)
   );
 }
+
 
 function App() {
   const [tab, setTab] = useState("dashboard");
