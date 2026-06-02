@@ -4714,7 +4714,7 @@ function FupProjetos() {
                   <div style={{ display: "flex", gap: 16 }}>
                     <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>COMPARECERAM</div><div style={{ color: FUP_C.text, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.compareceram}</div></div>
                     <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>PROCEDIMENTOS</div><div style={{ color: FUP_C.green, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.procedimentos}</div></div>
-                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONVERSÃO</div><div style={{ color: +pStats.esgDay.conv >= 40 ? FUP_C.green : +pStats.esgDay.conv >= 25 ? FUP_C.yellow : FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.conv}%</div></div>
+                    <div><div style={{ color: FUP_C.textDim, fontSize: 10 }}>CONVERSÃO</div><div style={{ color: pStats.esgDay.conv.toString().includes("⚠") ? FUP_C.yellow : +pStats.esgDay.conv >= 40 ? FUP_C.green : +pStats.esgDay.conv >= 25 ? FUP_C.yellow : FUP_C.red, fontSize: 18, fontWeight: 700 }}>{pStats.esgDay.conv.toString().includes("⚠") ? pStats.esgDay.conv : pStats.esgDay.conv + "%"}</div></div>
                   </div>
                 </div>
                 {/* Aulas Referidores */}
