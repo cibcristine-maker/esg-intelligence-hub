@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -15,7 +14,11 @@ export default async function handler(req, res) {
   try {
     const { prompt } = req.body;
 
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    if (!prompt) {
+      return res.status(400).json({ error: 'Prompt is required' });
+    }
+
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -24,14 +27,22 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
-        max_tokens: 1000,
+        max_tokens: 1500,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
 
-    const data = await response.json();
+    if (!anthropicRes.ok) {
+      const errText = await anthropicRes.text();
+      console.error('Anthropic error:', errText);
+      return res.status(500).json({ error: 'Anthropic API error: ' + errText });
+    }
+
+    const data = await anthropicRes.json();
     return res.status(200).json(data);
+
   } catch (error) {
+    console.error('Handler error:', error);
     return res.status(500).json({ error: error.message });
   }
 }
