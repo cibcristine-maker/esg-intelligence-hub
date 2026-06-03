@@ -1914,11 +1914,13 @@ Responda APENAS com JSON válido, sem markdown:
         body: JSON.stringify({ prompt }),
       });
       const data = await response.json();
+      if (data.error) throw new Error(data.error);
       const texto = (data.content||[]).map(b => b.text||"").join("");
+      if (!texto) throw new Error("Resposta vazia da API");
       const limpo = texto.replace(/```json|```/g,"").trim();
       setBriefing(JSON.parse(limpo));
     } catch(e) {
-      setErro("Erro ao gerar briefing. Tente novamente."); console.error(e);
+      setErro("Erro: " + (e.message || "Tente novamente.")); console.error(e);
     } finally { setGerando(false); }
   }
 
