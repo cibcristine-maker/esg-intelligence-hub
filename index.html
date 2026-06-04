@@ -1460,8 +1460,15 @@ function Inteligencia() {
   const { data: visitas, loading } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
+  const [filterMesIntel, setFilterMesIntel] = useState("");
 
   if (loading) return <div className="loading"><div className="spinner"/>Carregando...</div>;
+
+  const mesesIntel = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
+    const ordem = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    return ordem.indexOf(a) - ordem.indexOf(b);
+  });
+  const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
 
   const MARKETING = ["Cibele","Guilherme","Sarah","Catharina","Júlia"];
   const COMERCIAL = ["Marcell","Fernanda","Ana Marieta","Inside Sales"];
@@ -1469,16 +1476,16 @@ function Inteligencia() {
 
   // ── Médicos sem TP registrado (comercial only)
   const semTP = medicos.filter(m =>
-    !visitas.some(v => v.medico_nome === m.nome)
+    !vi.some(v => v.medico_nome === m.nome)
   );
 
   // ── Alta probabilidade
-  const altaProb = visitas.filter(v => v.probabilidade === "Alto");
+  const altaProb = vi.filter(v => v.probabilidade === "Alto");
 
   // ── Cobertura por tier
   const tierCoverage = ["1","2","3","4","5"].map(tier => {
     const mTier = medicos.filter(m => String(m.tier) === tier);
-    const visitados = mTier.filter(m => visitas.some(v => v.medico_nome === m.nome && v.canal === "Presencial"));
+    const visitados = mTier.filter(m => vi.some(v => v.medico_nome === m.nome && v.canal === "Presencial"));
     const pct = mTier.length ? Math.round(visitados.length/mTier.length*100) : 0;
     const alert = pct===0 ? "🔴 SEM PRESENCIAL" : pct>=60 ? "🟢 BOA COBERTURA" : pct>=30 ? "🟡 ATENÇÃO" : "🔴 CRÍTICO";
     return {tier, total:mTier.length, visitados:visitados.length, faltantes:mTier.length-visitados.length, pct, alert};
@@ -1488,7 +1495,7 @@ function Inteligencia() {
   const alertaMedicos = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)))
     .map(m => {
-      const ultimaVisita = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
+      const ultimaVisita = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
       const mTps = medicoTps.filter(t => t.medico_id === m.id && t.concluido);
       const urgencia = ["ST","1"].includes(String(m.tier)) ? "🔴 CRÍTICO — agendar ESTA semana" : "🟡 URGENTE — incluir na rota";
       return {
@@ -1505,13 +1512,13 @@ function Inteligencia() {
 
   // ── GAP Estratégico — T ST/1/2/3 sem nenhuma ação
   const gapMedicos = medicos
-    .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && !visitas.some(v => v.medico_nome === m.nome))
+    .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && !vi.some(v => v.medico_nome === m.nome))
     .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   // ── Visitas Time Marketing
-  const visMarketing = visitas.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
+  const visMarketing = vi.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
   const mkByResp = MARKETING.map(resp => {
-    const v = visitas.filter(vi => vi.responsavel === resp);
+    const v = vi.filter(vx => vi.responsavel === resp);
     return {
       resp,
       total: v.length,
@@ -1530,7 +1537,7 @@ function Inteligencia() {
 
   // ── Estoque ESG (Fios) — puxado de visitas (último registro por médico)
   const estoqueESG = medicos.map(m => {
-    const vs = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
+    const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
     const last = vs[0];
     const fios = last?.fios_esg_estoque ?? "—";
     const proc = last?.proc_marcados_esg ?? "—";
@@ -1543,7 +1550,7 @@ function Inteligencia() {
 
   // ── Estoque Balões
   const estoqueBaloes = medicos.map(m => {
-    const vs = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
+    const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
     const last = vs[0];
     const baloes = last?.baloes_estoque ?? "—";
     const proc = last?.proc_marcados_balao ?? "—";
@@ -1572,6 +1579,12 @@ function Inteligencia() {
         </div>
       </div>
 
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+        <button onClick={() => setFilterMesIntel("")} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:!filterMesIntel?"var(--teal)":"var(--surface2)",color:!filterMesIntel?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Todos</button>
+        {mesesIntel.map(m => (
+          <button key={m} onClick={() => setFilterMesIntel(m)} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:filterMesIntel===m?"var(--teal)":"var(--surface2)",color:filterMesIntel===m?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{m}</button>
+        ))}
+      </div>
       {/* ROW 1: Sem TP + Alta Prob */}
       <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:12}}>
         <div className="card">
