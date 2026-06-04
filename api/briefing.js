@@ -18,11 +18,16 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) {
+      return res.status(500).json({ error: 'API key not configured' });
+    }
+
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY,
+        'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
@@ -32,17 +37,15 @@ export default async function handler(req, res) {
       }),
     });
 
+    const data = await anthropicRes.json();
+
     if (!anthropicRes.ok) {
-      const errText = await anthropicRes.text();
-      console.error('Anthropic error:', errText);
-      return res.status(500).json({ error: 'Anthropic API error: ' + errText });
+      return res.status(500).json({ error: data.error?.message || JSON.stringify(data) });
     }
 
-    const data = await anthropicRes.json();
     return res.status(200).json(data);
 
   } catch (error) {
-    console.error('Handler error:', error);
-    return res.status(500).json({ error: error.message });
+    return res.status(500).json({ error: error.message || 'Unknown error' });
   }
 }
