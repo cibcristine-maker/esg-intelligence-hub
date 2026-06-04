@@ -2653,31 +2653,6 @@ Responda APENAS com JSON válido, sem markdown:
                       }
                     }
 
-                    // GEO — verificar PRIMEIRO antes de qualquer projeto
-                    if (!respostaJS && (ctxLower.includes("geo") || ctxLower.includes("relat") || ctxLower.includes("visibilidade") || ctxLower.includes("ia ") || ctxLower.includes("inteligência artificial") || ctxLower.includes("llm") || ctxLower.includes("chatgpt") || ctxLower.includes("gemini") || ctxLower.includes("perplexity"))) {
-                      if (geoDiag) {
-                        respostaJS = `Relatório GEO de ${geoDiag.nome}:
-
-Score atual: ${geoDiag.score_geo}
-
-Quem aparece no lugar dele: ${(geoDiag.concorrentes_que_aparecem||"").slice(0,150)}
-
-Gap crítico: ${(geoDiag.gaps_criticos||"").split(",")[0]}
-
-Ativo mais forte: ${(geoDiag.ativos_fortes||"").slice(0,120)}
-
-Oportunidade: ${(geoDiag.oportunidade||"").slice(0,150)}
-
-Fonte: ${geoDiag.fonte}`;
-                      } else {
-                        respostaJS = `Diagnóstico GEO ainda não foi gerado para este médico.
-
-Por que apresentar GEO agora: pacientes que pararam GLP-1 e reganharam peso estão perguntando ao ChatGPT e Gemini "o que fazer sem remédio em [cidade]" — médico invisível nas IAs perde esse paciente antes mesmo de ele abrir o Instagram.
-
-Janela urgente 2026-2028: com a quebra de patente da semaglutida, o volume de pacientes pós-GLP-1 vai dobrar. GEO tem CPL zero após investimento inicial e efeito cumulativo de 18-36 meses — enquanto Meta Ads enfrenta restrições crescentes para saúde desde jan/2025.`;
-                      }
-                    }
-
                     // Curso IAS Bariátricos
                     if (!respostaJS && (ctxLower.includes("bariátric") || ctxLower.includes("bariatric") || ctxLower.includes("curso ias") || ctxLower.includes("cirurgi")) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Bariátric"));
@@ -2693,7 +2668,7 @@ Janela urgente 2026-2028: com a quebra de patente da semaglutida, o volume de pa
                     }
 
                     // Imersão Marketing / GEO
-                    if (!respostaJS && (ctxLower.includes("imersão") || ctxLower.includes("imersao") || ctxLower.includes("marketing")) && fupMedico) {
+                    if (!respostaJS && (ctxLower.includes("imersão") || ctxLower.includes("imersao") || ctxLower.includes("marketing") || ctxLower.includes("geo") || ctxLower.includes("digital")) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Imersão"));
                       if (proj) {
                         const fups = proj.followups || [];
@@ -2726,31 +2701,6 @@ Janela urgente 2026-2028: com a quebra de patente da semaglutida, o volume de pa
                       if (proj) {
                         const fups = proj.followups || [];
                         respostaJS = `Em Pacientes Referidores — ${fups.length} lead(s) registrado(s). ${fups.length > 0 ? "Último: " + (fups[0].obs||"—").slice(0,100) + ". Verificar: follow-up realizado com os que não compareceram?" : "Verificar se há leads aguardando contato."}`;
-                      }
-                    }
-
-                    // GEO — quando menciona relatório GEO, diagnóstico GEO, visibilidade IA
-                    if (!respostaJS && (ctxLower.includes("geo") || ctxLower.includes("relat") || ctxLower.includes("visibilidade") || ctxLower.includes("ia ") || ctxLower.includes("chatgpt") || ctxLower.includes("inteligência artificial") || ctxLower.includes("llm"))) {
-                      if (geoDiag) {
-                        // Médico TEM diagnóstico GEO — trazer dados reais
-                        respostaJS = `Dados reais do Relatório GEO de ${geoDiag.nome} (${geoDiag.fonte.split(",")[0]}):
-
-Score atual: ${geoDiag.score_geo}
-Quem aparece no lugar dele: ${(geoDiag.concorrentes_que_aparecem||"").slice(0,120)}
-Principal gap: ${(geoDiag.gaps_criticos||"").split(",")[0]}
-Maior ativo: ${(geoDiag.ativos_fortes||"").slice(0,100)}
-Oportunidade: ${(geoDiag.oportunidade||"").slice(0,120)}
-
-Use esses dados reais na conversa — o relatório completo já foi entregue ao médico.`;
-                      } else {
-                        // Médico NÃO tem diagnóstico GEO — explicar benefícios e contexto
-                        respostaJS = `Ainda não foi gerado diagnóstico GEO para este médico. Pontos para apresentar o conceito:
-
-O que é GEO: pacientes que pararam GLP-1 e reganharam peso estão perguntando ao ChatGPT, Gemini e Perplexity "o que fazer sem remédio em [cidade]" — não buscam mais só no Google. Médicos invisíveis nas IAs perdem esse paciente antes mesmo de ele abrir o Instagram.
-
-Por que é urgente em 2026: com a quebra de patente da semaglutida, o volume de pacientes pós-GLP-1 vai dobrar. A janela de captura é jul/2026–jan/2027. Médicos que publicarem conteúdo agora estarão posicionados quando essa onda chegar.
-
-Diferencial: GEO tem CPL marginal zero após investimento inicial em conteúdo e efeito cumulativo — cada artigo publicado continua sendo citado por 18-36 meses. Meta Ads está com restrições crescentes para saúde desde jan/2025.`;
                       }
                     }
 
