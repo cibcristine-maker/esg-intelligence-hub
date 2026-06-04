@@ -2098,6 +2098,7 @@ function BriefingIA() {
   const [briefing, setBriefing] = React.useState(null);
   const [gerando, setGerando] = React.useState(false);
   const [erro, setErro] = React.useState(null);
+  const [contextoExtra, setContextoExtra] = React.useState("");
 
   const visitasMedico = selectedMedico
     ? [...todasVisitas].filter(v => nomesBatem(v.medico_nome, selectedMedico.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
@@ -2586,6 +2587,15 @@ Responda APENAS com JSON válido, sem markdown:
                 </div>
               )}
 
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>💬 Contexto adicional ou pergunta (opcional)</div>
+                <textarea
+                  value={contextoExtra}
+                  onChange={e => setContextoExtra(e.target.value)}
+                  placeholder="Ex: quero entender como abordar o relatório GEO com ele, foco no próximo ESG Day..."
+                  style={{width:"100%",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box",outline:"none"}}
+                />
+              </div>
               <button onClick={gerarBriefing} disabled={gerando||!selectedMedico}
                 style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
                 {gerando ? "⚡ Gerando briefing..." : ehNovoMedico ? "⚡ Gerar Briefing de Primeira Abordagem" : "⚡ Gerar Briefing IA"}
