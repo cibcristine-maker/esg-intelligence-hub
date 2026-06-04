@@ -2300,7 +2300,8 @@ ${contextoExtra ? "\n\nCONTEXTO ADICIONAL: " + contextoExtra : ""}
 TOM OBRIGATÓRIO: pragmático, gentil e consultivo. PROIBIDO linguagem de energia, entusiasmo exagerado ou elogios efusivos (ex: "que energia!", "fantástico!", "incrível!"). Aberturas devem soar como parceiro estratégico retomando algo concreto.
 
 Seja CONCISO — máximo 2 frases por campo. Responda APENAS com JSON válido sem markdown:
-{"resumo_situacao":"perfil do médico e contexto para primeira abordagem","objetivo_visita":"objetivo claro para primeiro contato","tp_recomendado":"TP mais adequado e por quê","abertura_sugerida":"frase de abertura PRAGMÁTICA e gentil — sem entusiasmo exagerado, sem exclamações de energia ou elogio efusivo. Tom profissional e consultivo, como um parceiro estratégico que vem com informação relevante. Ex: comece pelo contexto ou pela retomada de algo concreto da última visita","argumento_principal":"argumento personalizado ao perfil","material_recomendado":["material 1","material 2"],"sinais_de_avanco":["sinal 1","sinal 2"],"retomada":null,"alerta":"ponto de atenção ou null","proximos_tps":["TP desta visita","TP seguinte"],"acao_marketing":"ação digital baseada no perfil ou null"}`;
+{"resposta_account":"se houver contexto adicional do representante, responda diretamente aqui em 2-3 frases. Caso contrário, null.",
+  "resumo_situacao":"perfil do médico e contexto para primeira abordagem","objetivo_visita":"objetivo claro para primeiro contato","tp_recomendado":"TP mais adequado e por quê","abertura_sugerida":"frase de abertura PRAGMÁTICA e gentil — sem entusiasmo exagerado, sem exclamações de energia ou elogio efusivo. Tom profissional e consultivo, como um parceiro estratégico que vem com informação relevante. Ex: comece pelo contexto ou pela retomada de algo concreto da última visita","argumento_principal":"argumento personalizado ao perfil","material_recomendado":["material 1","material 2"],"sinais_de_avanco":["sinal 1","sinal 2"],"retomada":null,"alerta":"ponto de atenção ou null","proximos_tps":["TP desta visita","TP seguinte"],"acao_marketing":"ação digital baseada no perfil ou null"}`;
 
     const prompt = ehNovoMedico ? promptPrimeiraAbordagem : `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 
@@ -2678,6 +2679,7 @@ Responda APENAS com JSON válido, sem markdown:
                     <div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>BRIEFING GERADO<div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>
                   </div>
                   {[
+                    ["💬 Pergunta do Account", briefing.resposta_account, "var(--teal)"],
                     ["📍 Situação Atual", briefing.resumo_situacao, null],
                     ["🎯 Objetivo", briefing.objetivo_visita, "var(--gold)"],
                     ["💬 TP Recomendado", briefing.tp_recomendado, null],
