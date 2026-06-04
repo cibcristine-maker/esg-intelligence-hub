@@ -2156,6 +2156,20 @@ function BriefingIA() {
         acao_geo: "Diagnóstico entregue — plano 30/60/90 dias: schema markup, 3 pillar pages, Doctoralia revivido, transcrição dos vídeos YouTube como artigos indexáveis",
         fonte: "Relatório GEO — Dr. Jimi Scarparo: o paradoxo dos 154 mil seguidores invisíveis, Boston Scientific/Endura 2026"
       },
+      "marcio": {
+        nome: "Dr. Márcio Torikachvili",
+        paradoxo: "Forte presença para Balão Gástrico mas invisível para ESG/Gastroplastia Endoscópica nas IAs — lacuna crítica no posicionamento para o procedimento de maior valor",
+        score_geo: "40% consolidado — Grok 93% (melhor), Claude 17% (pior), ChatGPT 30%, Perplexity 20%, Gemini 40%",
+        score_google_business: "Excelente — 89 avaliações 5,0 estrelas",
+        score_doctoralia: "Ativo mas bio descreve apenas 'doenças do aparelho digestivo' — sem menção a Gastroplastia Endoscópica",
+        score_youtube: "Subdesenvolvido — apenas 65 inscritos",
+        concorrentes_que_aparecem: "Em ChatGPT, Claude e Perplexity não aparece para queries de Gastroplastia Endoscópica em Porto Alegre — outros médicos ocupam esse espaço",
+        gaps_criticos: "FAQ Schema JSON-LD ausente no site, sem posts sobre reganho pós-GLP-1 + ESG, YouTube subdesenvolvido, bio do Doctoralia sem keywords ESG, sem hashtag #GastroplastiaEndoscopica",
+        ativos_fortes: "Gemini JÁ o cita para 'gastroplastia endoscópica em Porto Alegre' (score 3/3), Google Business com 89 avaliações 5,0 estrelas, site drmarciotorika.com com seção ESG existente, localização Porto Alegre — pioneiro no Sul do Brasil",
+        oportunidade: "Quick wins de alto impacto: FAQ Schema JSON-LD no site, otimizar bio Doctoralia com 'Especialista em Gastroplastia Endoscópica e tratamento de reganho pós-GLP-1', criar landing page 'ESG — Pioneiro no Sul do Brasil', série de conteúdo 'Reganho pós-GLP-1 → Gastroplastia'",
+        acao_geo: "Diagnóstico entregue — plano 30/60/90 dias: prioridade no FAQ Schema, otimização Doctoralia, conteúdo pós-GLP-1, replicar força do Grok nas demais plataformas",
+        fonte: "Relatório GEO — Dr. Márcio Torikachvili: Diagnóstico de Visibilidade em IA & Plano de Ação para Gastroplastia Endoscópica, Boston Scientific/Endura 2026"
+      },
     };
     const nomeNorm = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/g," ").trim() : "";
     const geoDiag = selectedMedico ? Object.values(GEO_DIAGNOSTICOS).find(d => {
