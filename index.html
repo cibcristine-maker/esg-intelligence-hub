@@ -1912,11 +1912,13 @@ function Inteligencia() {
 // ─── CONFIG BANNER ─────────────────────────────────────────────────────────
 // ─── HELPER: busca flexível de nomes ──────────────────────────────────────
 const normalizar = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim() : "";
-// Remove vogais/consoantes duplas para comparação fonética simples (jimi/jimmi, etc)
 const simplificar = (s) => s.replace(/([a-z])\1+/g,"$1");
+// Normaliza variações comuns: anna→ana, etc
+const normalizarVariacoes = (s) => s.replace(/\banna\b/g,"ana").replace(/\bwulf\b/g,"wolf").replace(/\bwilson\b/g,"vilson");
 const nomesBatem = (a, b) => {
   if (!a || !b) return false;
-  const na = normalizar(a), nb = normalizar(b);
+  const na = normalizarVariacoes(normalizar(a));
+  const nb = normalizarVariacoes(normalizar(b));
   if (!na || !nb) return false;
   if (na === nb) return true;
   if (na.includes(nb) || nb.includes(na)) return true;
@@ -1924,7 +1926,11 @@ const nomesBatem = (a, b) => {
   const pa = na.split(" ").slice(0,2).join(" ");
   const pb = nb.split(" ").slice(0,2).join(" ");
   if (pa === pb && pa.length > 4) return true;
-  // Compara versão simplificada (remove letras duplas)
+  // Compara só primeira palavra se for nome único incomum (>5 chars)
+  const p1a = na.split(" ")[0], p1b = nb.split(" ")[0];
+  const ult_a = na.split(" ").slice(-1)[0], ult_b = nb.split(" ").slice(-1)[0];
+  if (p1a === p1b && ult_a === ult_b && p1a.length > 4) return true;
+  // Compara versão simplificada (remove letras duplas: jimi/jimmi)
   const sa = simplificar(na), sb = simplificar(nb);
   if (sa === sb) return true;
   const spa = sa.split(" ").slice(0,2).join(" ");
