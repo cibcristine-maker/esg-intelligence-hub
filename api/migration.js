@@ -1,26 +1,32 @@
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const supabaseUrl = process.env.SUPABASE_URL || 'https://vumtiszgrcjzgekkpgmp.supabase.co';
-  const serviceKey = process.env.SUPABASE_SERVICE_KEY;
+  const { createClient } = await import('@supabase/supabase-js');
+  const supabase = createClient(
+    process.env.SUPABASE_URL || 'https://vumtiszgrcjzgekkpgmp.supabase.co',
+    process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY
+  );
 
-  if (!serviceKey) return res.status(500).json({ error: 'SUPABASE_SERVICE_KEY não configurada' });
-
-  const r = await fetch(`${supabaseUrl}/rest/v1/rpc/exec_sql`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'apikey': serviceKey,
-      'Authorization': `Bearer ${serviceKey}`,
-    },
-    body: JSON.stringify({
-      query: "ALTER TABLE perfil_medico ADD COLUMN IF NOT EXISTS novo_medico text DEFAULT NULL;"
-    })
+  // Inserir registro de teste para forçar criação implícita não funciona
+  // Usar a abordagem de upsert com estrutura mínima
+  const { error } = await supabase.rpc('exec_sql', {
+    query: `
+      CREATE TABLE IF NOT EXISTS briefing_feedback (
+        id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+        medico_nome text,
+        responsavel text,
+        avaliacao text,
+        comentario text,
+        briefing_resumo text,
+        created_at timestamptz DEFAULT now()
+      );
+      ALTER TABLE briefing_feedback ENABLE ROW LEVEL SECURITY;
+      CREATE POLICY IF NOT EXISTS "allow_all" ON briefing_feedback FOR ALL USING (true) WITH CHECK (true);
+    `
   });
 
-  const data = await r.json();
-  return res.status(r.ok ? 200 : 500).json(data);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(200).json({ ok: true });
 }
