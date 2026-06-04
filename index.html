@@ -2711,14 +2711,74 @@ Responda APENAS com JSON válido, sem markdown:
                       }
                     }
 
+                    // Curso IAS Bariátricos
+                    if (!respostaJS && (ctxLower.includes("bariátric") || ctxLower.includes("bariatric") || ctxLower.includes("curso ias") || ctxLower.includes("cirurgi")) && fupMedico) {
+                      const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Bariátric"));
+                      if (proj) {
+                        const fups = proj.followups || [];
+                        const ult = fups[0];
+                        if (ult) {
+                          respostaJS = `No Curso IAS Bariátricos — ${fups.length} follow-up(s) registrado(s). Último (${ult.data||"?"}): Risco ${ult.risco||"—"}, Score ${ult.scoreImpl||"—"}, Procedimentos ${ult.procedimentos||0}, Avaliações ${ult.avaliacoes||0}. ${ult.risco==="Vermelho"?"⚠ Risco vermelho — escalar para gestão.":ult.risco==="Amarelo"?"Atenção: risco amarelo — acompanhar de perto.":"Em acompanhamento."} Pontos a retomar: CRM estruturado? Avaliações ESG agendadas? Material pós-curso foi enviado?`;
+                        } else {
+                          respostaJS = `Médico no Curso IAS Bariátricos mas sem follow-ups registrados ainda. Verificar: material pós-curso foi enviado (meta D+1)? CRM está estruturado (meta D+30)?`;
+                        }
+                      }
+                    }
+
+                    // Imersão Marketing / GEO
+                    if (!respostaJS && (ctxLower.includes("imersão") || ctxLower.includes("imersao") || ctxLower.includes("marketing") || ctxLower.includes("geo") || ctxLower.includes("digital")) && fupMedico) {
+                      const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Imersão"));
+                      if (proj) {
+                        const fups = proj.followups || [];
+                        const ult = fups[0];
+                        if (ult) {
+                          respostaJS = `Na Imersão Marketing — último registro (${ult.data||"?"}): GEO Score ${ult.geoScore||"—"}, Leads orgânicos ${ult.leadsOrganicos||0}, Procedimentos gerados ${ult.procedimentosGerados||0}. Visível no ChatGPT: ${ult.llmVisivelChatGPT||"Não"} | Google: ${ult.llmVisivelGoogle||"Não"}. Pontos a retomar: ações concluídas do plano GEO? Site com conteúdo pós-GLP-1 implementado?`;
+                        } else {
+                          respostaJS = `Médico na Imersão Marketing mas sem follow-ups registrados. Verificar andamento do plano GEO e se ações foram iniciadas.`;
+                        }
+                      }
+                    }
+
+                    // Aulas Referidores
+                    if (!respostaJS && (ctxLower.includes("referidor") || ctxLower.includes("aula") || ctxLower.includes("endocrinolog")) && fupMedico) {
+                      const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Referidor"));
+                      if (proj) {
+                        const fups = proj.followups || [];
+                        const ult = fups[0];
+                        if (ult) {
+                          respostaJS = `Em Aulas Referidores — último registro (${ult.data||"?"}): ${(ult.obs||"sem obs").slice(0,120)}. Pontos a retomar: médico referidor com CRM? Quantas indicações geradas? Procedimentos convertidos?`;
+                        } else {
+                          respostaJS = `Médico em Aulas Referidores mas sem follow-ups registrados. Verificar engajamento e primeiras indicações geradas.`;
+                        }
+                      }
+                    }
+
+                    // Pacientes Referidores
+                    if (!respostaJS && (ctxLower.includes("paciente") && (ctxLower.includes("referi") || ctxLower.includes("indica"))) && fupMedico) {
+                      const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Pac."));
+                      if (proj) {
+                        const fups = proj.followups || [];
+                        respostaJS = `Em Pacientes Referidores — ${fups.length} lead(s) registrado(s). ${fups.length > 0 ? "Último: " + (fups[0].obs||"—").slice(0,100) + ". Verificar: follow-up realizado com os que não compareceram?" : "Verificar se há leads aguardando contato."}`;
+                      }
+                    }
+
+                    // Resposta genérica quando há contexto mas sem projeto específico
+                    if (!respostaJS && contextoExtra) {
+                      const projList = Array.isArray(fupMedico) && fupMedico.length > 0
+                        ? fupMedico.map(p => p.projeto).join(", ")
+                        : null;
+                      if (projList) {
+                        respostaJS = `Contexto registrado: "${contextoExtra}". Este médico participa de: ${projList}. Use o briefing abaixo para orientar a abordagem considerando este contexto.`;
+                      } else {
+                        respostaJS = `Contexto registrado: "${contextoExtra}". Considere este ponto ao usar o briefing abaixo — especialmente na abertura e no argumento principal.`;
+                      }
+                    }
+
                     return (
                       <div style={{background:"rgba(0,191,165,0.1)",border:"2px solid var(--teal)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
                         <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--teal)",marginBottom:6}}>💬 Pergunta do Account</div>
                         <div style={{fontSize:12,color:"var(--muted)",marginBottom:8,fontStyle:"italic"}}>"{contextoExtra}"</div>
-                        {respostaJS
-                          ? <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{respostaJS}</p>
-                          : <p style={{margin:0,fontSize:13,color:"var(--muted)",lineHeight:1.7}}>Considere este contexto ao interpretar o briefing abaixo.</p>
-                        }
+                        <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{respostaJS || `Contexto considerado no briefing abaixo.`}</p>
                       </div>
                     );
                   })()}
