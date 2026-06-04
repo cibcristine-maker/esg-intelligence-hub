@@ -1518,16 +1518,19 @@ function Inteligencia() {
   // ── Visitas Time Marketing
   const visMarketing = vi.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
   const mkByResp = MARKETING.map(resp => {
-    const v = vi.filter(vx => vi.responsavel === resp);
+    const v = vi.filter(vx => vx.responsavel === resp);
     return {
       resp,
       total: v.length,
-      presencial: v.filter(vi => vi.canal === "Presencial").length,
-      whatsapp: v.filter(vi => vi.canal === "WhatsApp").length,
-      medicos: new Set(v.map(vi => vi.medico_nome)).size,
-      obs: v.filter(vi => vi.obs).length,
+      presencial: v.filter(vx => vx.canal === "Presencial").length,
+      video: v.filter(vx => vx.canal === "Vídeo").length,
+      whatsapp: v.filter(vx => vx.canal === "WhatsApp").length,
+      telefone: v.filter(vx => vx.canal === "Telefone").length,
+      medicos: new Set(v.map(vx => vx.medico_nome)).size,
+      comObs: v.filter(vx => vx.obs).length,
+      visitas: v.sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato)),
     };
-  });
+  }).filter(r => r.total > 0);
   const mkTotals = {
     total: visMarketing.length,
     presencial: visMarketing.filter(v => v.canal === "Presencial").length,
@@ -1703,14 +1706,42 @@ function Inteligencia() {
             <thead><tr><th>Responsável</th><th>Total</th><th>Presencial</th><th>WhatsApp</th><th>Médicos</th><th>Obs. Registradas</th></tr></thead>
             <tbody>
               {mkByResp.map(r => (
-                <tr key={r.resp}>
-                  <td style={{fontWeight:500}}>{r.resp}</td>
-                  <td style={{fontFamily:"DM Mono"}}>{r.total}</td>
-                  <td style={{fontFamily:"DM Mono"}}>{r.presencial}</td>
-                  <td style={{fontFamily:"DM Mono"}}>{r.whatsapp}</td>
-                  <td style={{fontFamily:"DM Mono"}}>{r.medicos}</td>
-                  <td style={{fontFamily:"DM Mono"}}>{r.obs}</td>
-                </tr>
+                <React.Fragment key={r.resp}>
+                  <tr style={{cursor:"pointer"}} onClick={() => {
+                    const el = document.getElementById("mkt-detail-"+r.resp);
+                    if(el) el.style.display = el.style.display==="none"?"table-row":"none";
+                  }}>
+                    <td style={{fontWeight:600}}>{r.resp}</td>
+                    <td style={{fontFamily:"DM Mono",color:"var(--teal)"}}>{r.total}</td>
+                    <td style={{fontFamily:"DM Mono"}}>{r.presencial}</td>
+                    <td style={{fontFamily:"DM Mono"}}>{r.video}</td>
+                    <td style={{fontFamily:"DM Mono"}}>{r.whatsapp}</td>
+                    <td style={{fontFamily:"DM Mono"}}>{r.telefone}</td>
+                    <td style={{fontFamily:"DM Mono"}}>{r.medicos}</td>
+                    <td style={{fontFamily:"DM Mono",color:"var(--teal)"}}>{r.comObs} ▼</td>
+                  </tr>
+                  <tr id={"mkt-detail-"+r.resp} style={{display:"none"}}>
+                    <td colSpan={8} style={{padding:"0 0 8px 0",background:"var(--bg)"}}>
+                      <div style={{padding:"8px 12px"}}>
+                        {r.visitas.filter(v => v.obs || v.acao_prevista).slice(0,5).map((v,i) => (
+                          <div key={i} style={{borderLeft:"2px solid var(--teal)",paddingLeft:10,marginBottom:8}}>
+                            <div style={{fontSize:11,color:"var(--muted)",marginBottom:2,display:"flex",gap:8}}>
+                              <span style={{fontFamily:"DM Mono"}}>{v.data_contato?new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR"):"—"}</span>
+                              <span style={{color:"var(--teal)"}}>{v.medico_nome}</span>
+                              <span>{v.canal||""}</span>
+                              {v.ultimo_tp && <span style={{color:"var(--gold)"}}>{v.ultimo_tp}</span>}
+                            </div>
+                            {v.obs && <div style={{fontSize:12,color:"var(--text)",lineHeight:1.5}}>{v.obs}</div>}
+                            {v.acao_prevista && <div style={{fontSize:11,color:"var(--teal)",marginTop:2}}>→ {v.acao_prevista}</div>}
+                          </div>
+                        ))}
+                        {r.visitas.filter(v => !v.obs && !v.acao_prevista).length > 0 && (
+                          <div style={{fontSize:11,color:"var(--muted)",marginTop:4}}>+ {r.visitas.filter(v => !v.obs && !v.acao_prevista).length} visita(s) sem observação</div>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                </React.Fragment>
               ))}
             </tbody>
           </table>
