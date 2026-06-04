@@ -589,6 +589,14 @@ function Dashboard() {
     }
   });
 
+  const dash_esg = vf.filter(v => v.procedimento_realizado === "ESG" || v.procedimento_realizado === "Ambos").length;
+  const dash_balao = vf.filter(v => v.procedimento_realizado === "Balão" || v.procedimento_realizado === "Ambos").length;
+  const dash_nao = vf.filter(v => v.procedimento_realizado === "Não").length;
+  const dash_pendente = vf.filter(v => v.procedimento_realizado === "Pendente").length;
+  const dash_proc = vf.filter(v => v.procedimento_realizado === "ESG" || v.procedimento_realizado === "Balão" || v.procedimento_realizado === "Ambos").length;
+  const dash_reg = vf.filter(v => !!v.procedimento_realizado).length;
+  const dash_conv = dash_reg > 0 ? Math.round((dash_proc / dash_reg) * 100) : 0;
+
   const byTier = ["ST",1,2,3,4,5].map(t => ({
     tier: t,
     total: medicos.filter(m => String(m.tier) === String(t)).length,
@@ -644,6 +652,38 @@ function Dashboard() {
             </div>
           </div>
 
+          {dash_reg > 0 && (
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📊 Outcome — Procedimentos Realizados</div>
+              <div className="kpi-row">
+                <div className="kpi">
+                  <div className="kpi-label">Procedimentos</div>
+                  <div className="kpi-value" style={{color:"var(--teal)"}}>{dash_proc}</div>
+                  <div className="kpi-sub">ESG + Balão</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">ESG</div>
+                  <div className="kpi-value" style={{color:"var(--teal)"}}>{dash_esg}</div>
+                  <div className="kpi-sub">realizados</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">Balão</div>
+                  <div className="kpi-value" style={{color:"#3b82f6"}}>{dash_balao}</div>
+                  <div className="kpi-sub">realizados</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">Conversão</div>
+                  <div className="kpi-value" style={{color:dash_conv>=40?"#10b981":dash_conv>=25?"var(--warn)":"#ef4444"}}>{dash_conv}%</div>
+                  <div className="kpi-sub">{dash_reg} c/ outcome</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">Não Converteu</div>
+                  <div className="kpi-value" style={{color:"#ef4444"}}>{dash_nao}</div>
+                  <div className="kpi-sub">{dash_pendente} pendentes</div>
+                </div>
+              </div>
+            </div>
+          )}
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px"}}>
             <div className="card">
               <div className="card-title">Visitas por Canal</div>
