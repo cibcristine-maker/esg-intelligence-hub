@@ -2419,7 +2419,7 @@ BLOCO LEAP: TP22 Apresentação Leap, TP23 Ativação total Leap
 
 Responda APENAS com JSON válido, sem markdown:
 {
-  "resposta_account": "OBRIGATÓRIO quando houver CONTEXTO ADICIONAL DO REPRESENTANTE: responda diretamente a pergunta ou pedido em 2-3 frases. Se não há contexto adicional no prompt, retorne null.",
+  "resposta_account": "OBRIGATÓRIO quando houver CONTEXTO ADICIONAL. Não repita a pergunta. SE menciona GEO, relatório, visibilidade, IAs, ChatGPT, Gemini: use os dados do DIAGNOSTICO GEO REAL DO MEDICO presentes neste prompt — cite score atual, quem aparece no lugar dele, gap crítico e oportunidade. Se não há diagnóstico GEO: diga que ainda não foi gerado e explique que pacientes pós-GLP-1 pesquisam nas IAs, janela 2026-2028. NUNCA mencione agenda, datas ou eventos neste campo. Sem contexto adicional, null.",
   "resumo_situacao": "2-3 frases sobre o momento atual cruzando visitas + segmentação",
   "objetivo_visita": "objetivo claro para a próxima visita",
   "tp_recomendado": "qual TP trabalhar e por quê conectando com driver de decisão",
