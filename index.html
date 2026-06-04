@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ESG Intelligence Hub — Endobariatrica</title>
+<title>ESG Intelligence Hub — Boston Scientific Endura</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -545,30 +545,23 @@ function Dashboard() {
   const { data: visitas, loading } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
-  const [filterMesDash, setFilterMesDash] = useState("");
 
   if (!isConfigured) return <ConfigBanner />;
 
-  const mesesDash = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
-    const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
-    return ordem.indexOf(a) - ordem.indexOf(b);
-  });
-  const vf = filterMesDash ? visitas.filter(v => v.mes === filterMesDash) : visitas;
-
-  const totalVisitas = vf.length;
-  const presenciais = vf.filter(v => v.canal === "Presencial").length;
-  const altoProb = vf.filter(v => v.probabilidade === "Alto").length;
-  const suporteMkt = vf.filter(v => v.suporte_marketing).length;
+  const totalVisitas = visitas.length;
+  const presenciais = visitas.filter(v => v.canal === "Presencial").length;
+  const altoProb = visitas.filter(v => v.probabilidade === "Alto").length;
+  const suporteMkt = visitas.filter(v => v.suporte_marketing).length;
   const totalTps = medicoTps.length;
   const tpsConcluidos = medicoTps.filter(t => t.concluido).length;
 
   const byCanal = CANAIS.reduce((acc, c) => {
-    acc[c] = visitasFiltradas.filter(v => v.canal === c).length;
+    acc[c] = visitas.filter(v => v.canal === c).length;
     return acc;
   }, {});
 
   const byResponsavel = {};
-  visitasFiltradas.forEach(v => {
+  visitas.forEach(v => {
     if (v.responsavel && !v.responsavel.startsWith("──")) {
       byResponsavel[v.responsavel] = (byResponsavel[v.responsavel] || 0) + 1;
     }
@@ -577,7 +570,7 @@ function Dashboard() {
   const byTier = ["ST",1,2,3,4,5].map(t => ({
     tier: t,
     total: medicos.filter(m => m.tier === t).length,
-    visitados: visitasFiltradas.filter(v => {
+    visitados: visitas.filter(v => {
       const m = medicos.find(md => md.nome === v.medico_nome);
       return m?.tier === t;
     }).length
@@ -588,14 +581,8 @@ function Dashboard() {
       <div className="section-header">
         <div>
           <div className="section-title">Dashboard</div>
-          <div className="section-sub">{filterMesDash || "Todos os meses"} · {totalVisitas} visitas</div>
+          <div className="section-sub">Visão em tempo real · atualiza com cada registro</div>
         </div>
-      </div>
-      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
-        <button onClick={() => setFilterMesDash("")} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:!filterMesDash?"var(--teal)":"var(--surface2)",color:!filterMesDash?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Todos</button>
-        {mesesDash.map(m => (
-          <button key={m} onClick={() => setFilterMesDash(m)} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:filterMesDash===m?"var(--teal)":"var(--surface2)",color:filterMesDash===m?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{m}</button>
-        ))}
       </div>
 
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
@@ -756,23 +743,15 @@ function Visitas() {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [filterResp, setFilterResp] = useState("");
-  const [filterMes, setFilterMes] = useState("");
   const [toast, setToast] = useState(null);
   const [selectedVisita, setSelectedVisita] = useState(null);
-
-  // Meses disponíveis dinamicamente
-  const mesesDisponiveis = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
-    const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
-    return ordem.indexOf(a) - ordem.indexOf(b);
-  });
 
   const sorted = [...visitas]
     .sort((a,b) => new Date(b.data_contato) - new Date(a.data_contato))
     .filter(v => {
       const q = search.toLowerCase();
       return (!q || v.medico_nome?.toLowerCase().includes(q) || v.obs?.toLowerCase().includes(q))
-        && (!filterResp || v.responsavel === filterResp)
-        && (!filterMes || v.mes === filterMes);
+        && (!filterResp || v.responsavel === filterResp);
     });
 
   const handleSave = async (form) => {
@@ -817,7 +796,7 @@ function Visitas() {
       <div className="section-header">
         <div>
           <div className="section-title">Registro de Visitas</div>
-          <div className="section-sub">{sorted.length} de {visitas.length} visitas{filterMes ? " · " + filterMes : ""} · clique na linha para ver detalhes</div>
+          <div className="section-sub">{visitas.length} visitas · clique na linha para ver detalhes</div>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Nova Visita</button>
       </div>
@@ -826,10 +805,6 @@ function Visitas() {
 
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico ou observação..." value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="search-select" value={filterMes} onChange={e => setFilterMes(e.target.value)}>
-          <option value="">Todos os meses</option>
-          {mesesDisponiveis.map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
         <select className="search-select" value={filterResp} onChange={e => setFilterResp(e.target.value)}>
           <option value="">Todos responsáveis</option>
           {RESPONSAVEIS.filter(r => !r.startsWith("──")).map(r => <option key={r}>{r}</option>)}
@@ -1459,16 +1434,8 @@ function Inteligencia() {
   const { data: visitas, loading } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
-  const [filterMesIntel, setFilterMesIntel] = useState("");
 
   if (loading) return <div className="loading"><div className="spinner"/>Carregando...</div>;
-
-  const mesesIntel = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
-    const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
-    return ordem.indexOf(a) - ordem.indexOf(b);
-  });
-
-  const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
 
   const MARKETING = ["Cibele","Guilherme","Sarah","Catharina","Júlia"];
   const COMERCIAL = ["Marcell","Fernanda","Ana Marieta","Inside Sales"];
@@ -1476,11 +1443,11 @@ function Inteligencia() {
 
   // ── Médicos sem TP registrado (comercial only)
   const semTP = medicos.filter(m =>
-    !vi.some(v => v.medico_nome === m.nome)
+    !visitas.some(v => v.medico_nome === m.nome)
   );
 
   // ── Alta probabilidade
-  const altaProb = vi.filter(v => v.probabilidade === "Alto");
+  const altaProb = visitas.filter(v => v.probabilidade === "Alto");
 
   // ── Cobertura por tier
   const tierCoverage = ["1","2","3","4","5"].map(tier => {
@@ -1495,7 +1462,7 @@ function Inteligencia() {
   const alertaMedicos = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)))
     .map(m => {
-      const ultimaVisita = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
+      const ultimaVisita = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
       const mTps = medicoTps.filter(t => t.medico_id === m.id && t.concluido);
       const urgencia = ["ST","1"].includes(String(m.tier)) ? "🔴 CRÍTICO — agendar ESTA semana" : "🟡 URGENTE — incluir na rota";
       return {
@@ -1512,13 +1479,13 @@ function Inteligencia() {
 
   // ── GAP Estratégico — T ST/1/2/3 sem nenhuma ação
   const gapMedicos = medicos
-    .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && !vi.some(v => v.medico_nome === m.nome))
+    .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && !visitas.some(v => v.medico_nome === m.nome))
     .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   // ── Visitas Time Marketing
-  const visMarketing = vi.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
+  const visMarketing = visitas.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
   const mkByResp = MARKETING.map(resp => {
-    const v = vi.filter(vi => vi.responsavel === resp);
+    const v = visitas.filter(vi => vi.responsavel === resp);
     return {
       resp,
       total: v.length,
@@ -1537,7 +1504,7 @@ function Inteligencia() {
 
   // ── Estoque ESG (Fios) — puxado de visitas (último registro por médico)
   const estoqueESG = medicos.map(m => {
-    const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
+    const vs = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
     const last = vs[0];
     const fios = last?.fios_esg_estoque ?? "—";
     const proc = last?.proc_marcados_esg ?? "—";
@@ -1550,7 +1517,7 @@ function Inteligencia() {
 
   // ── Estoque Balões
   const estoqueBaloes = medicos.map(m => {
-    const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
+    const vs = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
     const last = vs[0];
     const baloes = last?.baloes_estoque ?? "—";
     const proc = last?.proc_marcados_balao ?? "—";
@@ -1833,365 +1800,6 @@ function Inteligencia() {
 
 
 // ─── CONFIG BANNER ─────────────────────────────────────────────────────────
-// ─── HELPER: busca flexível de nomes ──────────────────────────────────────
-const normalizar = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim() : "";
-const nomesBatem = (a, b) => {
-  const na = normalizar(a), nb = normalizar(b);
-  if (!na || !nb) return false;
-  if (na === nb) return true;
-  if (na.includes(nb) || nb.includes(na)) return true;
-  const pa = na.split(" ").slice(0,2).join(" ");
-  const pb = nb.split(" ").slice(0,2).join(" ");
-  return pa === pb && pa.length > 4;
-};
-
-
-// ─── BRIEFING IA ───────────────────────────────────────────────────────────
-function BriefingIA() {
-  const { data: medicos, loading: loadingMed } = useSupabase("perfil_medico");
-  const { data: todasVisitas, loading: loadingVis } = useSupabase("visitas");
-  const { data: baseDados, loading: loadingBase } = useSupabase("base_dados");
-  const [search, setSearch] = React.useState("");
-  const [selectedMedico, setSelectedMedico] = React.useState(null);
-  const [briefing, setBriefing] = React.useState(null);
-  const [gerando, setGerando] = React.useState(false);
-  const [erro, setErro] = React.useState(null);
-
-  const visitasMedico = selectedMedico
-    ? [...todasVisitas].filter(v => nomesBatem(v.medico_nome, selectedMedico.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
-    : [];
-  const ultimaVisita = visitasMedico[0] || null;
-  const segmentacao = selectedMedico ? baseDados.find(b => b.nome === selectedMedico.nome) : null;
-  const medicosFiltrados = medicos.filter(m => !search || m.nome?.toLowerCase().includes(search.toLowerCase()));
-
-  const selecionarMedico = (m) => { setSelectedMedico(m); setBriefing(null); setErro(null); };
-
-  async function gerarBriefing() {
-    // Pode gerar mesmo sem visitas — usa só segmentação
-    setGerando(true); setBriefing(null); setErro(null);
-
-    const mesesOrdemPrompt = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
-    const mesesVisitas = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => mesesOrdemPrompt.indexOf(a)-mesesOrdemPrompt.indexOf(b)).slice(-3);
-    const historico = visitasMedico.length > 0
-      ? mesesVisitas.map(mes => {
-          const vMes = visitasMedico.filter(v => v.mes === mes);
-          const resumoMes = vMes.slice(0,3).map((v,i) =>
-            `  - ${v.data_contato||"?"}: TP=${v.ultimo_tp||"—"} | Canal=${v.canal||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,120)} | Ação prevista=${v.acao_prevista||"—"}`
-          ).join("\n");
-          return `${mes} (${vMes.length} visita${vMes.length!==1?"s":""}):\n${resumoMes}`;
-        }).join("\n\n")
-      : "Nenhuma visita registrada ainda — gerar briefing de PRIMEIRA ABORDAGEM baseado apenas no perfil de segmentação.";
-
-    const segStr = segmentacao ? `
-## MATRIZ DE SEGMENTAÇÃO
-Perfil Médico: ${segmentacao.perfil_medico||"—"}
-Estágio com BSCI: ${segmentacao.estagio_bsci||"—"}
-Potencial de Expansão 12m: ${segmentacao.potencial_expansao||"—"}
-Objetivo 12 Meses: ${segmentacao.objetivo_12m||"—"}
-GAPs Relatados: ${segmentacao.gaps_relatados||"—"}
-Pontos Fortes: ${segmentacao.pontos_fortes||"—"}
-Driver de Decisão: ${segmentacao.driver_decisao||"—"}
-Barreira para Ampliar: ${segmentacao.barreira_ampliar||"—"}
-Perfil de Adoção de Tecnologia: ${segmentacao.perfil_adocao||"—"}
-Indica GLP-1: ${segmentacao.indica_glp1||"—"}
-Coloca Balão: ${segmentacao.coloca_balao||"—"}
-Conduta quando recusa ESG por preço: ${segmentacao.conduta_recusa_esg||"—"}
-Agendamentos Obesidade/Mês: ${segmentacao.agend_obesidade_mes||"—"}
-Procedimentos ESG/Mês: ${segmentacao.proc_esg_mes||"—"}
-Conversão Consulta→Procedimento: ${segmentacao.conversao_pct||"—"}%
-Maturidade Gestão Clínica: ${segmentacao.maturidade_gestao||"—"}
-Posts/Mês: ${segmentacao.posts_mes||"—"}
-Investimento em Mídia: ${segmentacao.invest_midia||"—"}
-Capacitação Técnica: ${segmentacao.cap_tecnica||"—"}
-Capacitação Comercial: ${segmentacao.cap_comercial||"—"}
-Capacitação Digital: ${segmentacao.cap_digital||"—"}
-Cirurgião Parceiro: ${segmentacao.cirurgiao_parceiro||"—"}
-Referidor Parceiro: ${segmentacao.referidor_parceiro||"—"}
-Comissiona Secretária: ${segmentacao.comissiona_secretaria||"—"}
-` : "Dados de segmentação não encontrados para este médico.";
-
-    const prompt = `Você é especialista em estratégia comercial médica da divisão de Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
-
-Analise TODOS os dados abaixo e gere um BRIEFING DE ABORDAGEM para a PRÓXIMA VISITA.
-
-## MÉDICO
-Nome: ${selectedMedico.nome}
-Tier: ${selectedMedico.tier||"—"}
-Especialidade: ${ultimaVisita.especialidade||selectedMedico.especialidade||"—"}
-Clínica: ${selectedMedico.clinica||"—"}
-Região: ${selectedMedico.regiao||"—"}
-Total de visitas: ${visitasMedico.length}
-
-## ÚLTIMA VISITA
-${ultimaVisita ? `Data: ${ultimaVisita.data_contato||"?"}
-Responsável: ${ultimaVisita.responsavel||"—"}
-Canal: ${ultimaVisita.canal||"—"}
-Último TP: ${ultimaVisita.ultimo_tp||"—"}
-Probabilidade: ${ultimaVisita.probabilidade||"—"}
-Valor esperado: R$ ${ultimaVisita.valor_esperado||0}
-Fios ESG estoque: ${ultimaVisita.fios_esg_estoque||"—"}
-Balões estoque: ${ultimaVisita.baloes_estoque||"—"}
-Proc. ESG marcados: ${ultimaVisita.proc_marcados_esg||"—"}
-Suporte marketing: ${ultimaVisita.suporte_marketing?"Sim":"Não"}
-Ação prevista: ${ultimaVisita.acao_prevista||"—"}
-Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar briefing de PRIMEIRA ABORDAGEM baseado no perfil de segmentação."}
-
-## HISTÓRICO
-${historico}
-
-${segStr}
-
-## CONTEXTO ESTRATÉGICO
-- ESG e GLP-1 são COMPLEMENTARES, nunca competitivos
-- Paciente pós-GLP-1 com reganho de peso = maior conversão
-- Evidências: MERIT Trial (Lancet 2022), IFSO 2024 (n=15.714), ASGE-ESGE 2024
-- Programa INSPIRA: embaixadores pacientes ESG
-- TPs disponíveis: TP1 a TP23
-
-Responda APENAS com JSON válido, sem markdown:
-{
-  "resumo_situacao": "2-3 frases sobre o momento atual cruzando visitas + segmentação",
-  "objetivo_visita": "objetivo claro para a próxima visita",
-  "tp_recomendado": "qual TP trabalhar e por quê conectando com driver de decisão",
-  "abertura_sugerida": "frase de abertura natural baseada no histórico",
-  "argumento_principal": "argumento personalizado usando pontos fortes, barreira e driver",
-  "material_recomendado": ["material 1", "material 2", "material 3"],
-  "sinais_de_avanco": ["sinal 1", "sinal 2"],
-  "alerta": "ponto de atenção específico ou null",
-  "proximos_tps": ["TP desta visita", "TP da próxima"],
-  "acao_marketing": "ação de marketing baseada no perfil digital ou null"
-}`;
-
-    try {
-      const response = await fetch("/api/briefing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-      const data = await response.json();
-      if (data.error) throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
-      const texto = (data.content||[]).map(b => b.text||"").join("");
-      if (!texto) throw new Error("Resposta vazia — verifique a API key no Vercel");
-      const limpo = texto.replace(/```json|```/g,"").trim();
-      try {
-        setBriefing(JSON.parse(limpo));
-      } catch(parseErr) {
-        throw new Error("Erro ao interpretar resposta da IA: " + limpo.slice(0,100));
-      }
-    } catch(e) {
-      const msg = typeof e === 'object' ? (e.message || JSON.stringify(e)) : String(e);
-      setErro("Erro: " + msg);
-      console.error(e);
-    } finally { setGerando(false); }
-  }
-
-  const loading = loadingMed || loadingVis || loadingBase;
-
-  return (
-    <div>
-      <div className="section-header">
-        <div>
-          <div className="section-title">⚡ Briefing IA</div>
-          <div className="section-sub">Cruzamento de visitas + segmentação + IA para briefing personalizado</div>
-        </div>
-      </div>
-      <div style={{display:"grid", gridTemplateColumns:"280px 1fr", gap:16, alignItems:"start"}}>
-        <div className="card" style={{padding:"1rem"}}>
-          <div className="card-title">Médicos ({medicosFiltrados.length})</div>
-          <input className="search-input" style={{marginBottom:10,width:"100%"}} placeholder="Buscar..." value={search} onChange={e => setSearch(e.target.value)} />
-          {loading ? <div className="loading"><div className="spinner"/></div> : (
-            <div style={{maxHeight:520,overflowY:"auto"}}>
-              {medicosFiltrados.length === 0 ? <div className="empty">Nenhum médico.</div> : medicosFiltrados.map(m => {
-                const nVis = todasVisitas.filter(v => nomesBatem(v.medico_nome, m.nome)).length;
-                const ultV = [...todasVisitas].filter(v => nomesBatem(v.medico_nome, m.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
-                const temSeg = baseDados.some(b => b.nome === m.nome);
-                const isSel = selectedMedico?.id === m.id;
-                return (
-                  <div key={m.id} onClick={() => selecionarMedico(m)}
-                    style={{display:"flex",alignItems:"center",gap:10,padding:"10px 12px",borderRadius:10,cursor:"pointer",border:`1px solid ${isSel?"rgba(0,191,165,0.35)":"transparent"}`,background:isSel?"rgba(0,191,165,0.08)":"transparent",marginBottom:4}}>
-                    <div style={{width:36,height:36,borderRadius:"50%",background:"linear-gradient(135deg,#00897b,#00bfa5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:13,fontWeight:700,color:"#0a0e1a",flexShrink:0}}>
-                      {m.nome ? m.nome.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase() : "?"}
-                    </div>
-                    <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontSize:13,fontWeight:600,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{m.nome}</div>
-                      <div style={{fontSize:11,color:"var(--muted)",display:"flex",gap:6,marginTop:2}}>
-                        <span>T{m.tier||"?"}</span>
-                        {ultV && <span>· {new Date(ultV.data_contato+"T00:00:00").toLocaleDateString("pt-BR")}</span>}
-                        {nVis > 0 && <span>· {nVis}v</span>}
-                        {temSeg && <span style={{color:"var(--teal)"}}>· ✓seg</span>}
-                      </div>
-                    </div>
-                    {isSel && <span style={{color:"var(--teal)"}}>›</span>}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:14,padding:"1.5rem"}}>
-          {!selectedMedico ? (
-            <div style={{textAlign:"center",padding:"3rem 2rem"}}>
-              <div style={{fontSize:36,marginBottom:12}}>⚡</div>
-              <div style={{fontSize:15,fontWeight:600,marginBottom:6}}>Selecione um médico</div>
-              <div style={{fontSize:13,color:"var(--muted)"}}>Escolha um médico para gerar o briefing personalizado com IA.</div>
-            </div>
-          ) : (
-            <div>
-              <div style={{display:"flex",alignItems:"flex-start",justifyContent:"space-between",marginBottom:16,paddingBottom:16,borderBottom:"1px solid var(--border)"}}>
-                <div style={{display:"flex",gap:12,alignItems:"center"}}>
-                  <div style={{width:44,height:44,borderRadius:"50%",background:"linear-gradient(135deg,#00897b,#00bfa5)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:16,fontWeight:700,color:"#0a0e1a"}}>
-                    {selectedMedico.nome ? selectedMedico.nome.split(" ").slice(0,2).map(w=>w[0]).join("").toUpperCase() : "?"}
-                  </div>
-                  <div>
-                    <div style={{fontSize:17,fontWeight:700}}>{selectedMedico.nome}</div>
-                    <div style={{display:"flex",gap:6,marginTop:4,flexWrap:"wrap"}}>
-                      {selectedMedico.tier && <span className="badge badge-tier">Tier {selectedMedico.tier}</span>}
-                      {ultimaVisita?.especialidade && <span className="badge badge-canal">{ultimaVisita.especialidade}</span>}
-                      {segmentacao && <span className="badge" style={{background:"rgba(0,191,165,0.1)",color:"var(--teal)"}}>✓ Segmentação</span>}
-                    </div>
-                  </div>
-                </div>
-                <div style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"6px 12px",textAlign:"center"}}>
-                  <div style={{fontFamily:"DM Mono",fontSize:20,fontWeight:700,color:"var(--teal)"}}>{visitasMedico.length}</div>
-                  <div style={{fontSize:10,color:"var(--muted)",fontWeight:600}}>VISITAS</div>
-                </div>
-              </div>
-
-              {segmentacao && (
-                <div style={{marginBottom:16}}>
-                  <div className="card-title">Perfil de Segmentação</div>
-                  <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:6,marginBottom:8}}>
-                    {[["Perfil",segmentacao.perfil_medico],["Estágio",segmentacao.estagio_bsci],["Potencial",segmentacao.potencial_expansao],["Driver",segmentacao.driver_decisao],["Adoção",segmentacao.perfil_adocao],["Barreira",segmentacao.barreira_ampliar],["ESG/Mês",segmentacao.proc_esg_mes],["Conversão",segmentacao.conversao_pct?segmentacao.conversao_pct+"%":"—"]].map(([label,val]) => (
-                      <div key={label} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"7px 10px"}}>
-                        <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
-                        <div style={{fontSize:12,fontWeight:600}}>{val||"—"}</div>
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                    {segmentacao.objetivo_12m && <div style={{background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"8px 12px"}}><div style={{fontSize:10,color:"var(--teal)",fontWeight:700,marginBottom:3}}>OBJETIVO 12M</div><div style={{fontSize:12}}>{segmentacao.objetivo_12m}</div></div>}
-                    {segmentacao.gaps_relatados && <div style={{background:"rgba(239,68,68,0.05)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:8,padding:"8px 12px"}}><div style={{fontSize:10,color:"var(--danger)",fontWeight:700,marginBottom:3}}>GAPS</div><div style={{fontSize:12}}>{segmentacao.gaps_relatados}</div></div>}
-                    {segmentacao.pontos_fortes && <div style={{background:"rgba(16,185,129,0.05)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:8,padding:"8px 12px",gridColumn:"1/-1"}}><div style={{fontSize:10,color:"var(--success)",fontWeight:700,marginBottom:3}}>PONTOS FORTES</div><div style={{fontSize:12}}>{segmentacao.pontos_fortes}</div></div>}
-                  </div>
-                </div>
-              )}
-
-              {ultimaVisita ? (
-                <div style={{marginBottom:16}}>
-                  <div className="card-title">Última Visita — {new Date(ultimaVisita.data_contato+"T00:00:00").toLocaleDateString("pt-BR")}</div>
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:6}}>
-                    {[["Último TP",ultimaVisita.ultimo_tp],["Canal",ultimaVisita.canal],["Probabilidade",ultimaVisita.probabilidade],["Responsável",ultimaVisita.responsavel]].map(([label,val]) => (
-                      <div key={label} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"7px 10px"}}>
-                        <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
-                        <div style={{fontSize:12,fontWeight:600}}>{val||"—"}</div>
-                      </div>
-                    ))}
-                  </div>
-                  {ultimaVisita.obs && <div style={{marginTop:6,background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"8px 12px"}}><div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>OBSERVAÇÕES</div><div style={{fontSize:12,lineHeight:1.6}}>{ultimaVisita.obs}</div></div>}
-                  {ultimaVisita.acao_prevista && <div style={{marginTop:6,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"8px 12px"}}><div style={{fontSize:10,color:"var(--teal)",fontWeight:700,marginBottom:2}}>AÇÃO PREVISTA</div><div style={{fontSize:12}}>{ultimaVisita.acao_prevista}</div></div>}
-                </div>
-              ) : <div style={{textAlign:"center",padding:"1.5rem",color:"var(--muted)",fontSize:13}}>Nenhuma visita registrada ainda.</div>}
-
-              {visitasMedico.length > 0 && (
-                <div style={{marginBottom:16}}>
-                  <div className="card-title">Histórico — Últimos 3 Meses</div>
-                  {(() => {
-                    const mesesOrdem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
-                    const mesesPresentes = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => mesesOrdem.indexOf(a)-mesesOrdem.indexOf(b)).slice(-3);
-                    return mesesPresentes.map(mes => {
-                      const vMes = visitasMedico.filter(v => v.mes === mes);
-                      return (
-                        <div key={mes} style={{marginBottom:10}}>
-                          <div style={{fontSize:10,fontWeight:700,color:"var(--teal)",letterSpacing:"0.1em",marginBottom:4}}>{mes} · {vMes.length} visita{vMes.length!==1?"s":""}</div>
-                          {vMes.slice(0,3).map((v,i) => (
-                            <div key={i} style={{display:"grid",gridTemplateColumns:"75px 1fr",gap:8,padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:4,borderLeft:`2px solid ${v.probabilidade==="Alto"?"var(--success)":v.probabilidade==="Médio"?"var(--warn)":"var(--border)"}`}}>
-                              <div>
-                                <div style={{color:"var(--muted)",fontSize:10}}>{v.data_contato ? new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR") : "—"}</div>
-                                <div style={{color:"var(--teal)",fontWeight:600,fontSize:11}}>{v.ultimo_tp||"—"}</div>
-                              </div>
-                              <div>
-                                {v.obs && <div style={{color:"var(--text)",lineHeight:1.4,marginBottom:2}}>{v.obs.slice(0,80)}{v.obs.length>80?"…":""}</div>}
-                                {v.acao_prevista && <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista.slice(0,60)}</div>}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              )}
-
-              <button onClick={gerarBriefing} disabled={gerando||!selectedMedico}
-                style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
-                {gerando ? "⚡ Gerando briefing..." : ultimaVisita ? "⚡ Gerar Briefing IA" : "⚡ Gerar Briefing de Primeira Abordagem"}
-              </button>
-
-              {erro && (
-                <div style={{background: erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)", border: `1px solid ${erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "rgba(239,68,68,0.3)" : "rgba(245,158,11,0.3)"}`, borderRadius:10, padding:"12px 14px", fontSize:12, marginBottom:12}}>
-                  <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
-                    <span style={{fontSize:16}}>{erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "💳" : erro.includes('API key') || erro.includes('inválida') ? "🔑" : erro.includes('sobrecarregado') ? "⏳" : "⚠️"}</span>
-                    <div>
-                      <div style={{fontWeight:700,marginBottom:3,color: erro.includes('Crédito') || erro.includes('crédito') ? "var(--danger)" : "var(--warn)"}}>
-                        {erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "Créditos esgotados" : erro.includes('API key') || erro.includes('inválida') ? "Problema com API Key" : erro.includes('sobrecarregado') ? "Serviço sobrecarregado" : "Erro ao gerar briefing"}
-                      </div>
-                      <div style={{color:"var(--text)",lineHeight:1.5}}>{erro}</div>
-                      {(erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') || erro.includes('API key')) && (
-                        <div style={{marginTop:6,color:"var(--teal)",fontSize:11}}>→ Acesse console.anthropic.com para resolver</div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {briefing && (
-                <div>
-                  <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0 14px",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:"0.08em"}}>
-                    <div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>BRIEFING GERADO<div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>
-                  </div>
-                  {[
-                    ["📍 Situação Atual", briefing.resumo_situacao, null],
-                    ["🎯 Objetivo", briefing.objetivo_visita, "var(--gold)"],
-                    ["💬 TP Recomendado", briefing.tp_recomendado, null],
-                    ["⚡ Abertura Sugerida", briefing.abertura_sugerida ? `"${briefing.abertura_sugerida}"` : null, null],
-                    ["🧠 Argumento Principal", briefing.argumento_principal, null],
-                  ].map(([label, val, color]) => val ? (
-                    <div key={label} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
-                      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:color||"var(--muted)",marginBottom:6}}>{label}</div>
-                      <p style={{margin:0,fontSize:13,lineHeight:1.7,fontStyle:label.includes("Abertura")?"italic":"normal"}}>{val}</p>
-                    </div>
-                  ) : null)}
-
-                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
-                    <div style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px"}}>
-                      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:6}}>📎 Material</div>
-                      {(briefing.material_recomendado||[]).map((m,i) => <div key={i} style={{fontSize:12,padding:"3px 0",borderBottom:i<(briefing.material_recomendado.length-1)?"1px solid var(--border)":"none"}}>• {m}</div>)}
-                    </div>
-                    <div style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px"}}>
-                      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:6}}>✅ Sinais de Avanço</div>
-                      {(briefing.sinais_de_avanco||[]).map((s,i) => <div key={i} style={{fontSize:12,color:"var(--success)",padding:"3px 0",borderBottom:i<(briefing.sinais_de_avanco.length-1)?"1px solid var(--border)":"none"}}>✓ {s}</div>)}
-                    </div>
-                  </div>
-
-                  {briefing.acao_marketing && <div style={{background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:10,padding:"12px 14px",marginBottom:10}}><div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#8b5cf6",marginBottom:6}}>📱 Ação de Marketing</div><p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.acao_marketing}</p></div>}
-
-                  {briefing.alerta && <div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.3)",borderRadius:8,padding:"10px 12px",marginBottom:10,display:"flex",gap:8}}><span>⚠️</span><div><div style={{fontSize:10,fontWeight:700,marginBottom:3}}>PONTO DE ATENÇÃO</div><div style={{fontSize:12}}>{briefing.alerta}</div></div></div>}
-
-                  {briefing.proximos_tps && <div style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px",marginBottom:10}}><div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:8}}>🗓️ Sequência de TPs</div>{briefing.proximos_tps.map((tp,i) => <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:"var(--bg)",borderRadius:8,marginBottom:4}}><div style={{width:22,height:22,borderRadius:"50%",background:i===0?"var(--teal)":"var(--border)",color:i===0?"#0a0e1a":"var(--muted)",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</div><span style={{fontSize:12,color:i===0?"var(--text)":"var(--muted)"}}>{tp}</span></div>)}</div>}
-
-                  <button onClick={() => setBriefing(null)} style={{width:"100%",padding:10,borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",fontSize:12,fontFamily:"DM Sans,sans-serif",cursor:"pointer"}}>↩ Limpar</button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-
 function ConfigBanner() {
   return (
     <div className="config-banner">
@@ -2499,7 +2107,6 @@ function Historico() {
   const [filterResp, setFilterResp] = useState("");
   const [filterCanal, setFilterCanal] = useState("");
   const [filterSemana, setFilterSemana] = useState("");
-  const [filterMesHist, setFilterMesHist] = useState("");
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
   const [selectedVisita, setSelectedVisita] = useState(null);
@@ -2527,19 +2134,13 @@ function Historico() {
     return new Date(`${yb}-${mb}-${db}`) - new Date(`${ya}-${ma}-${da}`);
   });
 
-  const mesesHist = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
-    const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
-    return ordem.indexOf(a) - ordem.indexOf(b);
-  });
-
   const filtered = [...visitas]
     .filter(v => {
       const q = search.toLowerCase();
       return (!q || v.medico_nome?.toLowerCase().includes(q) || v.obs?.toLowerCase().includes(q))
         && (!filterResp || v.responsavel === filterResp)
         && (!filterCanal || v.canal === filterCanal)
-        && (!filterSemana || getSemana(v.data_contato) === filterSemana)
-        && (!filterMesHist || v.mes === filterMesHist);
+        && (!filterSemana || getSemana(v.data_contato) === filterSemana);
     })
     .sort((a,b) => new Date(b.data_contato||0) - new Date(a.data_contato||0));
 
@@ -2575,11 +2176,7 @@ function Historico() {
       {/* Filters */}
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico ou observação..." value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="search-select" value={filterMesHist} onChange={e => { setFilterMesHist(e.target.value); setFilterSemana(""); }}>
-          <option value="">Todos os meses</option>
-          {mesesHist.map(m => <option key={m} value={m}>{m}</option>)}
-        </select>
-        <select className="search-select" value={filterSemana} onChange={e => { setFilterSemana(e.target.value); setFilterMesHist(""); }}>
+        <select className="search-select" value={filterSemana} onChange={e => setFilterSemana(e.target.value)}>
           <option value="">Todas as semanas</option>
           {semanas.map(s => <option key={s} value={s}>Semana de {s}</option>)}
         </select>
@@ -2993,7 +2590,6 @@ const TABS = [
   { id:"historico",  label:"Histórico", icon:"📅" },
   { id:"basedados",  label:"Base de Dados", icon:"📋" },
   { id:"consulta",   label:"Consulta Médico", icon:"🔍" },
-  { id:"briefingIA",  label:"Briefing IA",     icon:"⚡" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
 ];
 
@@ -5321,7 +4917,7 @@ function App() {
           <div className="header-logo">E</div>
           <div>
             <div className="header-title">ESG Intelligence Hub</div>
-            <div className="header-sub">Endobariatrica</div>
+            <div className="header-sub">Boston Scientific · Endura</div>
           </div>
         </div>
         <nav className="nav">
@@ -5348,7 +4944,6 @@ function App() {
         {tab === "basedados"  && <BaseDados />}
         {tab === "consulta"   && <ConsultaMedico />}
         {tab === "fup"        && <FupProjetos />}
-        {tab === "briefingIA"  && <BriefingIA />}
       </main>
     </div>
   );
