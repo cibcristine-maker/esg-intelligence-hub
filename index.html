@@ -564,12 +564,12 @@ function Dashboard() {
   const tpsConcluidos = medicoTps.filter(t => t.concluido).length;
 
   const byCanal = CANAIS.reduce((acc, c) => {
-    acc[c] = visitas.filter(v => v.canal === c).length;
+    acc[c] = vf.filter(v => v.canal === c).length;
     return acc;
   }, {});
 
   const byResponsavel = {};
-  visitas.forEach(v => {
+  vf.forEach(v => {
     if (v.responsavel && !v.responsavel.startsWith("──")) {
       byResponsavel[v.responsavel] = (byResponsavel[v.responsavel] || 0) + 1;
     }
@@ -577,10 +577,10 @@ function Dashboard() {
 
   const byTier = ["ST",1,2,3,4,5].map(t => ({
     tier: t,
-    total: medicos.filter(m => m.tier === t).length,
-    visitados: visitas.filter(v => {
-      const m = medicos.find(md => md.nome === v.medico_nome);
-      return m?.tier === t;
+    total: medicos.filter(m => String(m.tier) === String(t)).length,
+    visitados: vf.filter(v => {
+      const m = medicos.find(md => nomesBatem(md.nome, v.medico_nome));
+      return String(m?.tier) === String(t);
     }).length
   }));
 
