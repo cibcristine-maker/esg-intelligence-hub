@@ -2102,6 +2102,9 @@ function BriefingIA() {
   const [gerando, setGerando] = React.useState(false);
   const [erro, setErro] = React.useState(null);
   const [contextoExtra, setContextoExtra] = React.useState("");
+  const [feedback, setFeedback] = React.useState(null); // 'util' | 'impreciso'
+  const [feedbackObs, setFeedbackObs] = React.useState("");
+  const [feedbackEnviado, setFeedbackEnviado] = React.useState(false);
 
   const visitasMedico = selectedMedico
     ? [...todasVisitas].filter(v => nomesBatem(v.medico_nome, selectedMedico.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
@@ -2717,6 +2720,28 @@ Responda APENAS com JSON válido, sem markdown:
 
                   {briefing.proximos_tps && <div style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px",marginBottom:10}}><div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:8}}>🗓️ Sequência de TPs</div>{briefing.proximos_tps.map((tp,i) => <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:"var(--bg)",borderRadius:8,marginBottom:4}}><div style={{width:22,height:22,borderRadius:"50%",background:i===0?"var(--teal)":"var(--border)",color:i===0?"#0a0e1a":"var(--muted)",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</div><span style={{fontSize:12,color:i===0?"var(--text)":"var(--muted)"}}>{tp}</span></div>)}</div>}
 
+                  {!feedbackEnviado ? (
+                    <div style={{marginBottom:12,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px"}}>
+                      <div style={{fontSize:11,fontWeight:700,color:"var(--muted)",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Este briefing foi útil?</div>
+                      <div style={{display:"flex",gap:8,marginBottom:feedback?8:0}}>
+                        <button onClick={() => setFeedback('util')} style={{flex:1,padding:"8px",borderRadius:8,border:`2px solid ${feedback==='util'?"var(--teal)":"var(--border)"}`,background:feedback==='util'?"rgba(0,191,165,0.1)":"transparent",color:feedback==='util'?"var(--teal)":"var(--muted)",fontSize:13,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>👍 Útil</button>
+                        <button onClick={() => setFeedback('impreciso')} style={{flex:1,padding:"8px",borderRadius:8,border:`2px solid ${feedback==='impreciso'?"#ef4444":"var(--border)"}`,background:feedback==='impreciso'?"rgba(239,68,68,0.1)":"transparent",color:feedback==='impreciso'?"#ef4444":"var(--muted)",fontSize:13,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>👎 Impreciso</button>
+                      </div>
+                      {feedback && (
+                        <div style={{marginTop:6}}>
+                          <textarea value={feedbackObs} onChange={e => setFeedbackObs(e.target.value)} placeholder={feedback==='util'?"O que foi mais útil? (opcional)":"O que estava errado ou faltou?"} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:12,resize:"vertical",minHeight:60,fontFamily:"DM Sans,sans-serif",boxSizing:"border-box"}} />
+                          <button onClick={async () => {
+                            try {
+                              await supabaseClient.from("briefing_feedback").insert({ medico_nome: selectedMedico?.nome, responsavel: "", avaliacao: feedback, comentario: feedbackObs, briefing_resumo: briefing?.resumo_situacao?.slice(0,200) });
+                            } catch(e) {}
+                            setFeedbackEnviado(true);
+                          }} style={{width:"100%",marginTop:6,padding:"8px",borderRadius:8,border:"none",background:"var(--teal)",color:"#0a0e1a",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Enviar feedback</button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div style={{marginBottom:12,textAlign:"center",fontSize:12,color:"var(--teal)"}}>✓ Feedback enviado — obrigado!</div>
+                  )}
                   <button onClick={() => setBriefing(null)} style={{width:"100%",padding:10,borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",fontSize:12,fontFamily:"DM Sans,sans-serif",cursor:"pointer"}}>↩ Limpar</button>
                 </div>
               )}
