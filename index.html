@@ -2139,6 +2139,47 @@ function BriefingIA() {
         }).join("\n\n")
       : "Nenhuma visita registrada — gerar briefing de PRIMEIRA ABORDAGEM baseado na segmentação.";
 
+    // Diagnósticos GEO específicos por médico
+    const GEO_DIAGNOSTICOS = {
+      "jimi": {
+        nome: "Dr. Jimi Scarparo",
+        paradoxo: "154k seguidores no Instagram mas invisível para Google e IAs — 'marca social-only'",
+        score_geo: "1,0/10 — crítico",
+        score_instagram: "8,5/10 — muito forte",
+        score_seo_tecnico: "2,5/10 — crítico (site one-page, sem blog, sem schema, meta-description quebrada)",
+        score_seo_conteudo: "2,0/10 — crítico (não ranqueia para termos comerciais)",
+        score_portais: "1,5/10 — crítico (zero avaliações Doctoralia, dados desatualizados)",
+        concorrentes_que_aparecem: "Galvão Neto/Endovita, Obesicenter (vizinho na Paulista 1776), Instituto Sallet, Clínica Mestieri — aparecem no lugar dele quando paciente busca ESG em SP",
+        gaps_criticos: "Sem Schema JSON-LD, site não indexável, zero conteúdo sobre pós-GLP-1, sem presença no Wikidata/Wikipedia, sem PubMed primário, Doctoralia abandonado",
+        ativos_fortes: "Técnica autoral Sander-Scarparo (cap. IntechOpen 2024), 311 vídeos YouTube não transcritos como artigos, localização Av. Paulista 1636 (endereço premium para público A/B), reconhecimento Boston Scientific como proctor",
+        oportunidade: "Janela 2026-2028: quebra patente semaglutida → mercado dobra para R$20bi → volume de alumni com reganho cresce proporcionalmente → paciente pós-GLP-1 pesquisa no ChatGPT, não no Instagram",
+        acao_geo: "Diagnóstico entregue — plano 30/60/90 dias: schema markup, 3 pillar pages, Doctoralia revivido, transcrição dos vídeos YouTube como artigos indexáveis",
+        fonte: "Relatório GEO — Dr. Jimi Scarparo: o paradoxo dos 154 mil seguidores invisíveis, Boston Scientific/Endura 2026"
+      },
+    };
+    const nomeNorm = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z]/g," ").trim() : "";
+    const geoDiag = selectedMedico ? Object.values(GEO_DIAGNOSTICOS).find(d => {
+      const nn = nomeNorm(d.nome);
+      const ns = nomeNorm(selectedMedico.nome);
+      return nn.split(" ").slice(0,2).join(" ") === ns.split(" ").slice(0,2).join(" ") || ns.includes(nn.split(" ")[1]||"");
+    }) : null;
+    const geoStr = geoDiag ? `
+
+## DIAGNÓSTICO GEO REAL DO MÉDICO (use estes dados — não invente)
+Fonte: ${geoDiag.fonte}
+Paradoxo identificado: ${geoDiag.paradoxo}
+Score GEO atual: ${geoDiag.score_geo}
+Score Instagram: ${geoDiag.score_instagram}
+Score SEO técnico: ${geoDiag.score_seo_tecnico}
+Score conteúdo: ${geoDiag.score_seo_conteudo}
+Score portais médicos: ${geoDiag.score_portais}
+Quem aparece no lugar dele nas IAs: ${geoDiag.concorrentes_que_aparecem}
+Gaps críticos: ${geoDiag.gaps_criticos}
+Ativos fortes não explorados: ${geoDiag.ativos_fortes}
+Oportunidade de mercado: ${geoDiag.oportunidade}
+Status do diagnóstico GEO: ${geoDiag.acao_geo}
+` : "";
+
     // FUP Projetos — contexto do Curso IAS Bariátricos
     const fupStr = fupMedico ? `
 
@@ -2192,7 +2233,7 @@ Gere um briefing de PRIMEIRA ABORDAGEM para o médico abaixo. Seja direto e prá
 
 MÉDICO: ${selectedMedico.nome} | Tier: ${selectedMedico.tier||"—"} | Especialidade: ${selectedMedico.especialidade||"—"} | Clínica: ${selectedMedico.clinica||"—"} | Região: ${selectedMedico.regiao||"—"}
 
-${segStr}${fupStr}
+${segStr}${geoStr}${fupStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
@@ -2277,7 +2318,7 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ## HISTÓRICO
 ${historico}
 
-${segStr}${fupStr}
+${segStr}${geoStr}${fupStr}
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
