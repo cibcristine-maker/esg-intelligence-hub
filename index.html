@@ -549,19 +549,19 @@ function Dashboard() {
   if (!isConfigured) return <ConfigBanner />;
 
   const totalVisitas = visitas.length;
-  const presenciais = visitas.filter(v => v.canal === "Presencial").length;
-  const altoProb = visitas.filter(v => v.probabilidade === "Alto").length;
-  const suporteMkt = visitas.filter(v => v.suporte_marketing).length;
+  const presenciais = visitasFiltradas.filter(v => v.canal === "Presencial").length;
+  const altoProb = visitasFiltradas.filter(v => v.probabilidade === "Alto").length;
+  const suporteMkt = visitasFiltradas.filter(v => v.suporte_marketing).length;
   const totalTps = medicoTps.length;
   const tpsConcluidos = medicoTps.filter(t => t.concluido).length;
 
   const byCanal = CANAIS.reduce((acc, c) => {
-    acc[c] = visitas.filter(v => v.canal === c).length;
+    acc[c] = visitasFiltradas.filter(v => v.canal === c).length;
     return acc;
   }, {});
 
   const byResponsavel = {};
-  visitas.forEach(v => {
+  visitasFiltradas.forEach(v => {
     if (v.responsavel && !v.responsavel.startsWith("──")) {
       byResponsavel[v.responsavel] = (byResponsavel[v.responsavel] || 0) + 1;
     }
@@ -570,7 +570,7 @@ function Dashboard() {
   const byTier = ["ST",1,2,3,4,5].map(t => ({
     tier: t,
     total: medicos.filter(m => m.tier === t).length,
-    visitados: visitas.filter(v => {
+    visitados: visitasFiltradas.filter(v => {
       const m = medicos.find(md => md.nome === v.medico_nome);
       return m?.tier === t;
     }).length
@@ -1446,8 +1446,16 @@ function Inteligencia() {
   const { data: visitas, loading } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
+  const [filterMesIntel, setFilterMesIntel] = useState("");
 
   if (loading) return <div className="loading"><div className="spinner"/>Carregando...</div>;
+
+  const mesesIntel = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
+    const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    return ordem.indexOf(a) - ordem.indexOf(b);
+  });
+
+  const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
 
   const MARKETING = ["Cibele","Guilherme","Sarah","Catharina","Júlia"];
   const COMERCIAL = ["Marcell","Fernanda","Ana Marieta","Inside Sales"];
@@ -1455,11 +1463,11 @@ function Inteligencia() {
 
   // ── Médicos sem TP registrado (comercial only)
   const semTP = medicos.filter(m =>
-    !visitas.some(v => v.medico_nome === m.nome)
+    !vi.some(v => v.medico_nome === m.nome)
   );
 
   // ── Alta probabilidade
-  const altaProb = visitas.filter(v => v.probabilidade === "Alto");
+  const altaProb = vi.filter(v => v.probabilidade === "Alto");
 
   // ── Cobertura por tier
   const tierCoverage = ["1","2","3","4","5"].map(tier => {
@@ -1474,7 +1482,7 @@ function Inteligencia() {
   const alertaMedicos = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)))
     .map(m => {
-      const ultimaVisita = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
+      const ultimaVisita = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
       const mTps = medicoTps.filter(t => t.medico_id === m.id && t.concluido);
       const urgencia = ["ST","1"].includes(String(m.tier)) ? "🔴 CRÍTICO — agendar ESTA semana" : "🟡 URGENTE — incluir na rota";
       return {
@@ -1491,13 +1499,13 @@ function Inteligencia() {
 
   // ── GAP Estratégico — T ST/1/2/3 sem nenhuma ação
   const gapMedicos = medicos
-    .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && !visitas.some(v => v.medico_nome === m.nome))
+    .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && !vi.some(v => v.medico_nome === m.nome))
     .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
 
   // ── Visitas Time Marketing
-  const visMarketing = visitas.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
+  const visMarketing = vi.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
   const mkByResp = MARKETING.map(resp => {
-    const v = visitas.filter(vi => vi.responsavel === resp);
+    const v = vi.filter(vi => vi.responsavel === resp);
     return {
       resp,
       total: v.length,
@@ -1516,7 +1524,7 @@ function Inteligencia() {
 
   // ── Estoque ESG (Fios) — puxado de visitas (último registro por médico)
   const estoqueESG = medicos.map(m => {
-    const vs = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
+    const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
     const last = vs[0];
     const fios = last?.fios_esg_estoque ?? "—";
     const proc = last?.proc_marcados_esg ?? "—";
@@ -1529,7 +1537,7 @@ function Inteligencia() {
 
   // ── Estoque Balões
   const estoqueBaloes = medicos.map(m => {
-    const vs = visitas.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
+    const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
     const last = vs[0];
     const baloes = last?.baloes_estoque ?? "—";
     const proc = last?.proc_marcados_balao ?? "—";
@@ -1849,11 +1857,17 @@ function BriefingIA() {
     // Pode gerar mesmo sem visitas — usa só segmentação
     setGerando(true); setBriefing(null); setErro(null);
 
+    const mesesOrdemPrompt = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    const mesesVisitas = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => mesesOrdemPrompt.indexOf(a)-mesesOrdemPrompt.indexOf(b)).slice(-3);
     const historico = visitasMedico.length > 0
-      ? visitasMedico.slice(0,5).map((v,i) =>
-          `Visita ${i+1} (${v.data_contato||"?"}): TP=${v.ultimo_tp||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,100)} | Ação=${v.acao_prevista||"—"}`
-        ).join("\n")
-      : "Nenhuma visita registrada ainda — primeira abordagem.";
+      ? mesesVisitas.map(mes => {
+          const vMes = visitasMedico.filter(v => v.mes === mes);
+          const resumoMes = vMes.slice(0,3).map((v,i) =>
+            `  - ${v.data_contato||"?"}: TP=${v.ultimo_tp||"—"} | Canal=${v.canal||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,120)} | Ação prevista=${v.acao_prevista||"—"}`
+          ).join("\n");
+          return `${mes} (${vMes.length} visita${vMes.length!==1?"s":""}):\n${resumoMes}`;
+        }).join("\n\n")
+      : "Nenhuma visita registrada ainda — gerar briefing de PRIMEIRA ABORDAGEM baseado apenas no perfil de segmentação.";
 
     const segStr = segmentacao ? `
 ## MATRIZ DE SEGMENTAÇÃO
@@ -2066,16 +2080,33 @@ Responda APENAS com JSON válido, sem markdown:
                 </div>
               ) : <div style={{textAlign:"center",padding:"1.5rem",color:"var(--muted)",fontSize:13}}>Nenhuma visita registrada ainda.</div>}
 
-              {visitasMedico.length > 1 && (
+              {visitasMedico.length > 0 && (
                 <div style={{marginBottom:16}}>
-                  <div className="card-title">Histórico de TPs</div>
-                  {visitasMedico.slice(1,4).map((v,i) => (
-                    <div key={i} style={{display:"grid",gridTemplateColumns:"80px 1fr auto",gap:8,padding:"8px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:6}}>
-                      <span style={{color:"var(--muted)",fontFamily:"DM Mono",fontSize:11}}>{new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR")}</span>
-                      <span style={{color:"var(--teal)",fontWeight:600}}>{v.ultimo_tp||"—"}</span>
-                      <span style={{color:"var(--muted)",fontSize:11}}>{v.probabilidade||""}</span>
-                    </div>
-                  ))}
+                  <div className="card-title">Histórico — Últimos 3 Meses</div>
+                  {(() => {
+                    const mesesOrdem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+                    const mesesPresentes = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => mesesOrdem.indexOf(a)-mesesOrdem.indexOf(b)).slice(-3);
+                    return mesesPresentes.map(mes => {
+                      const vMes = visitasMedico.filter(v => v.mes === mes);
+                      return (
+                        <div key={mes} style={{marginBottom:10}}>
+                          <div style={{fontSize:10,fontWeight:700,color:"var(--teal)",letterSpacing:"0.1em",marginBottom:4}}>{mes} · {vMes.length} visita{vMes.length!==1?"s":""}</div>
+                          {vMes.slice(0,3).map((v,i) => (
+                            <div key={i} style={{display:"grid",gridTemplateColumns:"75px 1fr",gap:8,padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:4,borderLeft:`2px solid ${v.probabilidade==="Alto"?"var(--success)":v.probabilidade==="Médio"?"var(--warn)":"var(--border)"}`}}>
+                              <div>
+                                <div style={{color:"var(--muted)",fontSize:10}}>{v.data_contato ? new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR") : "—"}</div>
+                                <div style={{color:"var(--teal)",fontWeight:600,fontSize:11}}>{v.ultimo_tp||"—"}</div>
+                              </div>
+                              <div>
+                                {v.obs && <div style={{color:"var(--text)",lineHeight:1.4,marginBottom:2}}>{v.obs.slice(0,80)}{v.obs.length>80?"…":""}</div>}
+                                {v.acao_prevista && <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista.slice(0,60)}</div>}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               )}
 
