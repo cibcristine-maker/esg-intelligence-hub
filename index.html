@@ -588,8 +588,14 @@ function Dashboard() {
       <div className="section-header">
         <div>
           <div className="section-title">Dashboard</div>
-          <div className="section-sub">Visão em tempo real · atualiza com cada registro</div>
+          <div className="section-sub">{filterMesDash || "Todos os meses"} · {totalVisitas} visitas</div>
         </div>
+      </div>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+        <button onClick={() => setFilterMesDash("")} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:!filterMesDash?"var(--teal)":"var(--surface2)",color:!filterMesDash?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Todos</button>
+        {mesesDash.map(m => (
+          <button key={m} onClick={() => setFilterMesDash(m)} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:filterMesDash===m?"var(--teal)":"var(--surface2)",color:filterMesDash===m?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{m}</button>
+        ))}
       </div>
 
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
