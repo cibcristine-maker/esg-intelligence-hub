@@ -897,7 +897,7 @@ function Visitas() {
                 {sorted.length === 0 ? (
                   <tr><td colSpan={8}><div className="empty">Nenhuma visita registrada.</div></td></tr>
                 ) : sorted.map(v => (
-                  <tr key={v.id} style={{cursor:"pointer"}} onClick={() => setSelectedVisita(v)}>
+                  <tr key={v.id} style={{cursor:"pointer",borderLeft:(!v.obs||!v.acao_prevista)?"3px solid var(--warn)":"3px solid transparent"}} onClick={() => setSelectedVisita(v)}>
                     <td className="td-muted" style={{fontFamily:"DM Mono",fontSize:12}}>
                       {v.data_contato ? new Date(v.data_contato + "T00:00:00").toLocaleDateString("pt-BR") : "—"}
                     </td>
@@ -905,6 +905,7 @@ function Visitas() {
                     <td style={{fontWeight:500}}>{v.medico_nome}</td>
                     <td><span className="badge badge-canal">{v.canal || "—"}</span></td>
                     <td className="td-muted">{v.ultimo_tp || "—"}</td>
+                    <td>{(!v.obs && !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:700}}>⚠ sem obs</span> : (!v.obs || !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:600}}>⚠ incompleto</span> : <span style={{fontSize:10,color:"var(--success)"}}>✓</span>}</td>
                     <td>{v.probabilidade ? probBadge(v.probabilidade) : "—"}</td>
                     <td style={{color: v.suporte_marketing ? "var(--teal)" : "var(--muted)", fontSize:12}}>
                       {v.suporte_marketing ? "✓ Sim" : "—"}
@@ -960,6 +961,8 @@ function VisitaModal({ medicos, onSave, onClose }) {
     proc_marcados_esg: "",
     baloes_estoque: "",
     proc_marcados_balao: "",
+    procedimento_realizado: "",
+    data_procedimento: "",
   });
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
 
@@ -3150,7 +3153,7 @@ function Historico() {
                 {filtered.length === 0 ? (
                   <tr><td colSpan={11}><div className="empty">Nenhuma visita encontrada.</div></td></tr>
                 ) : filtered.map(v => (
-                  <tr key={v.id} style={{cursor:"pointer"}} onClick={() => setSelectedVisita(v)}>
+                  <tr key={v.id} style={{cursor:"pointer",borderLeft:(!v.obs||!v.acao_prevista)?"3px solid var(--warn)":"3px solid transparent"}} onClick={() => setSelectedVisita(v)}>
                     <td className="td-muted" style={{fontFamily:"DM Mono",fontSize:12,whiteSpace:"nowrap"}}>
                       {v.data_contato ? new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR") : "—"}
                     </td>
