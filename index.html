@@ -2106,16 +2106,45 @@ function BriefingIA() {
   const ultimaVisita = visitasMedico[0] || null;
   const segmentacao = selectedMedico ? (medicos.find(m => m.id === selectedMedico.id) || medicos.find(m => nomesBatem(m.nome, selectedMedico.nome))) : null;
 
-  // Dados do FUP Projetos — Curso IAS Cirurgiões Bariátricos
+  // Dados do FUP Projetos — todos os projetos
   const fupMedico = React.useMemo(() => {
     if (!fupData || !selectedMedico) return null;
-    const bariatricos = fupData.cursoBariatricos?.medicos || [];
-    const med = bariatricos.find(m => nomesBatem(m.nome, selectedMedico.nome));
-    if (!med) return null;
-    const followups = (fupData.cursoBariatricos?.followups || [])
-      .filter(f => f.medicoId === med.id)
-      .sort((a,b) => new Date(b.data) - new Date(a.data));
-    return { ...med, followups };
+    const projetos = [];
+
+    // Curso IAS Bariátricos
+    const medBar = (fupData.cursoBariatricos?.medicos||[]).find(m => nomesBatem(m.nome, selectedMedico.nome));
+    if (medBar) {
+      const fups = (fupData.cursoBariatricos?.followups||[]).filter(f => f.medicoId === medBar.id).sort((a,b) => new Date(b.data)-new Date(a.data));
+      projetos.push({ projeto: "Curso IAS — Cirurgiões Bariátricos", status: medBar.status||"Ativo", followups: fups });
+    }
+
+    // Curso IAS Endoscopistas
+    const medEnd = (fupData.cursoEndoscopistas?.medicos||[]).find(m => nomesBatem(m.nome, selectedMedico.nome));
+    if (medEnd) {
+      const fups = (fupData.cursoEndoscopistas?.followups||[]).filter(f => f.medicoId === medEnd.id).sort((a,b) => new Date(b.data)-new Date(a.data));
+      projetos.push({ projeto: "Curso IAS — Endoscopistas", status: medEnd.status||"Ativo", followups: fups });
+    }
+
+    // Imersão Marketing
+    const medMkt = (fupData.imersaoMarketing?.medicos||[]).find(m => nomesBatem(m.nome, selectedMedico.nome));
+    if (medMkt) {
+      const acoes = (fupData.imersaoMarketing?.acoes||[]).filter(a => a.medicoId === medMkt.id).sort((a,b) => new Date(b.data)-new Date(a.data));
+      projetos.push({ projeto: "Imersão Marketing", status: medMkt.status||"Ativo", followups: acoes });
+    }
+
+    // ESG Day — vincular por médico responsável
+    const esgDayMed = (fupData.esgDay||[]).filter(e => nomesBatem(e.medico, selectedMedico.nome));
+    if (esgDayMed.length > 0) {
+      projetos.push({ projeto: "ESG Day", status: esgDayMed.length + " evento(s)", followups: esgDayMed.slice(0,3).map(e => ({ data: e.data, obs: `Compareceram: ${e.compareceram||0}, Procedimentos: ${e.procedimentos||0}, Conversão: ${e.conversao||0}%` })) });
+    }
+
+    // Aulas Referidores
+    const aulasRef = (fupData.aulasReferidores?.eventos||[]).filter(e => nomesBatem(e.medico, selectedMedico.nome));
+    if (aulasRef.length > 0) {
+      projetos.push({ projeto: "Aulas Referidores", status: aulasRef.length + " evento(s)", followups: aulasRef.slice(0,3).map(e => ({ data: e.data, obs: `Indicações: ${e.indicacoes||0}, Procedimentos: ${e.procedimentos||0}` })) });
+    }
+
+    return projetos.length > 0 ? projetos : null;
   }, [fupData, selectedMedico]);
 
   const MEDICOS_NOVOS = ["Daniela Castro Mattos Giron","Rodrigo Dallegre Correa da Silva","Isabella Palomeque Mazzuccato Rossi","Gabriel Braga Pereira","Rodrigo Nascimento Santana","Gonzalo Vieira da Cunha Zigano","Fabiola De Angeli Ferreira","Cristovam Miranda","Eduardo Lemos de Souza Bastos","Horacio Neto"];
@@ -2212,22 +2241,15 @@ Status do diagnóstico GEO: ${geoDiag.acao_geo}
 ` : "";
 
     // FUP Projetos — contexto do Curso IAS Bariátricos
-    const fupStr = fupMedico ? `
+    const fupStr = fupMedico && fupMedico.length > 0 ? `
 
-## FUP PROJETOS — CURSO IAS CIRURGIÕES BARIÁTRICOS
-Status: ${fupMedico.statusFunil || fupMedico.status || "—"}
-${fupMedico.followups.length > 0 ? `Último follow-up: ${fupMedico.followups[0].data || "—"} | Tipo: ${fupMedico.followups[0].tipo || "—"} | Status: ${fupMedico.followups[0].statusContato || "—"}
-Obs: ${(fupMedico.followups[0].obs || "—").slice(0,150)}
-Total follow-ups registrados: ${fupMedico.followups.length}
-${fupMedico.followups.slice(1,3).map(f => `- ${f.data||"?"} [${f.tipo||"—"}]: ${(f.obs||"—").slice(0,80)}`).join("\n")}` : "Nenhum follow-up registrado ainda — médico recém incorporado ao programa."}
-
-KPIs esperados do programa:
-- Material pós-curso enviado (meta: D+1)
-- CRM estruturado (meta: D+30)
-- Avaliações ESG agendadas (meta: ≥5 em M1)
-- Procedimentos ESG realizados (meta: ≥2 em M1, ≥5 em M3)
-- Score de Implementação (meta: ≥7 em M3)
-- Risco semáforo (meta: Verde em M3)
+## FUP PROJETOS — PARTICIPAÇÃO DO MÉDICO
+${fupMedico.map(p => `
+### ${p.projeto} | Status: ${p.status}
+${p.followups.length > 0
+  ? p.followups.slice(0,2).map(f => `- ${f.data||"?"}: ${(f.obs||f.tipo||"—").slice(0,120)}`).join("\n")
+  : "Nenhum follow-up registrado ainda."}
+`).join("\n")}
 ` : "";
 
     const segStr = segmentacao ? `
@@ -3487,7 +3509,7 @@ const TABS = [
   { id:"metas",      label:"Metas",            icon:"🎯" },
   { id:"historico",  label:"Histórico",        icon:"📅" },
   { id:"basedados",  label:"Base de Dados",    icon:"📋" },
-  { id:"consulta",   label:"Consulta Médico",  icon:"🔍" },
+
   { id:"fup", label:"FUP Projetos", icon:"📌" },
 ];
 
@@ -5840,7 +5862,7 @@ function App() {
         {tab === "metas"     && <Metas />}
         {tab === "historico"  && <Historico />}
         {tab === "basedados"  && <BaseDados />}
-        {tab === "consulta"   && <ConsultaMedico />}
+
         {tab === "fup"        && <FupProjetos />}
         {tab === "briefingIA"  && <BriefingIA />}
       </main>
