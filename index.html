@@ -1903,7 +1903,7 @@ Indica GLP-1: ${segmentacao.indica_glp1||"—"}
 Coloca Balão: ${segmentacao.coloca_balao||"—"}
 Conduta quando recusa ESG por preço: ${segmentacao.conduta_recusa_esg||"—"}
 Procedimentos ESG Marcados: ${segmentacao.procedimentos_marcados||"—"}
-Estoque de Pacientes: ${segmentacao.estoque_pacientes||"—"}
+Fios ESG em Estoque (material disponível, NÃO é número de pacientes): ${segmentacao.estoque_pacientes||"—"}
 Maturidade Gestão Clínica: ${segmentacao.maturidade_gestao||"—"}
 Capacitação Técnica: ${segmentacao.cap_tecnica||"—"}
 Capacitação Comercial: ${segmentacao.cap_comercial||"—"}
@@ -2080,7 +2080,7 @@ Responda APENAS com JSON válido, sem markdown:
                 <div style={{marginBottom:16}}>
                   <div className="card-title">Perfil de Segmentação</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:6,marginBottom:8}}>
-                    {[["Perfil",segmentacao.perfil_medico],["Estágio",segmentacao.estagio_bsci],["Potencial",segmentacao.potencial_expansao],["Driver",segmentacao.driver_decisao],["Adoção",segmentacao.perfil_adocao],["Barreira",segmentacao.barreira_ampliar],["ESG/Mês",segmentacao.proc_esg_mes],["Conversão",segmentacao.conversao_pct?segmentacao.conversao_pct+"%":"—"]].map(([label,val]) => (
+                    {[["Perfil",segmentacao.perfil_medico],["Estágio BSCI",segmentacao.estagio_bsci],["Potencial 12m",segmentacao.potencial_expansao],["Driver",segmentacao.driver_decisao],["Adoção Tech",segmentacao.perfil_adocao],["Barreira",segmentacao.barreira_ampliar],["Fios Estoque",segmentacao.estoque_pacientes],["ESG Marcados",segmentacao.procedimentos_marcados]].map(([label,val]) => (
                       <div key={label} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"7px 10px"}}>
                         <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
                         <div style={{fontSize:12,fontWeight:600}}>{val||"—"}</div>
@@ -2124,10 +2124,11 @@ Responda APENAS com JSON válido, sem markdown:
                           <div style={{fontSize:10,fontWeight:700,color:"var(--teal)",letterSpacing:"0.08em",marginBottom:4,textTransform:"uppercase"}}>{mes} · {vMes.length} visita{vMes.length!==1?"s":""}</div>
                           {vMes.slice(0,3).map((v,i) => (
                             <div key={i} style={{padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:4,borderLeft:"2px solid "+(v.probabilidade==="Alto"?"var(--success)":v.probabilidade==="Médio"?"var(--warn)":"var(--border)")}}>
-                              <div style={{display:"flex",gap:8,marginBottom:2}}>
+                              <div style={{display:"flex",gap:8,marginBottom:2,flexWrap:"wrap"}}>
                                 <span style={{color:"var(--muted)",fontFamily:"DM Mono",fontSize:10,flexShrink:0}}>{v.data_contato?new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR"):"—"}</span>
                                 <span style={{color:"var(--teal)",fontWeight:600}}>{v.ultimo_tp||"—"}</span>
                                 <span style={{color:"var(--muted)",fontSize:10}}>{v.canal||""}</span>
+                                {v.responsavel && <span style={{color:"var(--gold)",fontSize:10,fontWeight:600}}>{v.responsavel}</span>}
                               </div>
                               {v.obs && <div style={{color:"var(--text)",lineHeight:1.4,marginBottom:2,fontSize:11}}>{v.obs.slice(0,100)}{v.obs.length>100?"…":""}</div>}
                               {v.acao_prevista && <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista.slice(0,80)}</div>}
