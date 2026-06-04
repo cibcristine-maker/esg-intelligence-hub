@@ -1867,7 +1867,7 @@ function BriefingIA() {
     ? [...todasVisitas].filter(v => nomesBatem(v.medico_nome, selectedMedico.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
     : [];
   const ultimaVisita = visitasMedico[0] || null;
-  const segmentacao = selectedMedico ? baseDados.find(b => b.nome === selectedMedico.nome) : null;
+  const segmentacao = selectedMedico ? (baseDados.find(b => b.nome === selectedMedico.nome) || baseDados.find(b => nomesBatem(b.nome, selectedMedico.nome))) : null;
   const medicosFiltrados = medicos.filter(m => !search || m.nome?.toLowerCase().includes(search.toLowerCase()));
 
   const selecionarMedico = (m) => { setSelectedMedico(m); setBriefing(null); setErro(null); };
