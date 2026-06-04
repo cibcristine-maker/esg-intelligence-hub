@@ -2455,6 +2455,7 @@ function Historico() {
   const [filterResp, setFilterResp] = useState("");
   const [filterCanal, setFilterCanal] = useState("");
   const [filterSemana, setFilterSemana] = useState("");
+  const [filterMesHist, setFilterMesHist] = useState("");
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
   const [selectedVisita, setSelectedVisita] = useState(null);
@@ -2482,13 +2483,19 @@ function Historico() {
     return new Date(`${yb}-${mb}-${db}`) - new Date(`${ya}-${ma}-${da}`);
   });
 
+  const mesesHist = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
+    const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    return ordem.indexOf(a) - ordem.indexOf(b);
+  });
+
   const filtered = [...visitas]
     .filter(v => {
       const q = search.toLowerCase();
       return (!q || v.medico_nome?.toLowerCase().includes(q) || v.obs?.toLowerCase().includes(q))
         && (!filterResp || v.responsavel === filterResp)
         && (!filterCanal || v.canal === filterCanal)
-        && (!filterSemana || getSemana(v.data_contato) === filterSemana);
+        && (!filterSemana || getSemana(v.data_contato) === filterSemana)
+        && (!filterMesHist || v.mes === filterMesHist);
     })
     .sort((a,b) => new Date(b.data_contato||0) - new Date(a.data_contato||0));
 
@@ -2524,7 +2531,11 @@ function Historico() {
       {/* Filters */}
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico ou observação..." value={search} onChange={e => setSearch(e.target.value)} />
-        <select className="search-select" value={filterSemana} onChange={e => setFilterSemana(e.target.value)}>
+        <select className="search-select" value={filterMesHist} onChange={e => { setFilterMesHist(e.target.value); setFilterSemana(""); }}>
+          <option value="">Todos os meses</option>
+          {mesesHist.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <select className="search-select" value={filterSemana} onChange={e => { setFilterSemana(e.target.value); setFilterMesHist(""); }}>
           <option value="">Todas as semanas</option>
           {semanas.map(s => <option key={s} value={s}>Semana de {s}</option>)}
         </select>
