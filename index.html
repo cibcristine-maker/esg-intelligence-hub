@@ -1876,11 +1876,17 @@ function BriefingIA() {
     // Pode gerar mesmo sem visitas — usa só segmentação
     setGerando(true); setBriefing(null); setErro(null);
 
+    const MESES_ORDEM = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    const meses3 = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => MESES_ORDEM.indexOf(a)-MESES_ORDEM.indexOf(b)).slice(-3);
     const historico = visitasMedico.length > 0
-      ? visitasMedico.slice(0,5).map((v,i) =>
-          `Visita ${i+1} (${v.data_contato||"?"}): TP=${v.ultimo_tp||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,100)} | Ação=${v.acao_prevista||"—"}`
-        ).join("\n")
-      : "Nenhuma visita registrada ainda — primeira abordagem.";
+      ? meses3.map(mes => {
+          const vMes = visitasMedico.filter(v => v.mes === mes);
+          const linhas = vMes.slice(0,3).map(v =>
+            `  - ${v.data_contato||"?"} [${v.canal||"—"}] TP=${v.ultimo_tp||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,120)} | Ação prevista=${v.acao_prevista||"—"}`
+          ).join("\n");
+          return mes + " (" + vMes.length + " visita" + (vMes.length!==1?"s":"") + "):\n" + linhas;
+        }).join("\n\n")
+      : "Nenhuma visita registrada — gerar briefing de PRIMEIRA ABORDAGEM baseado na segmentação.";
 
     const segStr = segmentacao ? `
 ## MATRIZ DE SEGMENTAÇÃO
@@ -1910,9 +1916,14 @@ Referidor Parceiro: ${segmentacao.referidor_parceiro||"—"}
 Comissiona Secretária: ${segmentacao.comissiona_secretaria||"—"}
 ` : "Dados de segmentação não encontrados para este médico.";
 
-    const prompt = `Você é especialista em estratégia comercial médica da divisão de Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
+    const prompt = `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 
-Analise TODOS os dados abaixo e gere um BRIEFING DE ABORDAGEM para a PRÓXIMA VISITA.
+REGRAS CRÍTICAS DE INTERPRETAÇÃO:
+1. "Ação Prevista" = próximo passo COMERCIAL do representante, NÃO é característica do médico. "Proctoria com Dr X" = médico é o PROFESSOR/MENTOR, nunca o aluno.
+2. "Observações" = notas do representante sobre a visita — leia com atenção, contém contexto real do relacionamento.
+3. Prioridade das fontes: Matriz de Segmentação > Observações > Ação Prevista.
+4. NUNCA infira nível de experiência ou perfil do médico a partir de ações previstas.
+5. O histórico está organizado por mês — analise a EVOLUÇÃO do relacionamento ao longo dos meses.
 
 ## MÉDICO
 Nome: ${selectedMedico.nome}
@@ -2095,14 +2106,30 @@ Responda APENAS com JSON válido, sem markdown:
 
               {visitasMedico.length > 1 && (
                 <div style={{marginBottom:16}}>
-                  <div className="card-title">Histórico de TPs</div>
-                  {visitasMedico.slice(1,4).map((v,i) => (
-                    <div key={i} style={{display:"grid",gridTemplateColumns:"80px 1fr auto",gap:8,padding:"8px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:6}}>
-                      <span style={{color:"var(--muted)",fontFamily:"DM Mono",fontSize:11}}>{new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR")}</span>
-                      <span style={{color:"var(--teal)",fontWeight:600}}>{v.ultimo_tp||"—"}</span>
-                      <span style={{color:"var(--muted)",fontSize:11}}>{v.probabilidade||""}</span>
-                    </div>
-                  ))}
+                  <div className="card-title">Histórico — Últimos 3 Meses</div>
+                  {(() => {
+                    const ordemM = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+                    const ms = [...new Set(visitasMedico.map(v=>v.mes).filter(Boolean))].sort((a,b)=>ordemM.indexOf(a)-ordemM.indexOf(b)).slice(-3);
+                    return ms.map(mes => {
+                      const vMes = visitasMedico.filter(v=>v.mes===mes);
+                      return (
+                        <div key={mes} style={{marginBottom:10}}>
+                          <div style={{fontSize:10,fontWeight:700,color:"var(--teal)",letterSpacing:"0.08em",marginBottom:4,textTransform:"uppercase"}}>{mes} · {vMes.length} visita{vMes.length!==1?"s":""}</div>
+                          {vMes.slice(0,3).map((v,i) => (
+                            <div key={i} style={{padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:4,borderLeft:"2px solid "+(v.probabilidade==="Alto"?"var(--success)":v.probabilidade==="Médio"?"var(--warn)":"var(--border)")}}>
+                              <div style={{display:"flex",gap:8,marginBottom:2}}>
+                                <span style={{color:"var(--muted)",fontFamily:"DM Mono",fontSize:10,flexShrink:0}}>{v.data_contato?new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR"):"—"}</span>
+                                <span style={{color:"var(--teal)",fontWeight:600}}>{v.ultimo_tp||"—"}</span>
+                                <span style={{color:"var(--muted)",fontSize:10}}>{v.canal||""}</span>
+                              </div>
+                              {v.obs && <div style={{color:"var(--text)",lineHeight:1.4,marginBottom:2,fontSize:11}}>{v.obs.slice(0,100)}{v.obs.length>100?"…":""}</div>}
+                              {v.acao_prevista && <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista.slice(0,80)}</div>}
+                            </div>
+                          ))}
+                        </div>
+                      );
+                    });
+                  })()}
                 </div>
               )}
 
