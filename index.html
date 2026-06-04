@@ -1841,14 +1841,24 @@ function Inteligencia() {
 // ─── CONFIG BANNER ─────────────────────────────────────────────────────────
 // ─── HELPER: busca flexível de nomes ──────────────────────────────────────
 const normalizar = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim() : "";
+// Remove vogais/consoantes duplas para comparação fonética simples (jimi/jimmi, etc)
+const simplificar = (s) => s.replace(/([a-z])\1+/g,"$1");
 const nomesBatem = (a, b) => {
+  if (!a || !b) return false;
   const na = normalizar(a), nb = normalizar(b);
   if (!na || !nb) return false;
   if (na === nb) return true;
   if (na.includes(nb) || nb.includes(na)) return true;
+  // Compara primeiras 2 palavras
   const pa = na.split(" ").slice(0,2).join(" ");
   const pb = nb.split(" ").slice(0,2).join(" ");
-  return pa === pb && pa.length > 4;
+  if (pa === pb && pa.length > 4) return true;
+  // Compara versão simplificada (remove letras duplas)
+  const sa = simplificar(na), sb = simplificar(nb);
+  if (sa === sb) return true;
+  const spa = sa.split(" ").slice(0,2).join(" ");
+  const spb = sb.split(" ").slice(0,2).join(" ");
+  return spa === spb && spa.length > 4;
 };
 
 
@@ -1974,6 +1984,8 @@ REGRAS CRÍTICAS DE INTERPRETAÇÃO:
 5. O histórico está organizado por mês — analise a EVOLUÇÃO do relacionamento.
 6. LÓGICA DE RETOMADA: Se houver "Ação Prevista" em visitas anteriores, o briefing DEVE incluir na abertura e no objetivo a retomada desse ponto — perguntar como foi, se aconteceu, e identificar se há algo que a empresa pode agregar. Ex: se havia proctoria prevista, perguntar como foi e oferecer suporte específico (material, pacientes, cases).
 7. Use a Matriz de Segmentação como base do perfil — se o médico tem Tier ST, é referência nacional, trate com esse nível de reconhecimento.
+8. EVENTOS PASSADOS: Se o histórico menciona eventos já realizados (ESG Day, treinamento, webinar, curso), trate-os como CONQUISTAS do relacionamento — não sugira realizá-los novamente. Em vez disso, explore como capitalizar sobre eles: novos casos gerados, feedback, próximos passos pós-evento.
+9. NUNCA sugira ações que o histórico já indica como concluídas. Leia todo o histórico cronologicamente antes de sugerir próximos passos.
 
 ## MÉDICO
 Nome: ${selectedMedico.nome}
