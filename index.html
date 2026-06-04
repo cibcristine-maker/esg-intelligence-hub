@@ -2152,17 +2152,23 @@ Responda APENAS com JSON válido, sem markdown:
       if (data.error) throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
       const texto = (data.content||[]).map(b => b.text||"").join("");
       if (!texto) {
-        // Verificar se veio erro da API
         const errMsg = data.error ? (typeof data.error === 'object' ? JSON.stringify(data.error) : data.error) : "Resposta vazia";
         throw new Error(errMsg + " — verifique créditos em console.anthropic.com");
       }
-      // Extrai o JSON mesmo que haja texto antes/depois
-      const match = texto.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("Resposta da IA: " + texto.slice(0,120));
+      // Remove markdown code blocks e extrai JSON
+      const limpo = texto.replace(/```json\s*/gi,"").replace(/```\s*/g,"").trim();
+      // Tenta encontrar o JSON com regex mais ampla
+      const match = limpo.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("Resposta da IA: " + limpo.slice(0,150));
       try {
         setBriefing(JSON.parse(match[0]));
       } catch(parseErr) {
-        throw new Error("JSON inválido: " + match[0].slice(0,80));
+        // Tenta parsear diretamente se match[0] não funcionar
+        try {
+          setBriefing(JSON.parse(limpo));
+        } catch(e2) {
+          throw new Error("JSON inválido: " + match[0].slice(0,100));
+        }
       }
     } catch(e) {
       const msg = typeof e === 'object' ? (e.message || JSON.stringify(e)) : String(e);
