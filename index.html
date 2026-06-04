@@ -702,10 +702,21 @@ function Dashboard() {
 }
 
 // ─── VISITAS ───────────────────────────────────────────────────────────────
-function VisitaDetalheModal({ visita, onClose, onDelete }) {
+function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
   const fmt = (val) => val || "—";
   const fmtDate = (d) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
   const fmtMoney = (v) => v ? `$${Number(v).toLocaleString("pt-BR")}` : "—";
+  const [editando, setEditando] = useState(false);
+  const [obs, setObs] = useState(visita.obs || "");
+  const [acao, setAcao] = useState(visita.acao_prevista || "");
+  const [salvando, setSalvando] = useState(false);
+  const salvar = async () => {
+    setSalvando(true);
+    const { error } = await supabaseClient.from("visitas").update({ obs, acao_prevista: acao }).eq("id", visita.id);
+    setSalvando(false);
+    if (!error) { setEditando(false); if (onUpdate) onUpdate(); }
+    else alert("Erro ao salvar: " + error.message);
+  };
 
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -741,25 +752,39 @@ function VisitaDetalheModal({ visita, onClose, onDelete }) {
           ))}
         </div>
 
-        {visita.acao_prevista && (
-          <div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"10px 12px"}}>
-            <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:4}}>AÇÃO PREVISTA</div>
-            <div style={{fontSize:13}}>{visita.acao_prevista}</div>
-          </div>
-        )}
+        <div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"10px 12px"}}>
+          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:6}}>AÇÃO PREVISTA</div>
+          {editando
+            ? <textarea value={acao} onChange={e => setAcao(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box"}} />
+            : <div style={{fontSize:13,minHeight:20}}>{acao||"—"}</div>
+          }
+        </div>
 
-        {visita.obs && (
-          <div style={{marginBottom:12,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
-            <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:4}}>OBSERVAÇÕES</div>
-            <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{visita.obs}</div>
-          </div>
-        )}
+        <div style={{marginBottom:12,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
+          <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:6}}>OBSERVAÇÕES</div>
+          {editando
+            ? <textarea value={obs} onChange={e => setObs(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
+            : <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",minHeight:20}}>{obs||"—"}</div>
+          }
+        </div>
 
-        <div style={{display:"flex",justifyContent:"flex-end",gap:8}}>
+        <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
           <button className="btn btn-danger btn-sm" onClick={() => {
             if (confirm("Excluir esta visita? Esta ação não pode ser desfeita.")) onDelete(visita.id);
-          }}>🗑 Excluir Visita</button>
-          <button className="btn btn-ghost btn-sm" onClick={onClose}>Fechar</button>
+          }}>🗑 Excluir</button>
+          <div style={{display:"flex",gap:8}}>
+            {editando ? (
+              <>
+                <button className="btn btn-ghost btn-sm" onClick={() => { setEditando(false); setObs(visita.obs||""); setAcao(visita.acao_prevista||""); }}>Cancelar</button>
+                <button className="btn btn-primary btn-sm" onClick={salvar} disabled={salvando}>{salvando?"Salvando...":"✓ Salvar"}</button>
+              </>
+            ) : (
+              <>
+                <button className="btn btn-ghost btn-sm" onClick={() => setEditando(true)}>✎ Editar</button>
+                <button className="btn btn-ghost btn-sm" onClick={onClose}>Fechar</button>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -907,6 +932,7 @@ function Visitas() {
           visita={selectedVisita}
           onClose={() => setSelectedVisita(null)}
           onDelete={handleDelete}
+          onUpdate={refresh}
         />
       )}
       {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
@@ -2921,6 +2947,7 @@ function Historico() {
           visita={selectedVisita}
           onClose={() => setSelectedVisita(null)}
           onDelete={handleDelete}
+          onUpdate={refresh}
         />
       )}
       {toast && <Toast msg={toast} onHide={() => setToast(null)} />}
