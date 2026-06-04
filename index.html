@@ -2135,7 +2135,12 @@ function BriefingIA() {
     // ESG Day — vincular por médico responsável
     const esgDayMed = (fupData.esgDay||[]).filter(e => nomesBatem(e.medico, selectedMedico.nome));
     if (esgDayMed.length > 0) {
-      projetos.push({ projeto: "ESG Day", status: esgDayMed.length + " evento(s)", followups: esgDayMed.slice(0,3).map(e => ({ data: e.data, obs: `Compareceram: ${e.compareceram||0}, Procedimentos: ${e.procedimentos||0}, Conversão: ${e.conversao||0}%` })) });
+      projetos.push({ projeto: "ESG Day", status: esgDayMed.length + " evento(s)", followups: esgDayMed.slice(0,3).map(e => {
+        const comp = e.compareceram||0;
+        const proc = e.procedimentos||0;
+        const conv = comp > 0 ? Math.round((proc/comp)*100) : 0;
+        return { data: e.data, obs: `Compareceram: ${comp}, Procedimentos: ${proc}, Conversão real: ${conv}% (${proc}/${comp})` };
+      }) });
     }
 
     // Aulas Referidores
