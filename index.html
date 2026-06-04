@@ -1967,10 +1967,11 @@ Responda APENAS com JSON válido, sem markdown:
   "abertura_sugerida": "frase de abertura natural baseada no histórico",
   "argumento_principal": "argumento personalizado usando pontos fortes, barreira e driver",
   "material_recomendado": ["material 1", "material 2", "material 3"],
-  "sinais_de_avanco": ["sinal 1", "sinal 2"],
-  "alerta": "ponto de atenção específico ou null",
-  "proximos_tps": ["TP desta visita", "TP da próxima"],
-  "acao_marketing": "ação de marketing baseada no perfil digital ou null"
+  "sinais_de_avanco": ["sinal concreto 1 a observar", "sinal concreto 2 a observar"],
+  "retomada": "se havia ação prevista em visita anterior: o que perguntar para saber como foi, o que a empresa pode agregar. Se não houver ação prévia relevante, retorne null.",
+  "alerta": "ponto de atenção ou risco específico deste médico baseado nos dados reais (ou null)",
+  "proximos_tps": ["TP recomendado para esta visita", "TP para a visita seguinte"],
+  "acao_marketing": "ação de marketing personalizada baseada no perfil digital e gaps (ou null)"
 }`;
 
     try {
@@ -2183,6 +2184,13 @@ Responda APENAS com JSON válido, sem markdown:
                       {(briefing.sinais_de_avanco||[]).map((s,i) => <div key={i} style={{fontSize:12,color:"var(--success)",padding:"3px 0",borderBottom:i<(briefing.sinais_de_avanco.length-1)?"1px solid var(--border)":"none"}}>✓ {s}</div>)}
                     </div>
                   </div>
+
+                  {briefing.retomada && (
+                    <div style={{background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#8b5cf6",marginBottom:6}}>🔄 Retomada da Ação Prevista</div>
+                      <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.retomada}</p>
+                    </div>
+                  )}
 
                   {briefing.acao_marketing && <div style={{background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:10,padding:"12px 14px",marginBottom:10}}><div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#8b5cf6",marginBottom:6}}>📱 Ação de Marketing</div><p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.acao_marketing}</p></div>}
 
