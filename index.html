@@ -710,9 +710,11 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
   const [obs, setObs] = useState(visita.obs || "");
   const [acao, setAcao] = useState(visita.acao_prevista || "");
   const [salvando, setSalvando] = useState(false);
+  const [outcome, setOutcome] = useState(visita.procedimento_realizado || "");
+
   const salvar = async () => {
     setSalvando(true);
-    const { error } = await supabaseClient.from("visitas").update({ obs, acao_prevista: acao }).eq("id", visita.id);
+    const { error } = await supabaseClient.from("visitas").update({ obs, acao_prevista: acao, procedimento_realizado: outcome }).eq("id", visita.id);
     setSalvando(false);
     if (!error) { setEditando(false); if (onUpdate) onUpdate(); }
     else alert("Erro ao salvar: " + error.message);
@@ -760,12 +762,30 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           }
         </div>
 
-        <div style={{marginBottom:12,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
+        <div style={{marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
           <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:6}}>OBSERVAÇÕES</div>
           {editando
             ? <textarea value={obs} onChange={e => setObs(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
             : <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",minHeight:20}}>{obs||"—"}</div>
           }
+        </div>
+
+        <div style={{marginBottom:12,background:"rgba(0,191,165,0.06)",border:"1px solid rgba(0,191,165,0.25)",borderRadius:8,padding:"10px 12px"}}>
+          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:6}}>📊 OUTCOME — PROCEDIMENTO PÓS-VISITA</div>
+          {editando
+            ? <select value={outcome} onChange={e => setOutcome(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,fontFamily:"inherit"}}>
+                <option value="">Não registrado ainda</option>
+                <option value="ESG">✅ ESG realizado</option>
+                <option value="Balão">✅ Balão realizado</option>
+                <option value="Ambos">✅ ESG + Balão</option>
+                <option value="Não">❌ Não converteu</option>
+                <option value="Pendente">⏳ Pendente / Em avaliação</option>
+              </select>
+            : <div style={{fontSize:13,fontWeight:500,color:outcome&&outcome!=="Não"&&outcome!=="Pendente"?"var(--teal)":outcome==="Não"?"#ef4444":outcome==="Pendente"?"var(--warn)":"var(--muted)"}}>
+                {outcome==="ESG"?"✅ ESG realizado":outcome==="Balão"?"✅ Balão realizado":outcome==="Ambos"?"✅ ESG + Balão":outcome==="Não"?"❌ Não converteu":outcome==="Pendente"?"⏳ Pendente / Em avaliação":"— Não registrado ainda"}
+              </div>
+          }
+          {!editando && !outcome && <div style={{fontSize:11,color:"var(--warn)",marginTop:4}}>⚠ Registre o outcome quando o procedimento acontecer</div>}
         </div>
 
         <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
@@ -905,7 +925,10 @@ function Visitas() {
                     <td style={{fontWeight:500}}>{v.medico_nome}</td>
                     <td><span className="badge badge-canal">{v.canal || "—"}</span></td>
                     <td className="td-muted">{v.ultimo_tp || "—"}</td>
-                    <td>{(!v.obs && !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:700}}>⚠ sem obs</span> : (!v.obs || !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:600}}>⚠ incompleto</span> : <span style={{fontSize:10,color:"var(--success)"}}>✓</span>}</td>
+                    <td>
+                      {(!v.obs && !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:700}}>⚠ sem obs</span> : (!v.obs || !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:600}}>⚠ incompleto</span> : <span style={{fontSize:10,color:"var(--success)"}}>✓</span>}
+                    </td>
+                    <td>{!v.procedimento_realizado ? <span style={{fontSize:10,color:"var(--muted)"}}>— outcome</span> : v.procedimento_realizado==="ESG"||v.procedimento_realizado==="Balão"||v.procedimento_realizado==="Ambos" ? <span style={{fontSize:10,color:"var(--teal)",fontWeight:600}}>✅ {v.procedimento_realizado}</span> : v.procedimento_realizado==="Não" ? <span style={{fontSize:10,color:"#ef4444"}}>❌</span> : <span style={{fontSize:10,color:"var(--warn)"}}>⏳</span>}</td>
                     <td>{v.probabilidade ? probBadge(v.probabilidade) : "—"}</td>
                     <td style={{color: v.suporte_marketing ? "var(--teal)" : "var(--muted)", fontSize:12}}>
                       {v.suporte_marketing ? "✓ Sim" : "—"}
