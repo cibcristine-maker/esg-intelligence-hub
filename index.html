@@ -1983,14 +1983,18 @@ Responda APENAS com JSON válido, sem markdown:
       const data = await response.json();
       if (data.error) throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
       const texto = (data.content||[]).map(b => b.text||"").join("");
-      if (!texto) throw new Error("Resposta vazia — verifique a API key no Vercel");
+      if (!texto) {
+        // Verificar se veio erro da API
+        const errMsg = data.error ? (typeof data.error === 'object' ? JSON.stringify(data.error) : data.error) : "Resposta vazia";
+        throw new Error(errMsg + " — verifique créditos em console.anthropic.com");
+      }
       // Extrai o JSON mesmo que haja texto antes/depois
       const match = texto.match(/\{[\s\S]*\}/);
-      if (!match) throw new Error("JSON não encontrado na resposta");
+      if (!match) throw new Error("Resposta da IA: " + texto.slice(0,120));
       try {
         setBriefing(JSON.parse(match[0]));
       } catch(parseErr) {
-        throw new Error("Erro ao interpretar JSON: " + match[0].slice(0,80));
+        throw new Error("JSON inválido: " + match[0].slice(0,80));
       }
     } catch(e) {
       const msg = typeof e === 'object' ? (e.message || JSON.stringify(e)) : String(e);
