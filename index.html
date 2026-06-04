@@ -4031,7 +4031,7 @@ function EsgDayProject({ data, onChange }) {
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                 <thead>
                   <tr style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                    {["Clínica", "Cidade", "Data", "Responsável", "Compareceram", "Fechados", "Receita", "ROI", ""].map((h) => (
+                    {["Médico", "Cidade", "Data", "Responsável", "Compareceram", "Fechados", "Receita", "ROI", ""].map((h) => (
                       <th key={h} style={{ padding: "10px 12px", textAlign: "left", color: FUP_C.textMuted, fontWeight: 600, fontSize: 11, letterSpacing: "0.06em" }}>{h}</th>
                     ))}
                   </tr>
@@ -4069,7 +4069,7 @@ function EsgDayProject({ data, onChange }) {
                           <td colSpan={9} style={{ padding: "0 12px 16px", background: FUP_C.bg }}>
                             <div style={{ borderLeft: `3px solid ${FUP_C.teal}`, paddingLeft: 16, paddingTop: 12 }}>
                               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-                                <span style={{ color: FUP_C.teal, fontWeight: 700, fontSize: 13 }}>Seguimento — {r.clinica}</span>
+                                <span style={{ color: FUP_C.teal, fontWeight: 700, fontSize: 13 }}>Seguimento — {r.medico||r.clinica}</span>
                                 <FupBtn size="sm" onClick={() => setFupModal(r.id)} style={{ background: FUP_C.teal, border: "none" }}>+ Nova Visita</FupBtn>
                               </div>
                               <div style={{ display: "flex", gap: 16, marginBottom: 12, flexWrap: "wrap" }}>
@@ -5981,7 +5981,7 @@ function App() {
         {tab === "medicos"   && <Medicos />}
         {tab === "ativacao"  && <Ativacao />}
         {tab === "intel"     && <Inteligencia />}
-        {tab === "cartilha"  && <Cartilha />}
+        
         {tab === "metas"     && <Metas />}
         {tab === "historico"  && <Historico />}
         {tab === "basedados"  && <BaseDados />}
