@@ -2732,8 +2732,26 @@ Responda APENAS com JSON válido, sem markdown:
                           <textarea value={feedbackObs} onChange={e => setFeedbackObs(e.target.value)} placeholder={feedback==='util'?"O que foi mais útil? (opcional)":"O que estava errado ou faltou?"} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:12,resize:"vertical",minHeight:60,fontFamily:"DM Sans,sans-serif",boxSizing:"border-box"}} />
                           <button onClick={async () => {
                             try {
-                              await supabaseClient.from("briefing_feedback").insert({ medico_nome: selectedMedico?.nome, responsavel: "", avaliacao: feedback, comentario: feedbackObs, briefing_resumo: briefing?.resumo_situacao?.slice(0,200) });
-                            } catch(e) {}
+                              const { error: fbErr } = await supabaseClient.from("briefing_feedback").insert({
+                                medico_nome: selectedMedico?.nome || "",
+                                responsavel: "",
+                                avaliacao: feedback,
+                                comentario: feedbackObs,
+                                briefing_resumo: (briefing?.resumo_situacao||"").slice(0,200)
+                              });
+                              if (fbErr && fbErr.code === "42P01") {
+                                // Tabela não existe — tentar criar via serverless
+                                await fetch("/api/create-feedback-table");
+                                // Tentar inserir novamente
+                                await supabaseClient.from("briefing_feedback").insert({
+                                  medico_nome: selectedMedico?.nome || "",
+                                  responsavel: "",
+                                  avaliacao: feedback,
+                                  comentario: feedbackObs,
+                                  briefing_resumo: (briefing?.resumo_situacao||"").slice(0,200)
+                                });
+                              }
+                            } catch(e) { console.log("Feedback error:", e); }
                             setFeedbackEnviado(true);
                           }} style={{width:"100%",marginTop:6,padding:"8px",borderRadius:8,border:"none",background:"var(--teal)",color:"#0a0e1a",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"DM Sans,sans-serif"}}>Enviar feedback</button>
                         </div>
