@@ -2680,13 +2680,39 @@ Responda APENAS com JSON válido, sem markdown:
                   <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0 14px",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:"0.08em"}}>
                     <div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>BRIEFING GERADO<div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>
                   </div>
-                  {contextoExtra && briefing && (
-                    <div style={{background:"rgba(0,191,165,0.1)",border:"2px solid var(--teal)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
-                      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--teal)",marginBottom:6}}>💬 Pergunta do Account</div>
-                      <div style={{fontSize:12,color:"var(--muted)",marginBottom:6,fontStyle:"italic"}}>"{contextoExtra}"</div>
-                      {briefing.resposta_account && <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.resposta_account}</p>}
-                    </div>
-                  )}
+                  {contextoExtra && briefing && (() => {
+                    // Gerar resposta contextual no JS quando menciona ESG Day
+                    const ctxLower = contextoExtra.toLowerCase();
+                    let respostaJS = briefing.resposta_account || null;
+
+                    // Se menciona ESG Day e temos dados do FUP
+                    if ((ctxLower.includes("esg day") || ctxLower.includes("esgday")) && fupMedico) {
+                      const esgProj = fupMedico.find && fupMedico.find(p => p.projeto === "ESG Day");
+                      if (esgProj && esgProj.followups && esgProj.followups.length > 0) {
+                        const ultimo = esgProj.followups[0];
+                        const obsText = ultimo.obs || "";
+                        const compMatch = obsText.match(/Compareceram:\s*(\d+)/);
+                        const procMatch = obsText.match(/Procedimentos fechados:\s*(\d+)/);
+                        const naoMatch = obsText.match(/NÃO fecharam:\s*(\d+)/);
+                        const convMatch = obsText.match(/Conversão real:\s*(\d+)%/);
+                        if (compMatch && procMatch) {
+                          const comp = compMatch[1], proc = procMatch[1], nao = naoMatch ? naoMatch[1] : (comp - proc), conv = convMatch ? convMatch[1] : Math.round((proc/comp)*100);
+                          respostaJS = `No ESG Day de ${ultimo.data||"abril"}: ${comp} pacientes compareceram, ${proc} fechou procedimento e ${nao} não fecharam (conversão real: ${conv}% — meta KPI é ≥40%). Pontos para retomar: (1) Foi feito follow-up D+7 com os ${nao} que não fecharam? (2) Há estratégia de comunicação com esses pacientes? (3) O Dr. compreende que o gap pode ser de timing — paciente ainda em GLP-1 — ou de follow-up pós-evento?`;
+                        }
+                      }
+                    }
+
+                    return (
+                      <div style={{background:"rgba(0,191,165,0.1)",border:"2px solid var(--teal)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+                        <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--teal)",marginBottom:6}}>💬 Pergunta do Account</div>
+                        <div style={{fontSize:12,color:"var(--muted)",marginBottom:8,fontStyle:"italic"}}>"{contextoExtra}"</div>
+                        {respostaJS
+                          ? <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{respostaJS}</p>
+                          : <p style={{margin:0,fontSize:13,color:"var(--muted)",lineHeight:1.7}}>Considere este contexto ao interpretar o briefing abaixo.</p>
+                        }
+                      </div>
+                    );
+                  })()}
                   {[
                     ["📍 Situação Atual", briefing.resumo_situacao, null],
                     ["🎯 Objetivo", briefing.objetivo_visita, "var(--gold)"],
