@@ -2059,7 +2059,22 @@ Responda APENAS com JSON válido, sem markdown:
                 {gerando ? "⚡ Gerando briefing..." : ultimaVisita ? "⚡ Gerar Briefing IA" : "⚡ Gerar Briefing de Primeira Abordagem"}
               </button>
 
-              {erro && <div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.3)",borderRadius:8,padding:"10px 12px",fontSize:12,color:"var(--warn)",marginBottom:12}}>⚠️ {erro}</div>}
+              {erro && (
+                <div style={{background: erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)", border: `1px solid ${erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "rgba(239,68,68,0.3)" : "rgba(245,158,11,0.3)"}`, borderRadius:10, padding:"12px 14px", fontSize:12, marginBottom:12}}>
+                  <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
+                    <span style={{fontSize:16}}>{erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "💳" : erro.includes('API key') || erro.includes('inválida') ? "🔑" : erro.includes('sobrecarregado') ? "⏳" : "⚠️"}</span>
+                    <div>
+                      <div style={{fontWeight:700,marginBottom:3,color: erro.includes('Crédito') || erro.includes('crédito') ? "var(--danger)" : "var(--warn)"}}>
+                        {erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "Créditos esgotados" : erro.includes('API key') || erro.includes('inválida') ? "Problema com API Key" : erro.includes('sobrecarregado') ? "Serviço sobrecarregado" : "Erro ao gerar briefing"}
+                      </div>
+                      <div style={{color:"var(--text)",lineHeight:1.5}}>{erro}</div>
+                      {(erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') || erro.includes('API key')) && (
+                        <div style={{marginTop:6,color:"var(--teal)",fontSize:11}}>→ Acesse console.anthropic.com para resolver</div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {briefing && (
                 <div>
