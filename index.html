@@ -743,15 +743,23 @@ function Visitas() {
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
   const [filterResp, setFilterResp] = useState("");
+  const [filterMes, setFilterMes] = useState("");
   const [toast, setToast] = useState(null);
   const [selectedVisita, setSelectedVisita] = useState(null);
+
+  // Meses disponíveis dinamicamente
+  const mesesDisponiveis = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
+    const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    return ordem.indexOf(a) - ordem.indexOf(b);
+  });
 
   const sorted = [...visitas]
     .sort((a,b) => new Date(b.data_contato) - new Date(a.data_contato))
     .filter(v => {
       const q = search.toLowerCase();
       return (!q || v.medico_nome?.toLowerCase().includes(q) || v.obs?.toLowerCase().includes(q))
-        && (!filterResp || v.responsavel === filterResp);
+        && (!filterResp || v.responsavel === filterResp)
+        && (!filterMes || v.mes === filterMes);
     });
 
   const handleSave = async (form) => {
@@ -796,7 +804,7 @@ function Visitas() {
       <div className="section-header">
         <div>
           <div className="section-title">Registro de Visitas</div>
-          <div className="section-sub">{visitas.length} visitas · clique na linha para ver detalhes</div>
+          <div className="section-sub">{sorted.length} de {visitas.length} visitas{filterMes ? " · " + filterMes : ""} · clique na linha para ver detalhes</div>
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Nova Visita</button>
       </div>
@@ -805,6 +813,10 @@ function Visitas() {
 
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico ou observação..." value={search} onChange={e => setSearch(e.target.value)} />
+        <select className="search-select" value={filterMes} onChange={e => setFilterMes(e.target.value)}>
+          <option value="">Todos os meses</option>
+          {mesesDisponiveis.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
         <select className="search-select" value={filterResp} onChange={e => setFilterResp(e.target.value)}>
           <option value="">Todos responsáveis</option>
           {RESPONSAVEIS.filter(r => !r.startsWith("──")).map(r => <option key={r}>{r}</option>)}
