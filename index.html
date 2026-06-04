@@ -3629,7 +3629,6 @@ const TABS = [
   { id:"medicos",    label:"Médicos",          icon:"⊕" },
   { id:"ativacao",   label:"TPs",              icon:"☑" },
   { id:"intel",      label:"Inteligência",     icon:"◇" },
-  { id:"cartilha",   label:"Cartilha",         icon:"📋" },
   { id:"metas",      label:"Metas",            icon:"🎯" },
   { id:"historico",  label:"Histórico",        icon:"📅" },
   { id:"basedados",  label:"Base de Dados",    icon:"📋" },
@@ -3930,7 +3929,7 @@ function EsgDayProject({ data, onChange }) {
   const [fupModal, setFupModal] = useState(null); // clinica id for new follow-up
   const [fupForm, setFupForm] = useState({ data: "", tipo: "Visita presencial", procedimentosFechados: "", obs: "" });
   const [form, setForm] = useState({
-    clinica: "", cidade: "", data: "", responsavel: "", medico: "",
+    medico: "", clinica: "", cidade: "", data: "", responsavel: "",
     pacientesElegiveis: "", convidados: "", confirmados: "", compareceram: "",
     procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "",
   });
@@ -3960,7 +3959,7 @@ function EsgDayProject({ data, onChange }) {
     const newRec = { ...form, id: fupUid() };
     onChange([...records, newRec]);
     setModal(false);
-    setForm({ clinica: "", cidade: "", data: "", responsavel: "", medico: "", pacientesElegiveis: "", convidados: "", confirmados: "", compareceram: "", procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "" });
+    setForm({ medico: "", clinica: "", cidade: "", data: "", responsavel: "", pacientesElegiveis: "", convidados: "", confirmados: "", compareceram: "", procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "" });
   };
 
   const del = (id) => onChange(records.filter((r) => r.id !== id));
