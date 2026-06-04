@@ -1470,6 +1470,17 @@ function Inteligencia() {
   });
   const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
 
+  // Janela de 4 meses para análise de cobertura presencial
+  const MESES_ORDEM_INTEL = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+  const getMeses4 = () => {
+    const mesesComDados = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => MESES_ORDEM_INTEL.indexOf(a)-MESES_ORDEM_INTEL.indexOf(b));
+    if (!filterMesIntel) return mesesComDados; // todos
+    const idxAtual = MESES_ORDEM_INTEL.indexOf(filterMesIntel);
+    return MESES_ORDEM_INTEL.slice(Math.max(0, idxAtual-3), idxAtual+1).filter(m => mesesComDados.includes(m));
+  };
+  const meses4 = getMeses4();
+  const vi4 = visitas.filter(v => meses4.includes(v.mes)); // últimos 4 meses para análise presencial
+
   const MARKETING = ["Cibele","Guilherme","Sarah","Catharina","Júlia"];
   const COMERCIAL = ["Marcell","Fernanda","Ana Marieta","Inside Sales"];
   const TIER_PRIORITY = ["ST","1","2","3"];
@@ -1485,7 +1496,7 @@ function Inteligencia() {
   // ── Cobertura por tier
   const tierCoverage = ["1","2","3","4","5"].map(tier => {
     const mTier = medicos.filter(m => String(m.tier) === tier);
-    const visitados = mTier.filter(m => vi.some(v => v.medico_nome === m.nome && v.canal === "Presencial"));
+    const visitados = mTier.filter(m => vi4.some(v => nomesBatem(v.medico_nome, m.nome) && v.canal === "Presencial"));
     const pct = mTier.length ? Math.round(visitados.length/mTier.length*100) : 0;
     const alert = pct===0 ? "🔴 SEM PRESENCIAL" : pct>=60 ? "🟢 BOA COBERTURA" : pct>=30 ? "🟡 ATENÇÃO" : "🔴 CRÍTICO";
     return {tier, total:mTier.length, visitados:visitados.length, faltantes:mTier.length-visitados.length, pct, alert};
@@ -1495,7 +1506,7 @@ function Inteligencia() {
   const alertaMedicos = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)))
     .map(m => {
-      const ultimaVisita = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
+      const ultimaVisita = vi4.filter(v => nomesBatem(v.medico_nome, m.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
       const mTps = medicoTps.filter(t => t.medico_id === m.id && t.concluido);
       const urgencia = ["ST","1"].includes(String(m.tier)) ? "🔴 CRÍTICO — agendar ESTA semana" : "🟡 URGENTE — incluir na rota";
       return {
@@ -1854,9 +1865,12 @@ function Inteligencia() {
 
       {/* Médicos sem presencial — todos */}
       <div className="card">
-        <div className="card-title">📋 Todos os Médicos sem Visita Presencial</div>
+        <div className="card-title">📋 Médicos sem Visita Presencial — últimos {meses4.length} meses{meses4.length > 0 ? " ("+meses4[0]+" a "+meses4[meses4.length-1]+")" : ""}</div>
+        <div style={{fontSize:11,color:"var(--muted)",marginBottom:8}}>
+          Janela de análise: {meses4.join(" · ") || "todos os meses"}
+        </div>
         <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-          {medicos.filter(m => !visitas.some(v => v.medico_nome === m.nome && v.canal === "Presencial")).map(m => (
+          {medicos.filter(m => !vi4.some(v => nomesBatem(v.medico_nome, m.nome) && v.canal === "Presencial")).map(m => (
             <span key={m.id} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:6,padding:"4px 10px",fontSize:12,display:"flex",gap:6,alignItems:"center"}}>
               <span style={{color:TIER_COLOR[m.tier]||"#888",fontFamily:"DM Mono",fontSize:10}}>T{m.tier}</span>
               {m.nome}
