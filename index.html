@@ -615,6 +615,7 @@ function Dashboard() {
 
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
         <>
+          <Alerta30Dias visitas={visitas} medicos={medicos} />
           <div className="kpi-row">
             <div className="kpi">
               <div className="kpi-label">Total Visitas</div>
@@ -1808,6 +1809,7 @@ function Inteligencia() {
           <button key={t} onClick={() => setFilterTierIntel(filterTierIntel===t?"":t)} style={{padding:"4px 12px",borderRadius:20,border:"1px solid "+(TIER_COLOR[t]||"var(--border)"),background:filterTierIntel===t?(TIER_COLOR[t]||"var(--teal)"):"var(--surface2)",color:filterTierIntel===t?"#0a0e1a":"var(--muted)",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>T{t}</button>
         ))}
       </div>
+      <Alerta30Dias visitas={visitas} medicos={medicos} />
 
       {/* Estoque Balões */}
       <div className="card" style={{marginBottom:12}}>
@@ -1974,6 +1976,75 @@ function VisitaExpandivel({ v }) {
           {v.acao_prevista && (
             <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista}</div>
           )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+// ─── ALERTA 30 DIAS SEM PRESENCIAL ────────────────────────────────────────
+function Alerta30Dias({ visitas, medicos }) {
+  const [expandido, setExpandido] = React.useState(false);
+  const hoje = new Date();
+
+  const semPresencial = medicos
+    .filter(m => ["ST","1","2","3"].includes(String(m.tier)))
+    .map(m => {
+      const ultimaPresencial = visitas
+        .filter(v => nomesBatem(v.medico_nome, m.nome) && v.canal === "Presencial" && v.data_contato)
+        .sort((a,b) => new Date(b.data_contato) - new Date(a.data_contato))[0];
+      const dias = ultimaPresencial
+        ? Math.floor((hoje - new Date(ultimaPresencial.data_contato + "T00:00:00")) / 86400000)
+        : 999;
+      return { ...m, dias, ultimaPresencial: ultimaPresencial?.data_contato };
+    })
+    .filter(m => m.dias >= 30)
+    .sort((a,b) => {
+      const to = {"ST":0,"1":1,"2":2,"3":3};
+      return (to[String(a.tier)]??9) - (to[String(b.tier)]??9) || b.dias - a.dias;
+    });
+
+  if (semPresencial.length === 0) return null;
+
+  const criticos = semPresencial.filter(m => m.dias >= 60).length;
+  const cor = criticos > 0 ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.1)";
+  const corBorda = criticos > 0 ? "rgba(239,68,68,0.4)" : "rgba(245,158,11,0.4)";
+  const corTexto = criticos > 0 ? "#ef4444" : "var(--warn)";
+
+  return (
+    <div style={{background:cor,border:`1px solid ${corBorda}`,borderRadius:12,padding:"12px 14px",marginBottom:14}}>
+      <div
+        style={{display:"flex",justifyContent:"space-between",alignItems:"center",cursor:"pointer"}}
+        onClick={() => setExpandido(e => !e)}
+      >
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:18}}>🔴</span>
+          <div>
+            <div style={{fontWeight:700,fontSize:13,color:corTexto}}>
+              {semPresencial.length} médico{semPresencial.length!==1?"s":""} prioritário{semPresencial.length!==1?"s":""} sem presencial há +30 dias
+            </div>
+            <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>
+              {criticos > 0 ? `${criticos} crítico${criticos!==1?"s":""} (+60 dias) · ` : ""}Tiers ST/1/2/3 · clique para ver
+            </div>
+          </div>
+        </div>
+        <span style={{color:"var(--muted)",fontSize:12}}>{expandido?"▲":"▼"}</span>
+      </div>
+      {expandido && (
+        <div style={{marginTop:10,borderTop:"1px solid "+corBorda,paddingTop:10,display:"flex",flexDirection:"column",gap:6}}>
+          {semPresencial.map(m => (
+            <div key={m.id} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 10px",background:"var(--bg)",borderRadius:8,borderLeft:`3px solid ${m.dias>=60?"#ef4444":"var(--warn)"}`}}>
+              <div>
+                <span style={{color:TIER_COLOR[String(m.tier)]||"#888",fontFamily:"DM Mono",fontSize:10,fontWeight:700,marginRight:8}}>T{m.tier}</span>
+                <span style={{fontSize:13,fontWeight:500}}>{m.nome}</span>
+              </div>
+              <div style={{textAlign:"right"}}>
+                <div style={{fontSize:12,fontWeight:700,color:m.dias>=60?"#ef4444":"var(--warn)"}}>{m.dias === 999 ? "sem registro" : m.dias+"d"}</div>
+                <div style={{fontSize:10,color:"var(--muted)"}}>{m.ultimaPresencial ? new Date(m.ultimaPresencial+"T00:00:00").toLocaleDateString("pt-BR") : "nunca"}</div>
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>
