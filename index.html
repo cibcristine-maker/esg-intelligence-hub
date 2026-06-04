@@ -2088,6 +2088,11 @@ function Alerta30Dias({ visitas, medicos }) {
 function BriefingIA() {
   const { data: medicos, loading: loadingMed } = useSupabase("perfil_medico");
   const { data: todasVisitas, loading: loadingVis } = useSupabase("visitas");
+  const [fupData, setFupData] = useState(null);
+  useEffect(() => {
+    supabaseClient.from("fup_projetos").select("data").eq("id","shared").single()
+      .then(({ data }) => { if (data?.data) setFupData(data.data); });
+  }, []);
   const [search, setSearch] = React.useState("");
   const [selectedMedico, setSelectedMedico] = React.useState(null);
   const [briefing, setBriefing] = React.useState(null);
@@ -2099,6 +2104,18 @@ function BriefingIA() {
     : [];
   const ultimaVisita = visitasMedico[0] || null;
   const segmentacao = selectedMedico ? (medicos.find(m => m.id === selectedMedico.id) || medicos.find(m => nomesBatem(m.nome, selectedMedico.nome))) : null;
+
+  // Dados do FUP Projetos — Curso IAS Cirurgiões Bariátricos
+  const fupMedico = React.useMemo(() => {
+    if (!fupData || !selectedMedico) return null;
+    const bariatricos = fupData.cursoBariatricos?.medicos || [];
+    const med = bariatricos.find(m => nomesBatem(m.nome, selectedMedico.nome));
+    if (!med) return null;
+    const followups = (fupData.cursoBariatricos?.followups || [])
+      .filter(f => f.medicoId === med.id)
+      .sort((a,b) => new Date(b.data) - new Date(a.data));
+    return { ...med, followups };
+  }, [fupData, selectedMedico]);
 
   const MEDICOS_NOVOS = ["Daniela Castro Mattos Giron","Rodrigo Dallegre Correa da Silva","Isabella Palomeque Mazzuccato Rossi","Gabriel Braga Pereira","Rodrigo Nascimento Santana","Gonzalo Vieira da Cunha Zigano","Fabiola De Angeli Ferreira","Cristovam Miranda","Eduardo Lemos de Souza Bastos","Horacio Neto"];
   const ehNovoMedico = selectedMedico ? MEDICOS_NOVOS.some(n => nomesBatem(n, selectedMedico.nome)) : false;
@@ -2121,6 +2138,25 @@ function BriefingIA() {
           return mes + " (" + vMes.length + " visita" + (vMes.length!==1?"s":"") + "):\n" + linhas;
         }).join("\n\n")
       : "Nenhuma visita registrada — gerar briefing de PRIMEIRA ABORDAGEM baseado na segmentação.";
+
+    // FUP Projetos — contexto do Curso IAS Bariátricos
+    const fupStr = fupMedico ? `
+
+## FUP PROJETOS — CURSO IAS CIRURGIÕES BARIÁTRICOS
+Status: ${fupMedico.statusFunil || fupMedico.status || "—"}
+${fupMedico.followups.length > 0 ? `Último follow-up: ${fupMedico.followups[0].data || "—"} | Tipo: ${fupMedico.followups[0].tipo || "—"} | Status: ${fupMedico.followups[0].statusContato || "—"}
+Obs: ${(fupMedico.followups[0].obs || "—").slice(0,150)}
+Total follow-ups registrados: ${fupMedico.followups.length}
+${fupMedico.followups.slice(1,3).map(f => `- ${f.data||"?"} [${f.tipo||"—"}]: ${(f.obs||"—").slice(0,80)}`).join("\n")}` : "Nenhum follow-up registrado ainda — médico recém incorporado ao programa."}
+
+KPIs esperados do programa:
+- Material pós-curso enviado (meta: D+1)
+- CRM estruturado (meta: D+30)
+- Avaliações ESG agendadas (meta: ≥5 em M1)
+- Procedimentos ESG realizados (meta: ≥2 em M1, ≥5 em M3)
+- Score de Implementação (meta: ≥7 em M3)
+- Risco semáforo (meta: Verde em M3)
+` : "";
 
     const segStr = segmentacao ? `
 ## MATRIZ DE SEGMENTAÇÃO (Base de Dados — fonte prioritária)
@@ -2156,7 +2192,7 @@ Gere um briefing de PRIMEIRA ABORDAGEM para o médico abaixo. Seja direto e prá
 
 MÉDICO: ${selectedMedico.nome} | Tier: ${selectedMedico.tier||"—"} | Especialidade: ${selectedMedico.especialidade||"—"} | Clínica: ${selectedMedico.clinica||"—"} | Região: ${selectedMedico.regiao||"—"}
 
-${segStr}
+${segStr}${fupStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
@@ -2215,7 +2251,7 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ## HISTÓRICO
 ${historico}
 
-${segStr}
+${segStr}${fupStr}
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
