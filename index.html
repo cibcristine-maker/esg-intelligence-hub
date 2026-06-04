@@ -1856,7 +1856,6 @@ const nomesBatem = (a, b) => {
 function BriefingIA() {
   const { data: medicos, loading: loadingMed } = useSupabase("perfil_medico");
   const { data: todasVisitas, loading: loadingVis } = useSupabase("visitas");
-  const { data: baseDados, loading: loadingBase } = useSupabase("base_dados");
   const [search, setSearch] = React.useState("");
   const [selectedMedico, setSelectedMedico] = React.useState(null);
   const [briefing, setBriefing] = React.useState(null);
@@ -1867,7 +1866,7 @@ function BriefingIA() {
     ? [...todasVisitas].filter(v => nomesBatem(v.medico_nome, selectedMedico.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
     : [];
   const ultimaVisita = visitasMedico[0] || null;
-  const segmentacao = selectedMedico ? (baseDados.find(b => b.nome === selectedMedico.nome) || baseDados.find(b => nomesBatem(b.nome, selectedMedico.nome))) : null;
+  const segmentacao = selectedMedico ? (medicos.find(m => m.id === selectedMedico.id) || medicos.find(m => nomesBatem(m.nome, selectedMedico.nome))) : null;
   const medicosFiltrados = medicos.filter(m => !search || m.nome?.toLowerCase().includes(search.toLowerCase()));
 
   const selecionarMedico = (m) => { setSelectedMedico(m); setBriefing(null); setErro(null); };
@@ -1889,12 +1888,13 @@ function BriefingIA() {
       : "Nenhuma visita registrada — gerar briefing de PRIMEIRA ABORDAGEM baseado na segmentação.";
 
     const segStr = segmentacao ? `
-## MATRIZ DE SEGMENTAÇÃO
+## MATRIZ DE SEGMENTAÇÃO (Base de Dados — fonte prioritária)
 Perfil Médico: ${segmentacao.perfil_medico||"—"}
+Nível de Influência Regional: ${segmentacao.nivel_influencia||"—"}
 Estágio com BSCI: ${segmentacao.estagio_bsci||"—"}
 Potencial de Expansão 12m: ${segmentacao.potencial_expansao||"—"}
 Objetivo 12 Meses: ${segmentacao.objetivo_12m||"—"}
-GAPs Relatados: ${segmentacao.gaps_relatados||"—"}
+GAPs Relatados: ${segmentacao.gaps||"—"}
 Pontos Fortes: ${segmentacao.pontos_fortes||"—"}
 Driver de Decisão: ${segmentacao.driver_decisao||"—"}
 Barreira para Ampliar: ${segmentacao.barreira_ampliar||"—"}
@@ -1902,28 +1902,28 @@ Perfil de Adoção de Tecnologia: ${segmentacao.perfil_adocao||"—"}
 Indica GLP-1: ${segmentacao.indica_glp1||"—"}
 Coloca Balão: ${segmentacao.coloca_balao||"—"}
 Conduta quando recusa ESG por preço: ${segmentacao.conduta_recusa_esg||"—"}
-Agendamentos Obesidade/Mês: ${segmentacao.agend_obesidade_mes||"—"}
-Procedimentos ESG/Mês: ${segmentacao.proc_esg_mes||"—"}
-Conversão Consulta→Procedimento: ${segmentacao.conversao_pct||"—"}%
+Procedimentos ESG Marcados: ${segmentacao.procedimentos_marcados||"—"}
+Estoque de Pacientes: ${segmentacao.estoque_pacientes||"—"}
 Maturidade Gestão Clínica: ${segmentacao.maturidade_gestao||"—"}
-Posts/Mês: ${segmentacao.posts_mes||"—"}
-Investimento em Mídia: ${segmentacao.invest_midia||"—"}
 Capacitação Técnica: ${segmentacao.cap_tecnica||"—"}
 Capacitação Comercial: ${segmentacao.cap_comercial||"—"}
 Capacitação Digital: ${segmentacao.cap_digital||"—"}
 Cirurgião Parceiro: ${segmentacao.cirurgiao_parceiro||"—"}
 Referidor Parceiro: ${segmentacao.referidor_parceiro||"—"}
 Comissiona Secretária: ${segmentacao.comissiona_secretaria||"—"}
-` : "Dados de segmentação não encontrados para este médico.";
+Core: ${segmentacao.core||"—"}
+` : "ATENÇÃO: Segmentação não encontrada — baseie o briefing apenas no histórico de visitas.";
 
     const prompt = `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 
 REGRAS CRÍTICAS DE INTERPRETAÇÃO:
-1. "Ação Prevista" = próximo passo COMERCIAL do representante, NÃO é característica do médico. "Proctoria com Dr X" = médico é o PROFESSOR/MENTOR, nunca o aluno.
-2. "Observações" = notas do representante sobre a visita — leia com atenção, contém contexto real do relacionamento.
+1. "Ação Prevista" = próximo passo COMERCIAL planejado pelo representante, NUNCA é característica do médico. Ex: "Proctoria com Dr Eduardo Amui" = este médico é o PROFESSOR/MENTOR que realizará a proctoria, não o aluno.
+2. "Observações" = notas do representante sobre a visita — são a fonte mais rica de contexto real. Leia com atenção total.
 3. Prioridade das fontes: Matriz de Segmentação > Observações > Ação Prevista.
 4. NUNCA infira nível de experiência ou perfil do médico a partir de ações previstas.
-5. O histórico está organizado por mês — analise a EVOLUÇÃO do relacionamento ao longo dos meses.
+5. O histórico está organizado por mês — analise a EVOLUÇÃO do relacionamento.
+6. LÓGICA DE RETOMADA: Se houver "Ação Prevista" em visitas anteriores, o briefing DEVE incluir na abertura e no objetivo a retomada desse ponto — perguntar como foi, se aconteceu, e identificar se há algo que a empresa pode agregar. Ex: se havia proctoria prevista, perguntar como foi e oferecer suporte específico (material, pacientes, cases).
+7. Use a Matriz de Segmentação como base do perfil — se o médico tem Tier ST, é referência nacional, trate com esse nível de reconhecimento.
 
 ## MÉDICO
 Nome: ${selectedMedico.nome}
@@ -1996,7 +1996,7 @@ Responda APENAS com JSON válido, sem markdown:
     } finally { setGerando(false); }
   }
 
-  const loading = loadingMed || loadingVis || loadingBase;
+  const loading = loadingMed || loadingVis;
 
   return (
     <div>
@@ -2015,7 +2015,7 @@ Responda APENAS com JSON válido, sem markdown:
               {medicosFiltrados.length === 0 ? <div className="empty">Nenhum médico.</div> : medicosFiltrados.map(m => {
                 const nVis = todasVisitas.filter(v => nomesBatem(v.medico_nome, m.nome)).length;
                 const ultV = [...todasVisitas].filter(v => nomesBatem(v.medico_nome, m.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
-                const temSeg = baseDados.some(b => b.nome === m.nome);
+                const temSeg = !!(m.perfil_medico || m.objetivo_12m || m.estagio_bsci);
                 const isSel = selectedMedico?.id === m.id;
                 return (
                   <div key={m.id} onClick={() => selecionarMedico(m)}
