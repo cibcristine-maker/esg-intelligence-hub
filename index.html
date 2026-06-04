@@ -1800,6 +1800,19 @@ function Inteligencia() {
 
 
 // ─── CONFIG BANNER ─────────────────────────────────────────────────────────
+// ─── HELPER: busca flexível de nomes ──────────────────────────────────────
+const normalizar = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim() : "";
+const nomesBatem = (a, b) => {
+  const na = normalizar(a), nb = normalizar(b);
+  if (!na || !nb) return false;
+  if (na === nb) return true;
+  if (na.includes(nb) || nb.includes(na)) return true;
+  const pa = na.split(" ").slice(0,2).join(" ");
+  const pb = nb.split(" ").slice(0,2).join(" ");
+  return pa === pb && pa.length > 4;
+};
+
+
 // ─── BRIEFING IA ───────────────────────────────────────────────────────────
 function BriefingIA() {
   const { data: medicos, loading: loadingMed } = useSupabase("perfil_medico");
@@ -1812,7 +1825,7 @@ function BriefingIA() {
   const [erro, setErro] = React.useState(null);
 
   const visitasMedico = selectedMedico
-    ? [...todasVisitas].filter(v => v.medico_nome === selectedMedico.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
+    ? [...todasVisitas].filter(v => nomesBatem(v.medico_nome, selectedMedico.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
     : [];
   const ultimaVisita = visitasMedico[0] || null;
   const segmentacao = selectedMedico ? baseDados.find(b => b.nome === selectedMedico.nome) : null;
@@ -1950,8 +1963,8 @@ Responda APENAS com JSON válido, sem markdown:
           {loading ? <div className="loading"><div className="spinner"/></div> : (
             <div style={{maxHeight:520,overflowY:"auto"}}>
               {medicosFiltrados.length === 0 ? <div className="empty">Nenhum médico.</div> : medicosFiltrados.map(m => {
-                const nVis = todasVisitas.filter(v => v.medico_nome === m.nome).length;
-                const ultV = [...todasVisitas].filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
+                const nVis = todasVisitas.filter(v => nomesBatem(v.medico_nome, m.nome)).length;
+                const ultV = [...todasVisitas].filter(v => nomesBatem(v.medico_nome, m.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0];
                 const temSeg = baseDados.some(b => b.nome === m.nome);
                 const isSel = selectedMedico?.id === m.id;
                 return (
