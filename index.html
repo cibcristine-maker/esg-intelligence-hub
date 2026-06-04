@@ -2099,6 +2099,9 @@ function BriefingIA() {
     : [];
   const ultimaVisita = visitasMedico[0] || null;
   const segmentacao = selectedMedico ? (medicos.find(m => m.id === selectedMedico.id) || medicos.find(m => nomesBatem(m.nome, selectedMedico.nome))) : null;
+
+  const MEDICOS_NOVOS = ["Daniela Castro Mattos Giron","Rodrigo Dallegre Correa da Silva","Isabella Palomeque Mazzuccato Rossi","Gabriel Braga Pereira","Rodrigo Nascimento Santana","Gonzalo Vieira da Cunha Zigano","Fabiola De Angeli Ferreira","Cristovam Miranda","Eduardo Lemos de Souza Bastos","Horacio Neto"];
+  const ehNovoMedico = selectedMedico ? MEDICOS_NOVOS.some(n => nomesBatem(n, selectedMedico.nome)) : false;
   const medicosFiltrados = medicos.filter(m => !search || m.nome?.toLowerCase().includes(search.toLowerCase()));
 
   const selecionarMedico = (m) => { setSelectedMedico(m); setBriefing(null); setErro(null); };
@@ -2160,14 +2163,6 @@ REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referê
 Responda APENAS com JSON válido sem markdown:
 {"resumo_situacao":"perfil do médico e contexto para primeira abordagem","objetivo_visita":"objetivo claro para primeiro contato","tp_recomendado":"TP mais adequado e por quê","abertura_sugerida":"frase de abertura consultiva","argumento_principal":"argumento personalizado ao perfil","material_recomendado":["material 1","material 2"],"sinais_de_avanco":["sinal 1","sinal 2"],"retomada":null,"alerta":"ponto de atenção ou null","proximos_tps":["TP desta visita","TP seguinte"],"acao_marketing":"ação digital baseada no perfil ou null"}`;
 
-    const MEDICOS_NOVOS = [
-      "Daniela Castro Mattos Giron","Rodrigo Dallegre Correa da Silva",
-      "Isabella Palomeque Mazzuccato Rossi","Gabriel Braga Pereira",
-      "Rodrigo Nascimento Santana","Gonzalo Vieira da Cunha Zigano",
-      "Fabiola De Angeli Ferreira","Cristovam Miranda",
-      "Eduardo Lemos de Souza Bastos","Horacio Neto"
-    ];
-    const ehNovoMedico = MEDICOS_NOVOS.some(n => nomesBatem(n, selectedMedico.nome));
     const prompt = ehNovoMedico ? promptPrimeiraAbordagem : `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 
 REGRAS CRÍTICAS DE INTERPRETAÇÃO:
