@@ -1914,13 +1914,19 @@ Responda APENAS com JSON válido, sem markdown:
         body: JSON.stringify({ prompt }),
       });
       const data = await response.json();
-      if (data.error) throw new Error(data.error);
+      if (data.error) throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
       const texto = (data.content||[]).map(b => b.text||"").join("");
-      if (!texto) throw new Error("Resposta vazia da API");
+      if (!texto) throw new Error("Resposta vazia — verifique a API key no Vercel");
       const limpo = texto.replace(/```json|```/g,"").trim();
-      setBriefing(JSON.parse(limpo));
+      try {
+        setBriefing(JSON.parse(limpo));
+      } catch(parseErr) {
+        throw new Error("Erro ao interpretar resposta da IA: " + limpo.slice(0,100));
+      }
     } catch(e) {
-      setErro("Erro: " + (e.message || "Tente novamente.")); console.error(e);
+      const msg = typeof e === 'object' ? (e.message || JSON.stringify(e)) : String(e);
+      setErro("Erro: " + msg);
+      console.error(e);
     } finally { setGerando(false); }
   }
 
