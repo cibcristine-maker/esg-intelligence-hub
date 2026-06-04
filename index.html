@@ -546,12 +546,20 @@ function Dashboard() {
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
 
+  const [filterMesDash, setFilterMesDash] = useState("");
+
   if (!isConfigured) return <ConfigBanner />;
 
-  const totalVisitas = visitas.length;
-  const presenciais = visitas.filter(v => v.canal === "Presencial").length;
-  const altoProb = visitas.filter(v => v.probabilidade === "Alto").length;
-  const suporteMkt = visitas.filter(v => v.suporte_marketing).length;
+  const mesesDash = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
+    const ordem = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    return ordem.indexOf(a) - ordem.indexOf(b);
+  });
+  const vf = filterMesDash ? visitas.filter(v => v.mes === filterMesDash) : visitas;
+
+  const totalVisitas = vf.length;
+  const presenciais = vf.filter(v => v.canal === "Presencial").length;
+  const altoProb = vf.filter(v => v.probabilidade === "Alto").length;
+  const suporteMkt = vf.filter(v => v.suporte_marketing).length;
   const totalTps = medicoTps.length;
   const tpsConcluidos = medicoTps.filter(t => t.concluido).length;
 
