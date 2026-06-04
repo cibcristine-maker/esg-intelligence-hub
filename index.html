@@ -1910,60 +1910,56 @@ Referidor Parceiro: ${segmentacao.referidor_parceiro||"—"}
 Comissiona Secretária: ${segmentacao.comissiona_secretaria||"—"}
 ` : "Dados de segmentação não encontrados para este médico.";
 
-    const prompt = `Você é um especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico) da Boston Scientific Brasil.
+    const prompt = `Você é especialista em estratégia comercial médica da divisão de Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 
-INSTRUÇÕES CRÍTICAS DE INTERPRETAÇÃO:
-1. O campo "Ação Prevista" descreve o PRÓXIMO PASSO COMERCIAL planejado pelo representante — NÃO é uma característica do médico. Ex: "Proctoria com Dr X" significa que o médico vai REALIZAR uma proctoria como professor/mentor, não como aluno.
-2. O campo "Observações" contém notas do representante sobre a visita — leia com atenção pois contém informações valiosas sobre o perfil, comportamento e momento do médico.
-3. A "Matriz de Segmentação" (Base de Dados) é a fonte mais confiável do perfil estratégico do médico — use SEMPRE para embasar o briefing.
-4. NUNCA infira o nível de experiência do médico a partir de ações previstas. Use apenas dados explícitos da segmentação e observações.
-5. Quando houver informações conflitantes, priorize: Segmentação > Observações > Ação Prevista.
+Analise TODOS os dados abaixo e gere um BRIEFING DE ABORDAGEM para a PRÓXIMA VISITA.
 
-SOBRE O MÉDICO: ${selectedMedico.nome}
-- Tier: ${selectedMedico.tier||"—"} (indica prioridade comercial — ST/1 = máxima prioridade)
-- Especialidade: ${ultimaVisita?.especialidade||selectedMedico.especialidade||"—"}
-- Clínica: ${selectedMedico.clinica||"—"}
-- Região: ${selectedMedico.regiao||"—"}
-- Total de visitas registradas: ${visitasMedico.length}
+## MÉDICO
+Nome: ${selectedMedico.nome}
+Tier: ${selectedMedico.tier||"—"}
+Especialidade: ${ultimaVisita.especialidade||selectedMedico.especialidade||"—"}
+Clínica: ${selectedMedico.clinica||"—"}
+Região: ${selectedMedico.regiao||"—"}
+Total de visitas: ${visitasMedico.length}
 
-ÚLTIMA VISITA REGISTRADA:
-${ultimaVisita ? `- Data: ${ultimaVisita.data_contato||"?"}
-- Responsável: ${ultimaVisita.responsavel||"—"}
-- Canal: ${ultimaVisita.canal||"—"}
-- Último TP trabalhado: ${ultimaVisita.ultimo_tp||"—"}
-- Probabilidade de fechar: ${ultimaVisita.probabilidade||"—"}
-- Valor esperado no mês: R$ ${ultimaVisita.valor_esperado||0}
-- Fios ESG em estoque: ${ultimaVisita.fios_esg_estoque||"—"}
-- Balões em estoque: ${ultimaVisita.baloes_estoque||"—"}
-- Procedimentos ESG marcados: ${ultimaVisita.proc_marcados_esg||"—"}
-- Suporte marketing solicitado: ${ultimaVisita.suporte_marketing?"Sim":"Não"}
-- AÇÃO PREVISTA (próximo passo do representante, não perfil do médico): ${ultimaVisita.acao_prevista||"—"}
-- OBSERVAÇÕES DO REPRESENTANTE (leia com atenção — contém contexto valioso): ${ultimaVisita.obs||"—"}` : "SEM VISITAS REGISTRADAS — gerar briefing de PRIMEIRA ABORDAGEM baseado exclusivamente na Matriz de Segmentação abaixo."}
+## ÚLTIMA VISITA
+${ultimaVisita ? `Data: ${ultimaVisita.data_contato||"?"}
+Responsável: ${ultimaVisita.responsavel||"—"}
+Canal: ${ultimaVisita.canal||"—"}
+Último TP: ${ultimaVisita.ultimo_tp||"—"}
+Probabilidade: ${ultimaVisita.probabilidade||"—"}
+Valor esperado: R$ ${ultimaVisita.valor_esperado||0}
+Fios ESG estoque: ${ultimaVisita.fios_esg_estoque||"—"}
+Balões estoque: ${ultimaVisita.baloes_estoque||"—"}
+Proc. ESG marcados: ${ultimaVisita.proc_marcados_esg||"—"}
+Suporte marketing: ${ultimaVisita.suporte_marketing?"Sim":"Não"}
+Ação prevista: ${ultimaVisita.acao_prevista||"—"}
+Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar briefing de PRIMEIRA ABORDAGEM baseado no perfil de segmentação."}
 
-HISTÓRICO POR MÊS (últimos 3 meses — analise a evolução do relacionamento):
+## HISTÓRICO
 ${historico}
 
 ${segStr}
 
-CONTEXTO ESTRATÉGICO ENDOBARIATRICA:
+## CONTEXTO ESTRATÉGICO
 - ESG e GLP-1 são COMPLEMENTARES, nunca competitivos
-- Paciente pós-GLP-1 com reganho de peso = perfil de maior conversão
-- Evidências-chave: MERIT Trial (Lancet 2022), IFSO 2024 meta-análise (n=15.714), ASGE-ESGE 2024
-- Programa INSPIRA: rede de pacientes embaixadores ESG
-- TPs disponíveis: TP1 a TP23 (introdução, perfil paciente, evidências clínicas, complementaridade GLP-1, diferencial técnico, suporte, parceria/referência, follow-up, INSPIRA)
+- Paciente pós-GLP-1 com reganho de peso = maior conversão
+- Evidências: MERIT Trial (Lancet 2022), IFSO 2024 (n=15.714), ASGE-ESGE 2024
+- Programa INSPIRA: embaixadores pacientes ESG
+- TPs disponíveis: TP1 a TP23
 
-Responda APENAS com JSON válido, sem markdown, sem texto fora do JSON:
+Responda APENAS com JSON válido, sem markdown:
 {
-  "resumo_situacao": "2-3 frases precisas sobre o momento atual — cruzando observações das visitas com dados da segmentação. Mencione o Tier e estágio BSCI.",
-  "objetivo_visita": "objetivo claro e específico para a próxima visita — baseado no estágio, gaps e ação prevista",
-  "tp_recomendado": "TP recomendado + justificativa conectando com o driver de decisão e barreiras específicas deste médico",
-  "abertura_sugerida": "frase de abertura natural, consultiva e personalizada — baseada nas observações e histórico real",
-  "argumento_principal": "argumento central personalizado — use pontos fortes, barreiras e driver de decisão da segmentação",
-  "material_recomendado": ["material específico 1", "material específico 2", "material específico 3"],
-  "sinais_de_avanco": ["sinal concreto 1 a observar", "sinal concreto 2 a observar"],
-  "alerta": "ponto de atenção ou risco ESPECÍFICO deste médico baseado nos dados reais (ou null se não houver)",
-  "proximos_tps": ["TP recomendado para esta visita", "TP para a visita seguinte"],
-  "acao_marketing": "ação de marketing personalizada baseada no perfil digital e gaps (ou null)"
+  "resumo_situacao": "2-3 frases sobre o momento atual cruzando visitas + segmentação",
+  "objetivo_visita": "objetivo claro para a próxima visita",
+  "tp_recomendado": "qual TP trabalhar e por quê conectando com driver de decisão",
+  "abertura_sugerida": "frase de abertura natural baseada no histórico",
+  "argumento_principal": "argumento personalizado usando pontos fortes, barreira e driver",
+  "material_recomendado": ["material 1", "material 2", "material 3"],
+  "sinais_de_avanco": ["sinal 1", "sinal 2"],
+  "alerta": "ponto de atenção específico ou null",
+  "proximos_tps": ["TP desta visita", "TP da próxima"],
+  "acao_marketing": "ação de marketing baseada no perfil digital ou null"
 }`;
 
     try {
