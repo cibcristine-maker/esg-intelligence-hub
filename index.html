@@ -2653,6 +2653,31 @@ Responda APENAS com JSON válido, sem markdown:
                       }
                     }
 
+                    // GEO — verificar PRIMEIRO antes de qualquer projeto
+                    if (!respostaJS && (ctxLower.includes("geo") || ctxLower.includes("relat") || ctxLower.includes("visibilidade") || ctxLower.includes("ia ") || ctxLower.includes("inteligência artificial") || ctxLower.includes("llm") || ctxLower.includes("chatgpt") || ctxLower.includes("gemini") || ctxLower.includes("perplexity"))) {
+                      if (geoDiag) {
+                        respostaJS = `Relatório GEO de ${geoDiag.nome}:
+
+Score atual: ${geoDiag.score_geo}
+
+Quem aparece no lugar dele: ${(geoDiag.concorrentes_que_aparecem||"").slice(0,150)}
+
+Gap crítico: ${(geoDiag.gaps_criticos||"").split(",")[0]}
+
+Ativo mais forte: ${(geoDiag.ativos_fortes||"").slice(0,120)}
+
+Oportunidade: ${(geoDiag.oportunidade||"").slice(0,150)}
+
+Fonte: ${geoDiag.fonte}`;
+                      } else {
+                        respostaJS = `Diagnóstico GEO ainda não foi gerado para este médico.
+
+Por que apresentar GEO agora: pacientes que pararam GLP-1 e reganharam peso estão perguntando ao ChatGPT e Gemini "o que fazer sem remédio em [cidade]" — médico invisível nas IAs perde esse paciente antes mesmo de ele abrir o Instagram.
+
+Janela urgente 2026-2028: com a quebra de patente da semaglutida, o volume de pacientes pós-GLP-1 vai dobrar. GEO tem CPL zero após investimento inicial e efeito cumulativo de 18-36 meses — enquanto Meta Ads enfrenta restrições crescentes para saúde desde jan/2025.`;
+                      }
+                    }
+
                     // Curso IAS Bariátricos
                     if (!respostaJS && (ctxLower.includes("bariátric") || ctxLower.includes("bariatric") || ctxLower.includes("curso ias") || ctxLower.includes("cirurgi")) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Bariátric"));
@@ -2668,7 +2693,7 @@ Responda APENAS com JSON válido, sem markdown:
                     }
 
                     // Imersão Marketing / GEO
-                    if (!respostaJS && (ctxLower.includes("imersão") || ctxLower.includes("imersao") || ctxLower.includes("marketing") || ctxLower.includes("geo") || ctxLower.includes("digital")) && fupMedico) {
+                    if (!respostaJS && (ctxLower.includes("imersão") || ctxLower.includes("imersao") || ctxLower.includes("marketing")) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Imersão"));
                       if (proj) {
                         const fups = proj.followups || [];
