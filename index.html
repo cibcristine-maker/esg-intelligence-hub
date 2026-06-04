@@ -2679,8 +2679,14 @@ Responda APENAS com JSON válido, sem markdown:
                   <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0 14px",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:"0.08em"}}>
                     <div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>BRIEFING GERADO<div style={{flex:1,height:1,background:"rgba(0,191,165,0.25)"}}/>
                   </div>
+                  {contextoExtra && briefing && (
+                    <div style={{background:"rgba(0,191,165,0.1)",border:"2px solid var(--teal)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--teal)",marginBottom:6}}>💬 Pergunta do Account</div>
+                      <div style={{fontSize:12,color:"var(--muted)",marginBottom:6,fontStyle:"italic"}}>"{contextoExtra}"</div>
+                      {briefing.resposta_account && <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.resposta_account}</p>}
+                    </div>
+                  )}
                   {[
-                    ["💬 Pergunta do Account", briefing.resposta_account, "var(--teal)"],
                     ["📍 Situação Atual", briefing.resumo_situacao, null],
                     ["🎯 Objetivo", briefing.objetivo_visita, "var(--gold)"],
                     ["💬 TP Recomendado", briefing.tp_recomendado, null],
