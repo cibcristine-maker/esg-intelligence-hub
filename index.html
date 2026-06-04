@@ -2133,14 +2133,27 @@ function BriefingIA() {
     }
 
     // ESG Day — vincular por médico responsável
-    const esgDayMed = (fupData.esgDay||[]).filter(e => nomesBatem(e.medico, selectedMedico.nome));
+    const esgDayMed = (fupData.esgDay||[]).filter(e =>
+      nomesBatem(e.medico, selectedMedico.nome) ||
+      nomesBatem(e.clinica, selectedMedico.clinica||"") ||
+      nomesBatem(e.responsavel, selectedMedico.nome)
+    );
     if (esgDayMed.length > 0) {
       projetos.push({ projeto: "ESG Day", status: esgDayMed.length + " evento(s)", followups: esgDayMed.slice(0,3).map(e => {
         const comp = Number(e.compareceram)||0;
-        const proc = Number(e.procedimentos)||0;
-        const naoFecharam = comp - proc;
+        // procedimentos = procedimentos30d + soma dos followups
+        const procFups = (e.followups||[]).reduce((s,f) => s + (Number(f.procedimentosFechados)||0), 0);
+        const proc = (Number(e.procedimentos30d)||0) + procFups;
+        const naoFecharam = Math.max(0, comp - proc);
         const conv = comp > 0 ? Math.round((proc/comp)*100) : 0;
-        return { data: e.data, obs: `Compareceram: ${comp} pacientes | Procedimentos fechados: ${proc} | NÃO fecharam: ${naoFecharam} pacientes | Conversão real: ${conv}% — Meta KPI: ≥40%${conv < 25 ? " — ABAIXO DO ALERTA (revisar seleção/follow-up)" : conv < 40 ? " — abaixo da meta" : " — dentro da meta"}` };
+        return {
+          data: e.data,
+          compareceram: comp,
+          procedimentos: proc,
+          naoFecharam,
+          conv,
+          obs: `Compareceram: ${comp} pacientes | Procedimentos fechados: ${proc} | Não fecharam: ${naoFecharam} | Conversão real: ${conv}% (meta ≥40%)${conv===0&&proc>0?" — ATENÇÃO: conversão calculada como 0% mas houve procedimentos, verificar dados":""}`
+        };
       }) });
     }
 
@@ -2691,13 +2704,9 @@ Responda APENAS com JSON válido, sem markdown:
                       if (esgProj && esgProj.followups && esgProj.followups.length > 0) {
                         const ultimo = esgProj.followups[0];
                         const obsText = ultimo.obs || "";
-                        const compMatch = obsText.match(/Compareceram:\s*(\d+)/);
-                        const procMatch = obsText.match(/Procedimentos fechados:\s*(\d+)/);
-                        const naoMatch = obsText.match(/NÃO fecharam:\s*(\d+)/);
-                        const convMatch = obsText.match(/Conversão real:\s*(\d+)%/);
-                        if (compMatch && procMatch) {
-                          const comp = compMatch[1], proc = procMatch[1], nao = naoMatch ? naoMatch[1] : (comp - proc), conv = convMatch ? convMatch[1] : Math.round((proc/comp)*100);
-                          respostaJS = `No ESG Day de ${ultimo.data||"abril"}: ${comp} pacientes compareceram, ${proc} fechou procedimento e ${nao} não fecharam (conversão real: ${conv}% — meta KPI é ≥40%). Pontos para retomar: (1) Foi feito follow-up D+7 com os ${nao} que não fecharam? (2) Há estratégia de comunicação com esses pacientes? (3) O Dr. compreende que o gap pode ser de timing — paciente ainda em GLP-1 — ou de follow-up pós-evento?`;
+                        if (ultimo.compareceram !== undefined) {
+                          const comp = ultimo.compareceram, proc = ultimo.procedimentos, nao = ultimo.naoFecharam, conv = ultimo.conv;
+                          respostaJS = `No ESG Day de ${ultimo.data||"abril"}: ${comp} pacientes compareceram, ${proc} fechou o procedimento e ${nao} não fecharam (conversão real: ${conv}% — meta KPI ≥40%). Sugestão de retomada: (1) Foi feito follow-up D+7 com os ${nao} que não fecharam? (2) O Dr. tem estratégia de comunicação com esses pacientes? (3) Se o follow-up não foi feito, esse é o gap — não a qualidade da palestra. Se foi feito e não converteram, aí sim investigar seleção ou timing (paciente pode ainda estar em GLP-1).`;
                         }
                       }
                     }
