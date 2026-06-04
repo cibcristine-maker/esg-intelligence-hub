@@ -1788,6 +1788,12 @@ function Inteligencia() {
           </div>
         )}
       </div>
+      <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
+        <button onClick={() => setFilterTierIntel("")} style={{padding:"4px 12px",borderRadius:20,border:"1px solid var(--border)",background:!filterTierIntel?"var(--gold)":"var(--surface2)",color:!filterTierIntel?"#0a0e1a":"var(--muted)",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Todos Tiers</button>
+        {["ST","1","2","3","4","5"].map(t => (
+          <button key={t} onClick={() => setFilterTierIntel(filterTierIntel===t?"":t)} style={{padding:"4px 12px",borderRadius:20,border:"1px solid "+(TIER_COLOR[t]||"var(--border)"),background:filterTierIntel===t?(TIER_COLOR[t]||"var(--teal)"):"var(--surface2)",color:filterTierIntel===t?"#0a0e1a":"var(--muted)",fontSize:11,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>T{t}</button>
+        ))}
+      </div>
 
       {/* Estoque Balões */}
       <div className="card" style={{marginBottom:12}}>
