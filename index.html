@@ -2084,34 +2084,6 @@ function Alerta30Dias({ visitas, medicos }) {
 }
 
 
-// ─── GEO CARD ────────────────────────────────────────────────────────────────
-function GeoCard({ diag }) {
-  if (!diag) return null;
-  return (
-    <div style={{background:"rgba(10,186,181,0.07)",border:"1px solid rgba(10,186,181,0.35)",borderRadius:12,padding:"12px 14px",marginBottom:12}}>
-      <div style={{fontSize:10,fontWeight:700,color:"#0ABAB5",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📊 Diagnóstico GEO</div>
-      <div style={{fontSize:12,color:"var(--text)",marginBottom:5,lineHeight:1.5}}>
-        <span style={{color:"#0ABAB5",fontWeight:600}}>Score: </span>
-        <span>{String(diag.score_geo||"—").slice(0,60)}</span>
-      </div>
-      <div style={{fontSize:12,color:"var(--text)",marginBottom:5,lineHeight:1.5}}>
-        <span style={{color:"#ef4444",fontWeight:600}}>⚠ Gap: </span>
-        <span>{String(diag.gaps_criticos||"—").split(",")[0]}</span>
-      </div>
-      <div style={{fontSize:12,color:"var(--text)",marginBottom:5,lineHeight:1.5}}>
-        <span style={{color:"#0ABAB5",fontWeight:600}}>✦ Ativo: </span>
-        <span>{String(diag.ativos_fortes||"—").slice(0,90)}</span>
-      </div>
-      {diag.alerta_critico && (
-        <div style={{marginTop:6,background:"rgba(239,68,68,0.06)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:6,padding:"6px 10px",fontSize:11,color:"#ef4444"}}>
-          🚨 {String(diag.alerta_critico).slice(0,130)}
-        </div>
-      )}
-    </div>
-  );
-}
-
-
 // ─── BRIEFING IA ───────────────────────────────────────────────────────────
 function BriefingIA() {
   const { data: medicos, loading: loadingMed } = useSupabase("perfil_medico");
@@ -2614,7 +2586,6 @@ Responda APENAS com JSON válido, sem markdown:
                 </div>
               )}
 
-              <GeoCard diag={geoDiag} />
               <button onClick={gerarBriefing} disabled={gerando||!selectedMedico}
                 style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
                 {gerando ? "⚡ Gerando briefing..." : ehNovoMedico ? "⚡ Gerar Briefing de Primeira Abordagem" : "⚡ Gerar Briefing IA"}
