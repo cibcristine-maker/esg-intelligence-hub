@@ -644,6 +644,39 @@ function Dashboard() {
             </div>
           </div>
 
+          {totalOutcomeReg > 0 && (
+            <div style={{marginBottom:16}}>
+              <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:8}}>📊 Outcome — Procedimentos Realizados</div>
+              <div className="kpi-row">
+                <div className="kpi">
+                  <div className="kpi-label">Total Procedimentos</div>
+                  <div className="kpi-value" style={{color:"var(--teal)"}}>{totalProcedimentos}</div>
+                  <div className="kpi-sub">ESG + Balão</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">ESG Realizados</div>
+                  <div className="kpi-value" style={{color:"var(--teal)"}}>{outcomeESG + outcomeAmbos}</div>
+                  <div className="kpi-sub">no período</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">Balões Realizados</div>
+                  <div className="kpi-value" style={{color:"#3b82f6"}}>{outcomeBalao + outcomeAmbos}</div>
+                  <div className="kpi-sub">no período</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">Taxa Conversão</div>
+                  <div className="kpi-value" style={{color:txConversao>=40?"#10b981":txConversao>=25?"var(--warn)":"#ef4444"}}>{txConversao}%</div>
+                  <div className="kpi-sub">{totalOutcomeReg} visitas c/ outcome</div>
+                </div>
+                <div className="kpi">
+                  <div className="kpi-label">Não Converteu</div>
+                  <div className="kpi-value" style={{color:"#ef4444"}}>{outcomeNao}</div>
+                  <div className="kpi-sub">{outcomePendente} pendentes</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px"}}>
             <div className="card">
               <div className="card-title">Visitas por Canal</div>
