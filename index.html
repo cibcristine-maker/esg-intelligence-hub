@@ -4185,7 +4185,7 @@ function EsgDayProject({ data, onChange }) {
       {/* Modal Novo Evento */}
       <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Evento ESG Day">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-          <FupInput label="Clínica" value={form.clinica} onChange={(v) => setForm({ ...form, clinica: v })} required />
+          <FupInput label="Médico responsável" value={form.medico} onChange={(v) => setForm({ ...form, medico: v })} required />
           <FupInput label="Cidade" value={form.cidade} onChange={(v) => setForm({ ...form, cidade: v })} />
           <FupInput label="Data do Evento" type="date" value={form.data} onChange={(v) => setForm({ ...form, data: v })} />
           <FupInput label="Responsável (Account)" value={form.responsavel} onChange={(v) => setForm({ ...form, responsavel: v })} />
