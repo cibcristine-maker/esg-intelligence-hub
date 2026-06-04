@@ -1984,11 +1984,13 @@ Responda APENAS com JSON válido, sem markdown:
       if (data.error) throw new Error(typeof data.error === 'object' ? JSON.stringify(data.error) : data.error);
       const texto = (data.content||[]).map(b => b.text||"").join("");
       if (!texto) throw new Error("Resposta vazia — verifique a API key no Vercel");
-      const limpo = texto.replace(/```json|```/g,"").trim();
+      // Extrai o JSON mesmo que haja texto antes/depois
+      const match = texto.match(/\{[\s\S]*\}/);
+      if (!match) throw new Error("JSON não encontrado na resposta");
       try {
-        setBriefing(JSON.parse(limpo));
+        setBriefing(JSON.parse(match[0]));
       } catch(parseErr) {
-        throw new Error("Erro ao interpretar resposta da IA: " + limpo.slice(0,100));
+        throw new Error("Erro ao interpretar JSON: " + match[0].slice(0,80));
       }
     } catch(e) {
       const msg = typeof e === 'object' ? (e.message || JSON.stringify(e)) : String(e);
