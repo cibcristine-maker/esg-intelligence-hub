@@ -142,6 +142,20 @@ const css = `
   }
   .nav-btn:hover { color: var(--text); }
   .nav-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .nav-btn.destaque {
+    color: var(--teal);
+    font-weight: 700;
+    background: rgba(0,191,165,0.08);
+    border-radius: 8px;
+    margin: 8px 4px;
+    height: 40px;
+    padding: 0 16px;
+    border: 1px solid rgba(0,191,165,0.35);
+    border-bottom: 1px solid rgba(0,191,165,0.35) !important;
+    box-shadow: 0 0 12px rgba(0,191,165,0.15);
+  }
+  .nav-btn.destaque:hover { background: rgba(0,191,165,0.15); box-shadow: 0 0 20px rgba(0,191,165,0.3); }
+  .nav-btn.destaque.active { background: rgba(0,191,165,0.2); border-color: var(--teal); box-shadow: 0 0 20px rgba(0,191,165,0.4); }
 
   /* MAIN */
   .main {
@@ -3116,17 +3130,17 @@ function PerfilDetalhe({ medico, onClose }) {
 
 // ─── APP ROOT ──────────────────────────────────────────────────────────────
 const TABS = [
-  { id:"dashboard", label:"Dashboard", icon:"◈" },
-  { id:"visitas",   label:"Visitas",   icon:"✎" },
-  { id:"medicos",   label:"Médicos",   icon:"⊕" },
-  { id:"ativacao",  label:"TPs",       icon:"☑" },
-  { id:"intel",     label:"Inteligência", icon:"◇" },
-  { id:"cartilha",  label:"Cartilha",  icon:"📋" },
-  { id:"metas",     label:"Metas",     icon:"🎯" },
-  { id:"historico",  label:"Histórico", icon:"📅" },
-  { id:"basedados",  label:"Base de Dados", icon:"📋" },
-  { id:"consulta",   label:"Consulta Médico", icon:"🔍" },
-  { id:"briefingIA",  label:"Briefing IA",     icon:"⚡" },
+  { id:"dashboard",  label:"Dashboard",       icon:"◈" },
+  { id:"briefingIA", label:"Briefing IA",      icon:"⚡", destaque: true },
+  { id:"visitas",    label:"Visitas",          icon:"✎" },
+  { id:"medicos",    label:"Médicos",          icon:"⊕" },
+  { id:"ativacao",   label:"TPs",              icon:"☑" },
+  { id:"intel",      label:"Inteligência",     icon:"◇" },
+  { id:"cartilha",   label:"Cartilha",         icon:"📋" },
+  { id:"metas",      label:"Metas",            icon:"🎯" },
+  { id:"historico",  label:"Histórico",        icon:"📅" },
+  { id:"basedados",  label:"Base de Dados",    icon:"📋" },
+  { id:"consulta",   label:"Consulta Médico",  icon:"🔍" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
 ];
 
@@ -5461,7 +5475,7 @@ function App() {
           {TABS.map(t => (
             <button
               key={t.id}
-              className={`nav-btn ${tab === t.id ? "active" : ""}`}
+              className={`nav-btn ${tab === t.id ? "active" : ""} ${t.destaque ? "destaque" : ""}`}
               onClick={() => setTab(t.id)}
             >
               {t.icon} {t.label}
