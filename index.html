@@ -2704,6 +2704,31 @@ Responda APENAS com JSON válido, sem markdown:
                       }
                     }
 
+                    // GEO — quando menciona relatório GEO, diagnóstico GEO, visibilidade IA
+                    if (!respostaJS && (ctxLower.includes("geo") || ctxLower.includes("relat") || ctxLower.includes("visibilidade") || ctxLower.includes("ia ") || ctxLower.includes("chatgpt") || ctxLower.includes("inteligência artificial") || ctxLower.includes("llm"))) {
+                      if (geoDiag) {
+                        // Médico TEM diagnóstico GEO — trazer dados reais
+                        respostaJS = `Dados reais do Relatório GEO de ${geoDiag.nome} (${geoDiag.fonte.split(",")[0]}):
+
+Score atual: ${geoDiag.score_geo}
+Quem aparece no lugar dele: ${(geoDiag.concorrentes_que_aparecem||"").slice(0,120)}
+Principal gap: ${(geoDiag.gaps_criticos||"").split(",")[0]}
+Maior ativo: ${(geoDiag.ativos_fortes||"").slice(0,100)}
+Oportunidade: ${(geoDiag.oportunidade||"").slice(0,120)}
+
+Use esses dados reais na conversa — o relatório completo já foi entregue ao médico.`;
+                      } else {
+                        // Médico NÃO tem diagnóstico GEO — explicar benefícios e contexto
+                        respostaJS = `Ainda não foi gerado diagnóstico GEO para este médico. Pontos para apresentar o conceito:
+
+O que é GEO: pacientes que pararam GLP-1 e reganharam peso estão perguntando ao ChatGPT, Gemini e Perplexity "o que fazer sem remédio em [cidade]" — não buscam mais só no Google. Médicos invisíveis nas IAs perdem esse paciente antes mesmo de ele abrir o Instagram.
+
+Por que é urgente em 2026: com a quebra de patente da semaglutida, o volume de pacientes pós-GLP-1 vai dobrar. A janela de captura é jul/2026–jan/2027. Médicos que publicarem conteúdo agora estarão posicionados quando essa onda chegar.
+
+Diferencial: GEO tem CPL marginal zero após investimento inicial em conteúdo e efeito cumulativo — cada artigo publicado continua sendo citado por 18-36 meses. Meta Ads está com restrições crescentes para saúde desde jan/2025.`;
+                      }
+                    }
+
                     // Resposta genérica quando há contexto mas sem projeto específico
                     if (!respostaJS && contextoExtra) {
                       const projList = Array.isArray(fupMedico) && fupMedico.length > 0
