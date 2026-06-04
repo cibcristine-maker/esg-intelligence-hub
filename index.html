@@ -2616,7 +2616,7 @@ Responda APENAS com JSON válido, sem markdown:
                       fontSize:11,
                       color:"#ef4444"
                     }}>
-                      🚨 {geoDiag.alerta_critico.slice(0,120)}
+                      🚨 {(geoDiag.alerta_critico||"").slice(0,120)}
                     </div>
                   )}
                 </div>
