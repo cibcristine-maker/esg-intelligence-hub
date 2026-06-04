@@ -1852,6 +1852,56 @@ const nomesBatem = (a, b) => {
 };
 
 
+// ─── VISITA EXPANDÍVEL ────────────────────────────────────────────────────
+function VisitaExpandivel({ v }) {
+  const [expandido, setExpandido] = React.useState(false);
+  const temConteudo = v.obs || v.acao_prevista;
+  const corBorda = v.probabilidade==="Alto"?"var(--success)":v.probabilidade==="Médio"?"var(--warn)":"var(--border)";
+  return (
+    <div
+      onClick={() => temConteudo && setExpandido(e => !e)}
+      style={{
+        padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,
+        marginBottom:4,borderLeft:"2px solid "+corBorda,
+        cursor:temConteudo?"pointer":"default",
+        transition:"background 0.15s"
+      }}
+    >
+      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+        <span style={{color:"var(--muted)",fontFamily:"DM Mono",fontSize:10,flexShrink:0}}>
+          {v.data_contato?new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR"):"—"}
+        </span>
+        <span style={{color:"var(--teal)",fontWeight:600}}>{v.ultimo_tp||"—"}</span>
+        <span style={{color:"var(--muted)",fontSize:10}}>{v.canal||""}</span>
+        {v.responsavel && <span style={{color:"var(--gold)",fontSize:10,fontWeight:600}}>{v.responsavel}</span>}
+        {temConteudo && (
+          <span style={{marginLeft:"auto",color:"var(--muted)",fontSize:10}}>
+            {expandido ? "▲" : "▼"}
+          </span>
+        )}
+      </div>
+      {!expandido && temConteudo && (
+        <div style={{color:"var(--muted)",fontSize:11,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+          {(v.obs || v.acao_prevista||"").slice(0,70)}…
+        </div>
+      )}
+      {expandido && (
+        <div style={{marginTop:6}}>
+          {v.obs && (
+            <div style={{color:"var(--text)",lineHeight:1.5,fontSize:11,marginBottom:4,whiteSpace:"pre-wrap"}}>
+              {v.obs}
+            </div>
+          )}
+          {v.acao_prevista && (
+            <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista}</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+
 // ─── BRIEFING IA ───────────────────────────────────────────────────────────
 function BriefingIA() {
   const { data: medicos, loading: loadingMed } = useSupabase("perfil_medico");
@@ -2123,16 +2173,7 @@ Responda APENAS com JSON válido, sem markdown:
                         <div key={mes} style={{marginBottom:10}}>
                           <div style={{fontSize:10,fontWeight:700,color:"var(--teal)",letterSpacing:"0.08em",marginBottom:4,textTransform:"uppercase"}}>{mes} · {vMes.length} visita{vMes.length!==1?"s":""}</div>
                           {vMes.slice(0,3).map((v,i) => (
-                            <div key={i} style={{padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:4,borderLeft:"2px solid "+(v.probabilidade==="Alto"?"var(--success)":v.probabilidade==="Médio"?"var(--warn)":"var(--border)")}}>
-                              <div style={{display:"flex",gap:8,marginBottom:2,flexWrap:"wrap"}}>
-                                <span style={{color:"var(--muted)",fontFamily:"DM Mono",fontSize:10,flexShrink:0}}>{v.data_contato?new Date(v.data_contato+"T00:00:00").toLocaleDateString("pt-BR"):"—"}</span>
-                                <span style={{color:"var(--teal)",fontWeight:600}}>{v.ultimo_tp||"—"}</span>
-                                <span style={{color:"var(--muted)",fontSize:10}}>{v.canal||""}</span>
-                                {v.responsavel && <span style={{color:"var(--gold)",fontSize:10,fontWeight:600}}>{v.responsavel}</span>}
-                              </div>
-                              {v.obs && <div style={{color:"var(--text)",lineHeight:1.4,marginBottom:2,fontSize:11}}>{v.obs.slice(0,100)}{v.obs.length>100?"…":""}</div>}
-                              {v.acao_prevista && <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista.slice(0,80)}</div>}
-                            </div>
+                            <VisitaExpandivel key={i} v={v} />
                           ))}
                         </div>
                       );
