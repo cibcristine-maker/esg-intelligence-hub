@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>ESG Intelligence Hub — Boston Scientific Endura</title>
+<title>ESG Intelligence Hub — Endobariatrica</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -1821,12 +1821,14 @@ function BriefingIA() {
   const selecionarMedico = (m) => { setSelectedMedico(m); setBriefing(null); setErro(null); };
 
   async function gerarBriefing() {
-    if (!ultimaVisita) { setErro("Nenhuma visita registrada para este médico ainda."); return; }
+    // Pode gerar mesmo sem visitas — usa só segmentação
     setGerando(true); setBriefing(null); setErro(null);
 
-    const historico = visitasMedico.slice(0,5).map((v,i) =>
-      `Visita ${i+1} (${v.data_contato||"?"}): TP=${v.ultimo_tp||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,100)} | Ação=${v.acao_prevista||"—"}`
-    ).join("\n");
+    const historico = visitasMedico.length > 0
+      ? visitasMedico.slice(0,5).map((v,i) =>
+          `Visita ${i+1} (${v.data_contato||"?"}): TP=${v.ultimo_tp||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,100)} | Ação=${v.acao_prevista||"—"}`
+        ).join("\n")
+      : "Nenhuma visita registrada ainda — primeira abordagem.";
 
     const segStr = segmentacao ? `
 ## MATRIZ DE SEGMENTAÇÃO
@@ -1868,7 +1870,8 @@ Clínica: ${selectedMedico.clinica||"—"}
 Região: ${selectedMedico.regiao||"—"}
 Total de visitas: ${visitasMedico.length}
 
-## ÚLTIMA VISITA (${ultimaVisita.data_contato||"?"})
+## ÚLTIMA VISITA
+${ultimaVisita ? `Data: ${ultimaVisita.data_contato||"?"}
 Responsável: ${ultimaVisita.responsavel||"—"}
 Canal: ${ultimaVisita.canal||"—"}
 Último TP: ${ultimaVisita.ultimo_tp||"—"}
@@ -1879,7 +1882,7 @@ Balões estoque: ${ultimaVisita.baloes_estoque||"—"}
 Proc. ESG marcados: ${ultimaVisita.proc_marcados_esg||"—"}
 Suporte marketing: ${ultimaVisita.suporte_marketing?"Sim":"Não"}
 Ação prevista: ${ultimaVisita.acao_prevista||"—"}
-Observações: ${ultimaVisita.obs||"—"}
+Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar briefing de PRIMEIRA ABORDAGEM baseado no perfil de segmentação."}
 
 ## HISTÓRICO
 ${historico}
@@ -2051,9 +2054,9 @@ Responda APENAS com JSON válido, sem markdown:
                 </div>
               )}
 
-              <button onClick={gerarBriefing} disabled={gerando||!ultimaVisita}
+              <button onClick={gerarBriefing} disabled={gerando||!selectedMedico}
                 style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
-                {gerando ? "⚡ Gerando briefing..." : "⚡ Gerar Briefing IA"}
+                {gerando ? "⚡ Gerando briefing..." : ultimaVisita ? "⚡ Gerar Briefing IA" : "⚡ Gerar Briefing de Primeira Abordagem"}
               </button>
 
               {erro && <div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.3)",borderRadius:8,padding:"10px 12px",fontSize:12,color:"var(--warn)",marginBottom:12}}>⚠️ {erro}</div>}
@@ -5223,7 +5226,7 @@ function App() {
           <div className="header-logo">E</div>
           <div>
             <div className="header-title">ESG Intelligence Hub</div>
-            <div className="header-sub">Boston Scientific · Endura</div>
+            <div className="header-sub">Endobariatrica</div>
           </div>
         </div>
         <nav className="nav">
