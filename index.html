@@ -2251,7 +2251,7 @@ function BriefingIA() {
         fonte: "Relatório Estratégico SEO & GEO — Dr. Leonardo Teixeira Rodrigues: Visibilidade Inteligente, Boston Scientific Brasil/Endura, Abril 2026"
       },
       "fabio": {
-        nome: "Dr. Fábio Miranda Ribeiro",
+        nome: "Fábio Miranda",
         paradoxo: "Base digital mais completa da especialidade no RJ — YouTube ativo, 5,0★ 130 avaliações, Instagram verificado, IRCAD RIO — mas invisível para platô e reganho pós-GLP-1, o tema mais buscado de 2026",
         score_geo: "6/10 — ChatGPT: aparece para ESG e reganho RJ | Perplexity: 4/10 parcial | Google AI Overview: 4/10 parcial | Schema FAQ: 0/10 ausente | Conteúdo pós-GLP-1: 1/10 ausente",
         score_instagram: "8/10 — 17,4k seguidores, verificado, 564 posts, conteúdo estratégico",
@@ -2319,7 +2319,10 @@ function BriefingIA() {
     const geoDiag = selectedMedico ? Object.values(GEO_DIAGNOSTICOS).find(d => {
       const nn = nomeNorm(d.nome);
       const ns = nomeNorm(selectedMedico.nome);
-      return nn.split(" ").slice(0,2).join(" ") === ns.split(" ").slice(0,2).join(" ") || ns.includes(nn.split(" ")[1]||"");
+      const nn2 = nn.split(" "); const ns2 = ns.split(" ");
+      return nn2.slice(0,2).join(" ") === ns2.slice(0,2).join(" ") 
+        || ns.includes(nn2[0]||"") && ns.includes(nn2[1]||"")
+        || nn.includes(ns2[0]||"") && nn.includes(ns2[1]||"");
     }) : null;
     const geoStr = geoDiag ? `
 
