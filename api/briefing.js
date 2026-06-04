@@ -12,9 +12,7 @@ export default async function handler(req, res) {
 
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ 
-        error: 'API key não configurada. Acesse console.anthropic.com para configurar.' 
-      });
+      return res.status(500).json({ error: 'API key não configurada. Acesse console.anthropic.com.' });
     }
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
@@ -25,8 +23,8 @@ export default async function handler(req, res) {
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-6',
-        max_tokens: 1500,
+        model: 'claude-opus-4-6',
+        max_tokens: 2000,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
@@ -34,10 +32,8 @@ export default async function handler(req, res) {
     const data = await anthropicRes.json();
 
     if (!anthropicRes.ok) {
-      // Erros específicos da Anthropic
       const errType = data.error?.type || '';
       const errMsg = data.error?.message || JSON.stringify(data);
-      
       if (errType === 'authentication_error') {
         return res.status(401).json({ error: 'Chave de API inválida. Verifique em console.anthropic.com' });
       }
@@ -45,7 +41,7 @@ export default async function handler(req, res) {
         return res.status(402).json({ error: 'Créditos esgotados. Recarregue em console.anthropic.com/billing' });
       }
       if (errType === 'overloaded_error') {
-        return res.status(503).json({ error: 'Serviço temporariamente sobrecarregado. Tente em alguns segundos.' });
+        return res.status(503).json({ error: 'Serviço sobrecarregado. Tente em alguns segundos.' });
       }
       return res.status(500).json({ error: errMsg });
     }
