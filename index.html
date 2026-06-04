@@ -2268,6 +2268,8 @@ ${segStr}${geoStr}${fupStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
+${contextoExtra ? "\n\nCONTEXTO ADICIONAL: " + contextoExtra : ""}
+
 Seja CONCISO — máximo 2 frases por campo. Responda APENAS com JSON válido sem markdown:
 {"resumo_situacao":"perfil do médico e contexto para primeira abordagem","objetivo_visita":"objetivo claro para primeiro contato","tp_recomendado":"TP mais adequado e por quê","abertura_sugerida":"frase de abertura consultiva","argumento_principal":"argumento personalizado ao perfil","material_recomendado":["material 1","material 2"],"sinais_de_avanco":["sinal 1","sinal 2"],"retomada":null,"alerta":"ponto de atenção ou null","proximos_tps":["TP desta visita","TP seguinte"],"acao_marketing":"ação digital baseada no perfil ou null"}`;
 
