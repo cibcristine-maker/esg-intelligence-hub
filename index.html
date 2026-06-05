@@ -907,12 +907,14 @@ function Visitas() {
                     <td style={{fontWeight:500}}>{v.medico_nome}</td>
                     <td><span className="badge badge-canal">{v.canal || "—"}</span></td>
                     <td className="td-muted">{v.ultimo_tp || "—"}</td>
-                    <td>{(!v.obs && !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:700}}>⚠ sem obs</span> : (!v.obs || !v.acao_prevista) ? <span style={{fontSize:10,color:"var(--warn)",fontWeight:600}}>⚠ incompleto</span> : <span style={{fontSize:10,color:"var(--success)"}}>✓</span>}</td>
                     <td>{v.probabilidade ? probBadge(v.probabilidade) : "—"}</td>
                     <td style={{color: v.suporte_marketing ? "var(--teal)" : "var(--muted)", fontSize:12}}>
                       {v.suporte_marketing ? "✓ Sim" : "—"}
                     </td>
                     <td className="td-muted" style={{maxWidth:220, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap"}}>
+                      {(!v.obs && !v.acao_prevista) && <span style={{fontSize:10,color:"var(--warn)",fontWeight:700,display:"block",marginBottom:2}}>⚠ sem obs e ação prevista</span>}
+                      {(v.obs && !v.acao_prevista) && <span style={{fontSize:10,color:"var(--warn)",fontWeight:600,display:"block",marginBottom:2}}>⚠ sem ação prevista</span>}
+                      {(!v.obs && v.acao_prevista) && <span style={{fontSize:10,color:"var(--warn)",fontWeight:600,display:"block",marginBottom:2}}>⚠ sem observação</span>}
                       {v.obs || "—"}
                     </td>
                   </tr>
