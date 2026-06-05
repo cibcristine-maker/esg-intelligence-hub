@@ -2182,6 +2182,11 @@ function BriefingIA() {
 
   async function gerarBriefing() {
     // Pode gerar mesmo sem visitas — usa só segmentação
+    // Guard: bloqueia médico não-novo sem visitas
+    if (selectedMedico && !ehNovoMedico && !ultimaVisita) {
+      setErro("Este médico não possui visitas registradas. Cadastre ao menos uma visita antes de gerar o briefing.");
+      return;
+    }
     setGerando(true); setBriefing(null); setErro(null);
 
     const MESES_ORDEM = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
@@ -2413,11 +2418,12 @@ Seja CONCISO — máximo 2 frases por campo. Responda APENAS com JSON válido se
     const prompt = ehNovoMedico ? promptPrimeiraAbordagem : `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 
 REGRAS ESSENCIAIS:
+0. DADOS REAIS APENAS: Use EXCLUSIVAMENTE os dados deste prompt. Se um campo for "—" ou ausente, escreva "sem registro". NUNCA invente eventos (ESG Day, cursos, conversões) não documentados em ÚLTIMA VISITA, HISTÓRICO ou FUP PROJETOS.
 1. "Ação Prevista" = próximo passo do representante, NUNCA perfil do médico. Proctoria/Preceptoria = médico da carteira é SEMPRE o professor/expert.
 2. Prioridade das fontes: Segmentação > Observações > Ação Prevista.
 3. NUNCA inferir abertura, disposição ou papel sem dado explícito registrado.
 4. TPs 1-6 = SOMENTE médicos novos (Daniela Castro, Rodrigo Dallegre, Isabella Palomeque, Gabriel Braga, Rodrigo Nascimento, Gonzalo Zigano, Fábiola De Angeli, Cristovam Miranda, Eduardo Lemos Bastos, Horácio Neto). Médicos experientes começam no TP7.
-5. ESG Day = evento presencial, NÃO digital. Conversão = procedimentos÷comparecimentos.
+5. ESG Day = evento presencial, NÃO digital. Conversão = procedimentos÷comparecimentos. NUNCA mencione ESG Day se não houver dados na seção FUP PROJETOS deste prompt.
 6. GEO = otimização para IAs (ChatGPT, Gemini, Perplexity). NÃO é Meta Ads. Médicos NUNCA usaram GEO — é novo. Diagnóstico = só informação, a empresa não executa.
 7. Dr. Leonardo = Tier ST, sempre professor/expert. Dr. Eduardo Amui fez preceptoria NO serviço do Dr. Leonardo (observou o fluxo, não tocou paciente).
 8. Tom: pragmático e gentil. Sem entusiasmo exagerado. Sem "que energia!", "fantástico!", "incrível!".
@@ -2609,6 +2615,12 @@ Responda APENAS com JSON válido, sem markdown:
                 </div>
               )}
 
+              {selectedMedico && !ehNovoMedico && !ultimaVisita && (
+                <div style={{background:"rgba(245,158,11,0.1)",border:"1px solid rgba(245,158,11,0.3)",borderRadius:10,padding:"12px 14px",marginBottom:10,fontSize:13,color:"var(--warn)"}}>
+                  <strong>⚠ Sem visitas registradas</strong><br/>
+                  <span style={{fontSize:12,color:"var(--muted)"}}>Este médico não possui histórico de visitas. Cadastre ao menos uma visita antes de gerar o briefing.</span>
+                </div>
+              )}
               {ultimaVisita ? (
                 <div style={{marginBottom:16}}>
                   <div className="card-title">Última Visita — {new Date(ultimaVisita.data_contato+"T00:00:00").toLocaleDateString("pt-BR")}</div>
@@ -2655,7 +2667,7 @@ Responda APENAS com JSON válido, sem markdown:
                   style={{width:"100%",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box",outline:"none"}}
                 />
               </div>
-              <button onClick={gerarBriefing} disabled={gerando||!selectedMedico}
+              <button onClick={gerarBriefing} disabled={gerando||!selectedMedico||(selectedMedico&&!ehNovoMedico&&!ultimaVisita)}
                 style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
                 {gerando ? "⚡ Gerando briefing..." : ehNovoMedico ? "⚡ Gerar Briefing de Primeira Abordagem" : "⚡ Gerar Briefing IA"}
               </button>
