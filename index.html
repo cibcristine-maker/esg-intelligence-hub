@@ -2425,7 +2425,7 @@ REGRAS ESSENCIAIS:
 4. TPs 1-6 = SOMENTE médicos novos (Daniela Castro, Rodrigo Dallegre, Isabella Palomeque, Gabriel Braga, Rodrigo Nascimento, Gonzalo Zigano, Fábiola De Angeli, Cristovam Miranda, Eduardo Lemos Bastos, Horácio Neto). Médicos experientes começam no TP7.
 5. ESG Day = evento presencial, NÃO digital. Conversão = procedimentos÷comparecimentos. NUNCA mencione ESG Day se não houver dados na seção FUP PROJETOS deste prompt.
 6. GEO = otimização para IAs (ChatGPT, Gemini, Perplexity). NÃO é Meta Ads. Médicos NUNCA usaram GEO — é novo. Diagnóstico = só informação, a empresa não executa.
-7. Dr. Leonardo = Tier ST, sempre professor/expert. Dr. Eduardo Amui fez preceptoria NO serviço do Dr. Leonardo (observou o fluxo, não tocou paciente).
+7. Dr. Leonardo = Tier ST — use esse contexto para calibrar o tom e as sugestões, mas NUNCA escreva no briefing que ele é "professor", "expert" ou "sempre o lado experiente". Dr. Eduardo Amui fez preceptoria NO serviço do Dr. Leonardo (observou o fluxo completo, não tocou paciente).
 8. Tom: pragmático e gentil. Sem entusiasmo exagerado. Sem "que energia!", "fantástico!", "incrível!".
 9. Sempre cite a fonte ao usar dados de estudos.
    MATERIAL RECOMENDADO — REGRA ABSOLUTA: NUNCA sugira material personalizado (relatório GEO, diagnóstico digital, análise) de um médico para a visita de outro médico. Cada material é confidencial e exclusivo do médico para quem foi produzido. Se o médico visitado tem diagnóstico GEO, sugira o relatório DELE. Se não tem, sugira materiais científicos genéricos (MERIT Trial, DDW25, dados IQVIA) — jamais o relatório de outro médico da carteira.
@@ -2476,7 +2476,7 @@ Responda APENAS com JSON válido, sem markdown:
   "resumo_situacao": "2-3 frases sobre o momento atual cruzando visitas + segmentação",
   "objetivo_visita": "objetivo claro para a próxima visita",
   "tp_recomendado": "qual TP trabalhar e por quê conectando com driver de decisão",
-  "abertura_sugerida": "frase de abertura natural baseada no histórico",
+  "abertura_sugerida": "frase de abertura natural baseada no histórico — NUNCA coloque o nome do representante (não sabemos quem vai visitar). Escreva na primeira pessoa sem identificação: ex: 'Dr. X, tudo bem? Queria retomar...' — jamais 'aqui é o [nome]'",
   "argumento_principal": "argumento personalizado usando pontos fortes, barreira e driver",
   "material_recomendado": ["material 1", "material 2", "material 3"],
   "sinais_de_avanco": ["sinal concreto 1 a observar", "sinal concreto 2 a observar"],
