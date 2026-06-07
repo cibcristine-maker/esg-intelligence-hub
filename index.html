@@ -2259,9 +2259,12 @@ function BriefingIA() {
     const historico = visitasMedico.length > 0
       ? meses3.map(mes => {
           const vMes = visitasMedico.filter(v => v.mes === mes);
-          const linhas = vMes.slice(0,3).map(v =>
-            `  - ${v.data_contato||"?"} [${v.canal||"—"}] TP=${v.ultimo_tp||"—"} | Prob=${v.probabilidade||"—"} | Obs=${(v.obs||"—").slice(0,120)} | Ação prevista=${v.acao_prevista||"—"}`
-          ).join("\n");
+          const linhas = vMes.slice(0,3).map(v => {
+            const marcados = v.proc_marcados_esg ? `ESG marcados: ${v.proc_marcados_esg}` : "";
+            const realizados = v.proc_realizados_esg ? `ESG realizados: ${v.proc_realizados_esg}` : "";
+            const pipeline = [marcados, realizados].filter(Boolean).join(" | ") || "ESG marcados/realizados: NÃO INFORMADO";
+            return `  - ${v.data_contato||"?"} [${v.canal||"—"}] TP=${v.ultimo_tp||"—"} | ${pipeline} | Obs=${(v.obs||"—").slice(0,100)} | Ação prevista=${v.acao_prevista||"—"}`;
+          }).join("\n");
           return mes + " (" + vMes.length + " visita" + (vMes.length!==1?"s":"") + "):\n" + linhas;
         }).join("\n\n")
       : "Nenhuma visita registrada — gerar briefing de PRIMEIRA ABORDAGEM baseado na segmentação.";
@@ -2422,6 +2425,25 @@ Oportunidade de mercado: ${geoDiag.oportunidade}
 Status do diagnóstico GEO: ${geoDiag.acao_geo}
 ` : "";
 
+    // Pipeline consolidado do médico
+    const totalMarcados = visitasMedico.reduce((s,v) => s + (Number(v.proc_marcados_esg)||0), 0);
+    const totalRealizados = visitasMedico.reduce((s,v) => s + (Number(v.proc_realizados_esg)||0), 0);
+    const backlog = Math.max(0, totalMarcados - totalRealizados);
+    const tierMeta = segmentacao?.tier ? METAS_TIER[String(segmentacao.tier)] : null;
+    const metaMes = tierMeta ? tierMeta.esg_mes : null;
+    const temDadosPipeline = totalMarcados > 0 || totalRealizados > 0;
+
+    const pipelineStr = `
+## PIPELINE ESG DO MÉDICO
+${temDadosPipeline
+  ? `Total marcados (histórico): ${totalMarcados} | Total realizados informados: ${totalRealizados} | Backlog: ${backlog}
+Meta mensal do tier (${segmentacao?.tier||"?"}): ${metaMes !== null ? (metaMes < 1 ? "6/ano" : metaMes + " ESG/mês") : "não definida"}
+${metaMes && totalRealizados > 0 ? `Desempenho: ${Math.round((totalRealizados/metaMes)*100)}% da meta mensal` : ""}
+${backlog > 0 ? "⚠ ATENÇÃO: há procedimentos marcados não realizados — verificar motivo" : ""}
+${totalRealizados === 0 && totalMarcados > 0 ? "⚠ ATENÇÃO: há procedimentos marcados mas nenhum realizado foi informado" : ""}`
+  : "⚠ ATENÇÃO: nenhum dado de ESG marcado ou realizado registrado nas visitas — perguntar ao médico na próxima visita"}
+`;
+
     // FUP Projetos — contexto do Curso IAS Bariátricos
     const fupStr = fupMedico && fupMedico.length > 0 ? `
 
@@ -2468,7 +2490,7 @@ Gere um briefing de PRIMEIRA ABORDAGEM para o médico abaixo. Seja direto e prá
 
 MÉDICO: ${selectedMedico.nome} | Tier: ${selectedMedico.tier||"—"} | Especialidade: ${selectedMedico.especialidade||"—"} | Clínica: ${selectedMedico.clinica||"—"} | Região: ${selectedMedico.regiao||"—"}
 
-${segStr}${geoStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${fupStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
@@ -2521,7 +2543,7 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ## HISTÓRICO
 ${historico}
 
-${segStr}${geoStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${fupStr}
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
