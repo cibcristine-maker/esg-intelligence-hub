@@ -582,40 +582,6 @@ function Dashboard() {
   const totalTps = medicoTps.length;
   const tpsConcluidos = medicoTps.filter(t => t.concluido).length;
 
-  // Pipeline de eficiência
-  const pipelineByMedico = medicos.map(m => {
-    const visM = vf.filter(v => nomesBatem(v.medico_nome, m.nome));
-    const marcados = visM.reduce((s, v) => s + (Number(v.proc_marcados_esg)||0), 0);
-    const realizados = visM.reduce((s, v) => s + (Number(v.proc_realizados_esg)||0), 0);
-    const tier = String(m.tier||"");
-    const meta = METAS_TIER[tier];
-    const metaMes = meta ? meta.esg_mes : null;
-    const pct = metaMes > 0 ? Math.round((realizados / metaMes) * 100) : null;
-    return { nome: m.nome, tier, marcados, realizados, backlog: Math.max(0, marcados - realizados), metaMes, pct };
-  }).filter(m => m.marcados > 0 || m.realizados > 0).sort((a,b) => (b.realizados||0) - (a.realizados||0));
-
-  const pipelineTotais = {
-    marcados: pipelineByMedico.reduce((s,m) => s + m.marcados, 0),
-    realizados: pipelineByMedico.reduce((s,m) => s + m.realizados, 0),
-    backlog: pipelineByMedico.reduce((s,m) => s + m.backlog, 0),
-  };
-
-  const pipelineByTier = ["ST","1","2","3","4","5"].map(t => {
-    const meds = pipelineByMedico.filter(m => String(m.tier) === t);
-    const realizados = meds.reduce((s,m) => s + m.realizados, 0);
-    const meta = METAS_TIER[t];
-    const metaTotal = meta ? meta.esg_mes * meds.length : 0;
-    const pct = metaTotal > 0 ? Math.round((realizados / metaTotal) * 100) : null;
-    return { tier: t, meds: meds.length, realizados, metaTotal, pct };
-  }).filter(t => t.meds > 0);
-
-  const pipelineByAccount = [...COMERCIAL, ...MARKETING].map(resp => {
-    const visR = vf.filter(v => v.responsavel === resp && v.proc_realizados_esg > 0);
-    const realizados = visR.reduce((s,v) => s + (Number(v.proc_realizados_esg)||0), 0);
-    const marcados = vf.filter(v => v.responsavel === resp).reduce((s,v) => s + (Number(v.proc_marcados_esg)||0), 0);
-    return { resp, realizados, marcados };
-  }).filter(a => a.marcados > 0 || a.realizados > 0);
-
   const byCanal = CANAIS.reduce((acc, c) => {
     acc[c] = vf.filter(v => v.canal === c).length;
     return acc;
@@ -682,84 +648,6 @@ function Dashboard() {
               <div className="kpi-sub">na carteira</div>
             </div>
           </div>
-
-          {pipelineByMedico.length > 0 && (
-            <div style={{marginBottom:16}}>
-              <div style={{fontSize:12,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:10}}>📊 Pipeline de Eficiência</div>
-
-              {/* KPIs consolidados */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:10,marginBottom:12}}>
-                {[
-                  ["Proc. Marcados",pipelineTotais.marcados,"var(--text)","Agendados no período"],
-                  ["Proc. Realizados",pipelineTotais.realizados,"var(--teal)","Confirmados pelo médico"],
-                  ["Backlog",pipelineTotais.backlog,pipelineTotais.backlog>0?"var(--warn)":"var(--success)","Marcados não realizados"],
-                ].map(([l,v,c,sub]) => (
-                  <div key={l} style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px"}}>
-                    <div style={{fontSize:10,color:"var(--muted)",fontWeight:700,textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:5}}>{l}</div>
-                    <div style={{fontSize:24,fontWeight:700,color:c}}>{v}</div>
-                    <div style={{fontSize:11,color:"var(--muted)",marginTop:2}}>{sub}</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Por Tier */}
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"14px 16px",marginBottom:10}}>
-                <div style={{fontSize:11,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>Por Tier — Realizados vs Meta</div>
-                {pipelineByTier.map(t => (
-                  <div key={t.tier} style={{marginBottom:8}}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:4}}>
-                      <div style={{display:"flex",alignItems:"center",gap:8}}>
-                        <span style={{fontSize:11,fontWeight:700,background:t.tier==="ST"?"rgba(240,165,0,0.15)":t.tier==="1"?"rgba(239,68,68,0.15)":"rgba(100,116,139,0.15)",color:t.tier==="ST"?"var(--gold)":t.tier==="1"?"#ef4444":"var(--muted)",padding:"2px 7px",borderRadius:4}}>{t.tier==="ST"?"ST":`T${t.tier}`}</span>
-                        <span style={{fontSize:12,color:"var(--text)"}}>{t.realizados} realizados</span>
-                      </div>
-                      <div style={{fontSize:11,color:"var(--muted)"}}>
-                        meta {t.metaTotal} · <span style={{color:t.pct>=100?"var(--success)":t.pct>=70?"var(--warn)":"#ef4444",fontWeight:600}}>{t.pct}%</span>
-                      </div>
-                    </div>
-                    <div style={{height:5,background:"var(--border)",borderRadius:3,overflow:"hidden"}}>
-                      <div style={{height:"100%",width:Math.min(100,t.pct||0)+"%",background:t.pct>=100?"var(--success)":t.pct>=70?"var(--warn)":"#ef4444",borderRadius:3,transition:"width 0.5s"}} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Por Médico */}
-              <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"14px 16px",marginBottom:10}}>
-                <div style={{fontSize:11,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>Por Médico</div>
-                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
-                  <thead><tr>{["Médico","Tier","Marcados","Realizados","Backlog","vs Meta"].map(h=><th key={h} style={{textAlign:"left",padding:"5px 8px",color:"var(--muted)",fontSize:10,fontWeight:700,borderBottom:"1px solid var(--border)"}}>{h}</th>)}</tr></thead>
-                  <tbody>
-                    {pipelineByMedico.map(m=>(
-                      <tr key={m.nome}>
-                        <td style={{padding:"7px 8px",fontWeight:500,borderBottom:"1px solid rgba(30,58,82,0.4)"}}>{m.nome}</td>
-                        <td style={{padding:"7px 8px",borderBottom:"1px solid rgba(30,58,82,0.4)"}}><span style={{fontSize:10,fontWeight:700,color:m.tier==="ST"?"var(--gold)":"var(--muted)"}}>{m.tier==="ST"?"ST":`T${m.tier}`}</span></td>
-                        <td style={{padding:"7px 8px",borderBottom:"1px solid rgba(30,58,82,0.4)",color:"var(--text)"}}>{m.marcados}</td>
-                        <td style={{padding:"7px 8px",borderBottom:"1px solid rgba(30,58,82,0.4)",color:"var(--teal)",fontWeight:600}}>{m.realizados}</td>
-                        <td style={{padding:"7px 8px",borderBottom:"1px solid rgba(30,58,82,0.4)",color:m.backlog>0?"var(--warn)":"var(--success)"}}>{m.backlog}</td>
-                        <td style={{padding:"7px 8px",borderBottom:"1px solid rgba(30,58,82,0.4)"}}>{m.pct!==null?<span style={{fontWeight:600,color:m.pct>=100?"var(--success)":m.pct>=70?"var(--warn)":"#ef4444"}}>{m.pct}%</span>:"—"}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Por Account */}
-              {pipelineByAccount.length > 0 && (
-                <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:10,padding:"14px 16px"}}>
-                  <div style={{fontSize:11,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:10}}>Por Account</div>
-                  {pipelineByAccount.map(a=>(
-                    <div key={a.resp} style={{display:"flex",justifyContent:"space-between",alignItems:"center",padding:"6px 0",borderBottom:"1px solid rgba(30,58,82,0.3)"}}>
-                      <span style={{fontSize:13,fontWeight:500}}>{a.resp}</span>
-                      <div style={{display:"flex",gap:16,fontSize:12}}>
-                        <span style={{color:"var(--muted)"}}>marcados: {a.marcados}</span>
-                        <span style={{color:"var(--teal)",fontWeight:600}}>realizados: {a.realizados}</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
 
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px"}}>
             <div className="card">
