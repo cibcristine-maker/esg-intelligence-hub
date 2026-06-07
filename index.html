@@ -764,11 +764,10 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
   const [editando, setEditando] = useState(false);
   const [obs, setObs] = useState(visita.obs || "");
   const [acao, setAcao] = useState(visita.acao_prevista || "");
-  const [realizados, setRealizados] = useState(visita.proc_realizados_esg ? String(visita.proc_realizados_esg) : "");
   const [salvando, setSalvando] = useState(false);
   const salvar = async () => {
     setSalvando(true);
-    const { error } = await supabaseClient.from("visitas").update({ obs, acao_prevista: acao, proc_realizados_esg: realizados ? Number(realizados) : null }).eq("id", visita.id);
+    const { error } = await supabaseClient.from("visitas").update({ obs, acao_prevista: acao }).eq("id", visita.id);
     setSalvando(false);
     if (!error) { setEditando(false); if (onUpdate) onUpdate(); }
     else alert("Erro ao salvar: " + error.message);
@@ -798,7 +797,6 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             ["$ Esperado", fmtMoney(visita.valor_esperado)],
             ["Fios ESG Estoque", visita.fios_esg_estoque],
             ["Proc. Marcados (ESG)", visita.proc_marcados_esg],
-            ["✅ Proc. Realizados", visita.proc_realizados_esg],
             ["Balões Estoque", visita.baloes_estoque],
             ["Proc. Marcados (Balão)", visita.proc_marcados_balao],
           ].map(([label, val]) => (
@@ -817,14 +815,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           }
         </div>
 
-        <div style={{<div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.15)",borderRadius:8,padding:"10px 12px"}}>
-          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:6}}>✅ PROC. REALIZADOS DESDE ÚLTIMA VISITA</div>
-          {editando
-            ? <input type="number" value={realizados} onChange={e => setRealizados(e.target.value)} placeholder="Perguntar ao médico" style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,fontFamily:"inherit"}} />
-            : <div style={{fontSize:13,fontWeight:600,color:realizados?"var(--teal)":"var(--muted)"}}>{realizados||"—"} {realizados?"procedimentos":""}</div>
-          }
-        </div>
-        marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
+        <div style={{marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
           <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:6}}>OBSERVAÇÕES</div>
           {editando
             ? <textarea value={obs} onChange={e => setObs(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
@@ -901,7 +892,6 @@ function Visitas() {
       mes: form.mes || "JUNHO 26",
       fios_esg_estoque: form.fios_esg_estoque ? Number(form.fios_esg_estoque) : null,
       proc_marcados_esg: form.proc_marcados_esg ? Number(form.proc_marcados_esg) : null,
-      proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: form.baloes_estoque ? Number(form.baloes_estoque) : null,
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
     };
@@ -1031,7 +1021,6 @@ function VisitaModal({ medicos, onSave, onClose }) {
     proc_marcados_esg: "",
     baloes_estoque: "",
     proc_marcados_balao: "",
-    proc_realizados_esg: "",
   });
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
 
@@ -1110,10 +1099,6 @@ function VisitaModal({ medicos, onSave, onClose }) {
           <div className="form-group">
             <label className="form-label">Proc. Marcados (ESG)</label>
             <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)} />
-          </div>
-          <div className="form-group">
-            <label className="form-label" style={{color:"var(--teal)"}}>✅ Proc. Realizados desde última visita</label>
-            <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)} />
           </div>
           <div className="form-group">
             <label className="form-label">Balões em Estoque</label>
@@ -2588,7 +2573,7 @@ ${historico}
 ${segStr}${geoStr}${fupStr}
 
 ## METAS POR TIER (use para contextualizar a situação do médico)
-ST: 15 ESG/mês, 1 visita presencial/mês (outro estado, máx 30 dias) | T1: 8 ESG/mês, 1 visita presencial/mês (outro estado) | T2: 4 ESG/mês, 1 visita/mês | T3: 3 ESG/mês, 1 visita/mês | T4: 2 ESG/mês, 1 visita/2 meses | T5: 6 ESG/ano
+ST: 15 ESG/mês, 2 visitas presenciais/mês | T1: 8 ESG/mês, 2 visitas/mês | T2: 4 ESG/mês, 1 visita/mês | T3: 3 ESG/mês, 1 visita/mês | T4: 2 ESG/mês, 1 visita/2 meses | T5: 6 ESG/ano
 Visita bem-sucedida = obs preenchida + ação prevista registrada + TP avançou
 Quando o campo proc_marcados_esg estiver preenchido, compare com a meta do tier e mencione se está acima, na meta ou abaixo. Cite a meta explicitamente.
 
@@ -4086,8 +4071,8 @@ function FupProjToast({ msg, type }) {
 // ─── PROJECT CARDS (LANDING) ─────────────────────────────────────────────────
 // ─── METAS POR TIER ──────────────────────────────────────────────────────────
 const METAS_TIER = {
-  "ST": { esg_mes: 15, visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
-  "1":  { esg_mes: 8,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
+  "ST": { esg_mes: 15, visitas_presenciais_mes: 2, max_dias_sem_presencial: 15 },
+  "1":  { esg_mes: 8,  visitas_presenciais_mes: 2, max_dias_sem_presencial: 15 },
   "2":  { esg_mes: 4,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
   "3":  { esg_mes: 3,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
   "4":  { esg_mes: 2,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 60 },
