@@ -848,6 +848,7 @@ function Visitas({ visitasExternas, onSave }) {
     setToast("Visita registrada!");
     setShowForm(false);
     refresh();
+    if (onSave) onSave();
   };
 
   const handleDelete = async (id) => {
