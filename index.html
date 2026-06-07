@@ -1085,7 +1085,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
             <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label" style={{color:"var(--teal)"}}>✅ Realizados desde última visita</label>
+            <label className="form-label" style={{color:"var(--teal)"}}>✅ ESGs Realizados desde última visita</label>
             <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)} />
           </div>
           <div className="form-group">
@@ -2064,6 +2064,12 @@ function VisitaExpandivel({ v }) {
           )}
           {v.acao_prevista && (
             <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista}</div>
+          )}
+          {v.proc_realizados_esg > 0 && (
+            <div style={{color:"var(--success)",fontSize:11,fontWeight:600,marginTop:3}}>
+              ✅ {v.proc_realizados_esg} ESG{v.proc_realizados_esg > 1 ? "s" : ""} realizado{v.proc_realizados_esg > 1 ? "s" : ""}
+              {v.proc_marcados_esg > 0 && <span style={{color:"var(--muted)",fontWeight:400}}> · {v.proc_marcados_esg} marcado{v.proc_marcados_esg > 1 ? "s" : ""}</span>}
+            </div>
           )}
         </div>
       )}
