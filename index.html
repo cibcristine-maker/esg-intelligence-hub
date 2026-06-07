@@ -2573,7 +2573,7 @@ ${historico}
 ${segStr}${geoStr}${fupStr}
 
 ## METAS POR TIER (use para contextualizar a situação do médico)
-ST: 15 ESG/mês, 2 visitas presenciais/mês | T1: 8 ESG/mês, 2 visitas/mês | T2: 4 ESG/mês, 1 visita/mês | T3: 3 ESG/mês, 1 visita/mês | T4: 2 ESG/mês, 1 visita/2 meses | T5: 6 ESG/ano
+ST: 15 ESG/mês, 2 visitas presenciais/mês | T1: 8 ESG/mês, 1 visita presencial/mês (outro estado) | T2: 4 ESG/mês, 1 visita/mês | T3: 3 ESG/mês, 1 visita/mês | T4: 2 ESG/mês, 1 visita/2 meses | T5: 6 ESG/ano
 Visita bem-sucedida = obs preenchida + ação prevista registrada + TP avançou
 Quando o campo proc_marcados_esg estiver preenchido, compare com a meta do tier e mencione se está acima, na meta ou abaixo. Cite a meta explicitamente.
 
@@ -4072,7 +4072,7 @@ function FupProjToast({ msg, type }) {
 // ─── METAS POR TIER ──────────────────────────────────────────────────────────
 const METAS_TIER = {
   "ST": { esg_mes: 15, visitas_presenciais_mes: 2, max_dias_sem_presencial: 15 },
-  "1":  { esg_mes: 8,  visitas_presenciais_mes: 2, max_dias_sem_presencial: 15 },
+  "1":  { esg_mes: 8,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
   "2":  { esg_mes: 4,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
   "3":  { esg_mes: 3,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
   "4":  { esg_mes: 2,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 60 },
