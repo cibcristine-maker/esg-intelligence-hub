@@ -747,6 +747,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             ["$ Esperado", fmtMoney(visita.valor_esperado)],
             ["Fios ESG Estoque", visita.fios_esg_estoque],
             ["Proc. Marcados (ESG)", visita.proc_marcados_esg],
+            ["✅ Realizados", visita.proc_realizados_esg],
             ["Balões Estoque", visita.baloes_estoque],
             ["Proc. Marcados (Balão)", visita.proc_marcados_balao],
           ].map(([label, val]) => (
@@ -842,6 +843,7 @@ function Visitas() {
       mes: form.mes || "JUNHO 26",
       fios_esg_estoque: form.fios_esg_estoque ? Number(form.fios_esg_estoque) : null,
       proc_marcados_esg: form.proc_marcados_esg ? Number(form.proc_marcados_esg) : null,
+      proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: form.baloes_estoque ? Number(form.baloes_estoque) : null,
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
     };
@@ -971,6 +973,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
     proc_marcados_esg: "",
     baloes_estoque: "",
     proc_marcados_balao: "",
+    proc_realizados_esg: "",
   });
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
 
@@ -1049,6 +1052,10 @@ function VisitaModal({ medicos, onSave, onClose }) {
           <div className="form-group">
             <label className="form-label">Proc. Marcados (ESG)</label>
             <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)} />
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{color:"var(--teal)"}}>✅ Realizados desde última visita</label>
+            <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)} />
           </div>
           <div className="form-group">
             <label className="form-label">Balões em Estoque</label>
