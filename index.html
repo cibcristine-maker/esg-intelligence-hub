@@ -555,8 +555,10 @@ function useSupabase(table, deps = []) {
 }
 
 // ─── DASHBOARD ─────────────────────────────────────────────────────────────
-function Dashboard() {
-  const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
+function Dashboard({ visitasExternas }) {
+  const { data: visitasLocal, loading, refresh: refreshIntel } = useSupabase("visitas");
+  const visitas = visitasExternas || visitasLocal;
+  const refreshFn = refreshExterno || refreshIntel;
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
 
@@ -793,8 +795,9 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
   );
 }
 
-function Visitas() {
-  const { data: visitas, loading, refresh } = useSupabase("visitas");
+function Visitas({ visitasExternas, onSave }) {
+  const { data: visitasLocal, loading, refresh } = useSupabase("visitas");
+  const visitas = visitasExternas || visitasLocal;
   const { data: medicos } = useSupabase("perfil_medico");
   const [showForm, setShowForm] = useState(false);
   const [search, setSearch] = useState("");
@@ -1502,8 +1505,10 @@ function Ativacao() {
 
 
 // ─── INTELIGÊNCIA ESTRATÉGICA ──────────────────────────────────────────────
-function Inteligencia() {
-  const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
+function Inteligencia({ visitasExternas, refreshExterno }) {
+  const { data: visitasLocal, loading, refresh: refreshIntel } = useSupabase("visitas");
+  const visitas = visitasExternas || visitasLocal;
+  const refreshFn = refreshExterno || refreshIntel;
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
   const [filterMesIntel, setFilterMesIntel] = useState("");
@@ -1641,7 +1646,7 @@ function Inteligencia() {
           <div className="section-title">Inteligência Estratégica</div>
           <div className="section-sub">Análise cruzada · atualiza automaticamente com as visitas</div>
         </div>
-        <button onClick={refreshIntel} style={{padding:"6px 14px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",fontSize:12,cursor:"pointer",fontFamily:"DM Sans,sans-serif",display:"flex",alignItems:"center",gap:6}} title="Atualizar dados">
+        <button onClick={refreshFn} style={{padding:"6px 14px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",fontSize:12,cursor:"pointer",fontFamily:"DM Sans,sans-serif",display:"flex",alignItems:"center",gap:6}} title="Atualizar dados">
           🔄 Atualizar
         </button>
       </div>
@@ -3178,7 +3183,8 @@ function MetaModal({ meta, mes, onSave, onClose }) {
 
 // ─── HISTÓRICO SEMANAL ─────────────────────────────────────────────────────
 function Historico() {
-  const { data: visitas, loading, refresh } = useSupabase("visitas");
+  const { data: visitasLocal, loading, refresh } = useSupabase("visitas");
+  const visitas = visitasExternas || visitasLocal;
   const [filterResp, setFilterResp] = useState("");
   const [filterCanal, setFilterCanal] = useState("");
   const [filterSemana, setFilterSemana] = useState("");
@@ -5995,6 +6001,7 @@ function FupProjetos() {
 
 function App() {
   const [tab, setTab] = useState("dashboard");
+  const { data: visitasGlobal, loading: loadingVisitas, refresh: refreshVisitas } = useSupabase("visitas");
 
   return (
     <div className="app">
@@ -6020,11 +6027,11 @@ function App() {
         </nav>
       </header>
       <main className="main">
-        {tab === "dashboard" && <Dashboard />}
-        {tab === "visitas"   && <Visitas />}
+        {tab === "dashboard" && <Dashboard visitasExternas={visitasGlobal} />}
+        {tab === "visitas"   && <Visitas visitasExternas={visitasGlobal} onSave={refreshVisitas} />}
         {tab === "medicos"   && <Medicos />}
         {tab === "ativacao"  && <Ativacao />}
-        {tab === "intel"     && <Inteligencia />}
+        {tab === "intel"     && <Inteligencia visitasExternas={visitasGlobal} refreshExterno={refreshVisitas} />}
         
         {tab === "metas"     && <Metas />}
         {tab === "historico"  && <Historico />}
