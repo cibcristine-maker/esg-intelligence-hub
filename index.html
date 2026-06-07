@@ -817,7 +817,14 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           }
         </div>
 
-        <div style={{marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
+        <div style={{<div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.15)",borderRadius:8,padding:"10px 12px"}}>
+          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:6}}>✅ PROC. REALIZADOS DESDE ÚLTIMA VISITA</div>
+          {editando
+            ? <input type="number" value={realizados} onChange={e => setRealizados(e.target.value)} placeholder="Perguntar ao médico" style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,fontFamily:"inherit"}} />
+            : <div style={{fontSize:13,fontWeight:600,color:realizados?"var(--teal)":"var(--muted)"}}>{realizados||"—"} {realizados?"procedimentos":""}</div>
+          }
+        </div>
+        marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
           <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:6}}>OBSERVAÇÕES</div>
           {editando
             ? <textarea value={obs} onChange={e => setObs(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
