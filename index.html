@@ -2507,6 +2507,13 @@ Seja CONCISO — máximo 2 frases por campo. Responda APENAS com JSON válido se
 
     const prompt = ehNovoMedico ? promptPrimeiraAbordagem : `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 
+CONCEITOS ESTRATÉGICOS OBRIGATÓRIOS — incluir em TODO briefing, independente do médico:
+A. ESG COMO PRÓXIMO PASSO LÓGICO: Para pacientes em platô ou insucesso pós-GLP-1, ESG é a evolução natural do tratamento. Posicionar como complemento, nunca como concorrência ao GLP-1.
+B. ANCORAGEM: Mesmo pacientes que não farão ESG hoje precisam saber que o médico tem estratégia para a jornada de cuidado. Ancorar ESG em todas as consultas gera receita recorrente — esses pacientes ficarão na clínica por anos.
+C. BASE DE DADOS VALE OURO: Estimular o médico a buscar oportunidades na própria base. Pacientes com reganho pós-GLP-1 são os mais qualificados e com maior intenção de conversão.
+
+Esses três conceitos SEMPRE aparecem no briefing — no Argumento Principal ou na Sugestão de Abordagem — adaptados ao contexto do médico visitado.
+
 REGRAS ESSENCIAIS:
 0. DADOS REAIS APENAS: Use EXCLUSIVAMENTE os dados deste prompt. Se um campo for "—" ou ausente, escreva "sem registro". NUNCA invente eventos (ESG Day, cursos, conversões) não documentados em ÚLTIMA VISITA, HISTÓRICO ou FUP PROJETOS.
 1. "Ação Prevista" = próximo passo do representante, NUNCA perfil do médico. Proctoria/Preceptoria = médico da carteira é SEMPRE o professor/expert.
@@ -2757,6 +2764,38 @@ Responda APENAS com JSON válido, sem markdown:
                   style={{width:"100%",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box",outline:"none"}}
                 />
               </div>
+              {selectedMedico && ultimaVisita && (ultimaVisita.proc_marcados_esg || ultimaVisita.proc_realizados_esg) && (
+                <div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.4)",borderRadius:10,padding:"10px 14px",marginBottom:2}}>
+                  <div style={{fontSize:10,fontWeight:700,color:"var(--warn)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:6}}>⚠ Pipeline ESG — Snapshot última visita</div>
+                  <div style={{display:"flex",gap:12,flexWrap:"wrap"}}>
+                    {ultimaVisita.proc_marcados_esg > 0 && (
+                      <div style={{fontSize:13}}>
+                        <span style={{color:"var(--muted)"}}>📋 Agendados: </span>
+                        <span style={{fontWeight:700,color:"var(--warn)"}}>{ultimaVisita.proc_marcados_esg} ESG</span>
+                      </div>
+                    )}
+                    {ultimaVisita.proc_realizados_esg > 0 && (
+                      <div style={{fontSize:13}}>
+                        <span style={{color:"var(--muted)"}}>✅ Realizados: </span>
+                        <span style={{fontWeight:700,color:"var(--success)"}}>{ultimaVisita.proc_realizados_esg} ESG</span>
+                      </div>
+                    )}
+                    {ultimaVisita.proc_marcados_esg > 0 && ultimaVisita.proc_realizados_esg > 0 && ultimaVisita.proc_marcados_esg > ultimaVisita.proc_realizados_esg && (
+                      <div style={{fontSize:13}}>
+                        <span style={{color:"var(--muted)"}}>🔁 Backlog: </span>
+                        <span style={{fontWeight:700,color:"#ef4444"}}>{ultimaVisita.proc_marcados_esg - ultimaVisita.proc_realizados_esg} ESG</span>
+                      </div>
+                    )}
+                  </div>
+                  <div style={{fontSize:10,color:"var(--muted)",marginTop:5}}>Data: {ultimaVisita.data_contato ? new Date(ultimaVisita.data_contato+"T00:00:00").toLocaleDateString("pt-BR") : "—"}</div>
+                </div>
+              )}
+              {selectedMedico && ultimaVisita && !ultimaVisita.proc_marcados_esg && !ultimaVisita.proc_realizados_esg && !ehNovoMedico && (
+                <div style={{background:"rgba(245,158,11,0.06)",border:"1px solid rgba(245,158,11,0.25)",borderRadius:10,padding:"8px 14px",marginBottom:2}}>
+                  <div style={{fontSize:12,color:"var(--warn)"}}>⚠ Sem dados de ESG registrados — perguntar ao médico quantos tem agendados</div>
+                </div>
+              )}
+
               <button onClick={gerarBriefing} disabled={gerando||!selectedMedico||(selectedMedico&&!ehNovoMedico&&!ultimaVisita)}
                 style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
                 {gerando ? "⚡ Gerando briefing..." : ehNovoMedico ? "⚡ Gerar Briefing de Primeira Abordagem" : "⚡ Gerar Briefing IA"}
