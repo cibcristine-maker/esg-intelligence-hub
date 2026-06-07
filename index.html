@@ -1625,7 +1625,7 @@ function Inteligencia() {
   }).filter(m => m.baloes !== "—" || m.proc !== "—");
 
   // ── Referenciadores — visitas onde referidor=true
-  const visRef = visitas.filter(v => v.referidor);
+  const visRef = vi.filter(v => v.referidor);
   const refByResp = [...COMERCIAL, ...MARKETING].map(resp => {
     const v = visRef.filter(vi => vi.responsavel === resp);
     return { resp, total: v.length, presencial: v.filter(vi => vi.canal === "Presencial").length, whatsapp: v.filter(vi => vi.canal === "WhatsApp").length, pct: v.length ? Math.round(v.filter(vi => vi.canal==="Presencial").length/v.length*100) : 0 };
