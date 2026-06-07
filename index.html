@@ -777,7 +777,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             ["Ação MKT", visita.acao_mkt],
             ["$ Esperado", fmtMoney(visita.valor_esperado)],
             ["Fios ESG Estoque", visita.fios_esg_estoque],
-            ["Proc. Marcados (ESG)", visita.proc_marcados_esg],
+            ["ESGs agendados (snapshot)", visita.proc_marcados_esg],
             ["✅ Realizados", visita.proc_realizados_esg],
             ["Balões Estoque", visita.baloes_estoque],
             ["Proc. Marcados (Balão)", visita.proc_marcados_balao],
@@ -1081,7 +1081,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
             <input className="form-input" type="number" value={form.fios_esg_estoque} onChange={e => set("fios_esg_estoque", e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">Proc. Marcados (ESG)</label>
+            <label className="form-label">ESGs agendados hoje</label>
             <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)} />
           </div>
           <div className="form-group">
@@ -2066,7 +2066,7 @@ function VisitaExpandivel({ v }) {
             <div style={{display:"flex",gap:8}}>
               {v.proc_marcados_esg > 0 && (
                 <div style={{background:"var(--surface2)",borderRadius:6,padding:"5px 10px",fontSize:11}}>
-                  <span style={{color:"var(--muted)"}}>📋 Marcados: </span>
+                  <span style={{color:"var(--muted)"}}>📋 Agendados: </span>
                   <span style={{fontWeight:600}}>{v.proc_marcados_esg} ESG</span>
                 </div>
               )}
@@ -2426,8 +2426,11 @@ Status do diagnóstico GEO: ${geoDiag.acao_geo}
 ` : "";
 
     // Pipeline consolidado do médico
-    const totalMarcados = visitasMedico.reduce((s,v) => s + (Number(v.proc_marcados_esg)||0), 0);
-    const totalRealizados = visitasMedico.reduce((s,v) => s + (Number(v.proc_realizados_esg)||0), 0);
+    // Snapshot da última visita — não acumula
+    const ultimaComDados = visitasMedico.find(v => v.proc_marcados_esg || v.proc_realizados_esg);
+    const totalMarcados = Number(ultimaComDados?.proc_marcados_esg)||0;
+    const totalRealizados = Number(ultimaComDados?.proc_realizados_esg)||0;
+    const dataSnapshot = ultimaComDados?.data_contato || null;
     const backlog = Math.max(0, totalMarcados - totalRealizados);
     const tierMeta = segmentacao?.tier ? METAS_TIER[String(segmentacao.tier)] : null;
     const metaMes = tierMeta ? tierMeta.esg_mes : null;
@@ -2436,7 +2439,7 @@ Status do diagnóstico GEO: ${geoDiag.acao_geo}
     const pipelineStr = `
 ## PIPELINE ESG DO MÉDICO
 ${temDadosPipeline
-  ? `Total marcados (histórico): ${totalMarcados} | Total realizados informados: ${totalRealizados} | Backlog: ${backlog}
+  ? `Snapshot da visita de ${dataSnapshot||"?"}: ESGs agendados: ${totalMarcados} | ESGs realizados: ${totalRealizados} | Backlog: ${backlog}
 Meta mensal do tier (${segmentacao?.tier||"?"}): ${metaMes !== null ? (metaMes < 1 ? "6/ano" : metaMes + " ESG/mês") : "não definida"}
 ${metaMes && totalRealizados > 0 ? `Desempenho: ${Math.round((totalRealizados/metaMes)*100)}% da meta mensal` : ""}
 ${backlog > 0 ? "⚠ ATENÇÃO: há procedimentos marcados não realizados — verificar motivo" : ""}
