@@ -556,7 +556,7 @@ function useSupabase(table, deps = []) {
 
 // ─── DASHBOARD ─────────────────────────────────────────────────────────────
 function Dashboard() {
-  const { data: visitas, loading } = useSupabase("visitas");
+  const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
 
@@ -1503,7 +1503,7 @@ function Ativacao() {
 
 // ─── INTELIGÊNCIA ESTRATÉGICA ──────────────────────────────────────────────
 function Inteligencia() {
-  const { data: visitas, loading } = useSupabase("visitas");
+  const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
   const [filterMesIntel, setFilterMesIntel] = useState("");
@@ -1641,6 +1641,9 @@ function Inteligencia() {
           <div className="section-title">Inteligência Estratégica</div>
           <div className="section-sub">Análise cruzada · atualiza automaticamente com as visitas</div>
         </div>
+        <button onClick={refreshIntel} style={{padding:"6px 14px",borderRadius:8,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",fontSize:12,cursor:"pointer",fontFamily:"DM Sans,sans-serif",display:"flex",alignItems:"center",gap:6}} title="Atualizar dados">
+          🔄 Atualizar
+        </button>
       </div>
 
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
