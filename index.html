@@ -2025,17 +2025,12 @@ const nomesBatem = (a, b) => {
 // ─── VISITA EXPANDÍVEL ────────────────────────────────────────────────────
 function VisitaExpandivel({ v }) {
   const [expandido, setExpandido] = React.useState(false);
-  const temConteudo = v.obs || v.acao_prevista;
+  const temConteudo = v.obs || v.acao_prevista || v.proc_marcados_esg || v.proc_realizados_esg;
   const corBorda = v.probabilidade==="Alto"?"var(--success)":v.probabilidade==="Médio"?"var(--warn)":"var(--border)";
   return (
     <div
       onClick={() => temConteudo && setExpandido(e => !e)}
-      style={{
-        padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,
-        marginBottom:4,borderLeft:"2px solid "+corBorda,
-        cursor:temConteudo?"pointer":"default",
-        transition:"background 0.15s"
-      }}
+      style={{padding:"7px 10px",background:"var(--bg)",borderRadius:8,fontSize:12,marginBottom:4,borderLeft:"2px solid "+corBorda,cursor:temConteudo?"pointer":"default",transition:"background 0.15s"}}
     >
       <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
         <span style={{color:"var(--muted)",fontFamily:"DM Mono",fontSize:10,flexShrink:0}}>
@@ -2044,31 +2039,43 @@ function VisitaExpandivel({ v }) {
         <span style={{color:"var(--teal)",fontWeight:600}}>{v.ultimo_tp||"—"}</span>
         <span style={{color:"var(--muted)",fontSize:10}}>{v.canal||""}</span>
         {v.responsavel && <span style={{color:"var(--gold)",fontSize:10,fontWeight:600}}>{v.responsavel}</span>}
-        {temConteudo && (
-          <span style={{marginLeft:"auto",color:"var(--muted)",fontSize:10}}>
-            {expandido ? "▲" : "▼"}
-          </span>
-        )}
+        {v.proc_realizados_esg > 0 && <span style={{color:"var(--success)",fontSize:10,fontWeight:600}}>✅ {v.proc_realizados_esg} ESG</span>}
+        {v.proc_marcados_esg > 0 && !v.proc_realizados_esg && <span style={{color:"var(--muted)",fontSize:10}}>📋 {v.proc_marcados_esg} marc.</span>}
+        {temConteudo && <span style={{marginLeft:"auto",color:"var(--muted)",fontSize:10}}>{expandido?"▲":"▼"}</span>}
       </div>
       {!expandido && temConteudo && (
         <div style={{color:"var(--muted)",fontSize:11,marginTop:2,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
-          {(v.obs || v.acao_prevista||"").slice(0,70)}…
+          {(v.obs||v.acao_prevista||"").slice(0,70)}{(v.obs||v.acao_prevista)?"…":""}
         </div>
       )}
       {expandido && (
-        <div style={{marginTop:6}}>
+        <div style={{marginTop:8,display:"flex",flexDirection:"column",gap:6}}>
           {v.obs && (
-            <div style={{color:"var(--text)",lineHeight:1.5,fontSize:11,marginBottom:4,whiteSpace:"pre-wrap"}}>
-              {v.obs}
+            <div style={{background:"var(--surface2)",borderRadius:6,padding:"6px 8px"}}>
+              <div style={{fontSize:9,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:3}}>Observações</div>
+              <div style={{color:"var(--text)",lineHeight:1.5,fontSize:11,whiteSpace:"pre-wrap"}}>{v.obs}</div>
             </div>
           )}
           {v.acao_prevista && (
-            <div style={{color:"var(--teal)",fontSize:11}}>→ {v.acao_prevista}</div>
+            <div style={{background:"rgba(0,191,165,0.06)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:6,padding:"6px 8px"}}>
+              <div style={{fontSize:9,fontWeight:700,color:"var(--teal)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:3}}>Ação Prevista</div>
+              <div style={{color:"var(--text)",fontSize:11}}>→ {v.acao_prevista}</div>
+            </div>
           )}
-          {v.proc_realizados_esg > 0 && (
-            <div style={{color:"var(--success)",fontSize:11,fontWeight:600,marginTop:3}}>
-              ✅ {v.proc_realizados_esg} ESG{v.proc_realizados_esg > 1 ? "s" : ""} realizado{v.proc_realizados_esg > 1 ? "s" : ""}
-              {v.proc_marcados_esg > 0 && <span style={{color:"var(--muted)",fontWeight:400}}> · {v.proc_marcados_esg} marcado{v.proc_marcados_esg > 1 ? "s" : ""}</span>}
+          {(v.proc_marcados_esg > 0 || v.proc_realizados_esg > 0) && (
+            <div style={{display:"flex",gap:8}}>
+              {v.proc_marcados_esg > 0 && (
+                <div style={{background:"var(--surface2)",borderRadius:6,padding:"5px 10px",fontSize:11}}>
+                  <span style={{color:"var(--muted)"}}>📋 Marcados: </span>
+                  <span style={{fontWeight:600}}>{v.proc_marcados_esg} ESG</span>
+                </div>
+              )}
+              {v.proc_realizados_esg > 0 && (
+                <div style={{background:"rgba(16,185,129,0.08)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:6,padding:"5px 10px",fontSize:11}}>
+                  <span style={{color:"var(--muted)"}}>✅ Realizados: </span>
+                  <span style={{color:"var(--success)",fontWeight:600}}>{v.proc_realizados_esg} ESG</span>
+                </div>
+              )}
             </div>
           )}
         </div>
