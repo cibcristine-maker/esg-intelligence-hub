@@ -621,6 +621,56 @@ function Dashboard() {
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
         <>
           <Alerta30Dias visitas={visitas} medicos={medicos} />
+
+      {/* Card de Parâmetros de Sucesso */}
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"16px 18px",marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+          <span style={{fontSize:16}}>📋</span>
+          <div style={{fontSize:12,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase"}}>Parâmetros de Sucesso — Referência do Time</div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+          {/* Metas por Tier */}
+          <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px"}}>
+            <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>🎯 Meta ESG por Tier</div>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <thead><tr>{["Tier","ESG/mês","Visitas/mês","Max dias sem presencial"].map(h => <th key={h} style={{textAlign:"left",padding:"4px 6px",color:"var(--muted)",fontSize:10,fontWeight:600}}>{h}</th>)}</tr></thead>
+              <tbody>
+                {Object.entries(METAS_TIER).map(([tier, meta]) => (
+                  <tr key={tier}>
+                    <td style={{padding:"5px 6px",fontWeight:700,color:tier==="ST"?"var(--gold)":"var(--text)"}}>{tier==="ST"?"ST":`T${tier}`}</td>
+                    <td style={{padding:"5px 6px",color:"var(--teal)",fontWeight:600}}>{meta.esg_mes < 1 ? "6/ano" : meta.esg_mes}</td>
+                    <td style={{padding:"5px 6px",color:"var(--text)"}}>{meta.visitas_presenciais_mes < 1 ? "1/3 meses" : meta.visitas_presenciais_mes + "x"}</td>
+                    <td style={{padding:"5px 6px",color:"var(--text)"}}>{meta.max_dias_sem_presencial}d</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Critérios de visita e carteira */}
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",flex:1}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>✅ Visita Bem-Sucedida</div>
+              {CRITERIOS_VISITA.map(c => (
+                <div key={c.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:5,fontSize:12}}>
+                  <span style={{color:"var(--teal)",fontSize:10}}>✓</span>
+                  <span>{c.label}</span>
+                  <span style={{marginLeft:"auto",color:"var(--muted)",fontSize:11}}>{c.peso}%</span>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",flex:1}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>📊 Carteira Saudável</div>
+              {CRITERIOS_CARTEIRA.map((c,i) => (
+                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:5,fontSize:12}}>
+                  <span style={{color:"var(--teal)",fontSize:10,marginTop:2}}>✓</span>
+                  <span style={{flex:1}}>{c.label}</span>
+                  <span style={{marginLeft:8,color:"var(--teal)",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{c.meta}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
           <div className="kpi-row">
             <div className="kpi">
               <div className="kpi-label">Total Visitas</div>
@@ -1856,6 +1906,56 @@ function Inteligencia() {
       </div>
       <Alerta30Dias visitas={visitas} medicos={medicos} />
 
+      {/* Card de Parâmetros de Sucesso */}
+      <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"16px 18px",marginBottom:16}}>
+        <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:14}}>
+          <span style={{fontSize:16}}>📋</span>
+          <div style={{fontSize:12,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase"}}>Parâmetros de Sucesso — Referência do Time</div>
+        </div>
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:14}}>
+          {/* Metas por Tier */}
+          <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px"}}>
+            <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>🎯 Meta ESG por Tier</div>
+            <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
+              <thead><tr>{["Tier","ESG/mês","Visitas/mês","Max dias sem presencial"].map(h => <th key={h} style={{textAlign:"left",padding:"4px 6px",color:"var(--muted)",fontSize:10,fontWeight:600}}>{h}</th>)}</tr></thead>
+              <tbody>
+                {Object.entries(METAS_TIER).map(([tier, meta]) => (
+                  <tr key={tier}>
+                    <td style={{padding:"5px 6px",fontWeight:700,color:tier==="ST"?"var(--gold)":"var(--text)"}}>{tier==="ST"?"ST":`T${tier}`}</td>
+                    <td style={{padding:"5px 6px",color:"var(--teal)",fontWeight:600}}>{meta.esg_mes < 1 ? "6/ano" : meta.esg_mes}</td>
+                    <td style={{padding:"5px 6px",color:"var(--text)"}}>{meta.visitas_presenciais_mes < 1 ? "1/3 meses" : meta.visitas_presenciais_mes + "x"}</td>
+                    <td style={{padding:"5px 6px",color:"var(--text)"}}>{meta.max_dias_sem_presencial}d</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {/* Critérios de visita e carteira */}
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",flex:1}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>✅ Visita Bem-Sucedida</div>
+              {CRITERIOS_VISITA.map(c => (
+                <div key={c.id} style={{display:"flex",alignItems:"center",gap:6,marginBottom:5,fontSize:12}}>
+                  <span style={{color:"var(--teal)",fontSize:10}}>✓</span>
+                  <span>{c.label}</span>
+                  <span style={{marginLeft:"auto",color:"var(--muted)",fontSize:11}}>{c.peso}%</span>
+                </div>
+              ))}
+            </div>
+            <div style={{background:"var(--surface2)",borderRadius:8,padding:"10px 12px",flex:1}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}>📊 Carteira Saudável</div>
+              {CRITERIOS_CARTEIRA.map((c,i) => (
+                <div key={i} style={{display:"flex",alignItems:"flex-start",gap:6,marginBottom:5,fontSize:12}}>
+                  <span style={{color:"var(--teal)",fontSize:10,marginTop:2}}>✓</span>
+                  <span style={{flex:1}}>{c.label}</span>
+                  <span style={{marginLeft:8,color:"var(--teal)",fontWeight:600,fontSize:11,whiteSpace:"nowrap"}}>{c.meta}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Estoque Balões */}
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">🎈 Inteligência de Estoque — Balões</div>
@@ -2471,6 +2571,11 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ${historico}
 
 ${segStr}${geoStr}${fupStr}
+
+## METAS POR TIER (use para contextualizar a situação do médico)
+ST: 15 ESG/mês, 2 visitas presenciais/mês | T1: 8 ESG/mês, 2 visitas/mês | T2: 4 ESG/mês, 1 visita/mês | T3: 3 ESG/mês, 1 visita/mês | T4: 2 ESG/mês, 1 visita/2 meses | T5: 6 ESG/ano
+Visita bem-sucedida = obs preenchida + ação prevista registrada + TP avançou
+Quando o campo proc_marcados_esg estiver preenchido, compare com a meta do tier e mencione se está acima, na meta ou abaixo. Cite a meta explicitamente.
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
@@ -3964,6 +4069,28 @@ function FupProjToast({ msg, type }) {
 }
 
 // ─── PROJECT CARDS (LANDING) ─────────────────────────────────────────────────
+// ─── METAS POR TIER ──────────────────────────────────────────────────────────
+const METAS_TIER = {
+  "ST": { esg_mes: 15, visitas_presenciais_mes: 2, max_dias_sem_presencial: 15 },
+  "1":  { esg_mes: 8,  visitas_presenciais_mes: 2, max_dias_sem_presencial: 15 },
+  "2":  { esg_mes: 4,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
+  "3":  { esg_mes: 3,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
+  "4":  { esg_mes: 2,  visitas_presenciais_mes: 1, max_dias_sem_presencial: 60 },
+  "5":  { esg_mes: 0.5, visitas_presenciais_mes: 0.33, max_dias_sem_presencial: 90 },
+};
+
+const CRITERIOS_VISITA = [
+  { id: "obs", label: "Observação preenchida", peso: 33 },
+  { id: "acao", label: "Ação prevista registrada", peso: 33 },
+  { id: "tp", label: "TP avançou ou manteve", peso: 34 },
+];
+
+const CRITERIOS_CARTEIRA = [
+  { label: "T1/T2 visitados presencialmente no mês", meta: "≥ 80%" },
+  { label: "Visitas com obs + ação prevista", meta: "≥ 70%" },
+  { label: "Nenhum T1/T2 sem presencial há +30 dias", meta: "100%" },
+];
+
 const FUP_PROJECTS = [
   { id: "esgDay", label: "ESG Day", icon: "🎯", desc: "Eventos em clínicas com pacientes elegíveis. Seguimento de comparecimento, fechamento e ROI.", color: FUP_C.teal },
   { id: "aulasReferidores", label: "Aulas Referidores", icon: "📚", desc: "Capacitação de médicos referidores. KPIs de engajamento, indicações e conversão.", color: FUP_C.blue },
