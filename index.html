@@ -2912,6 +2912,12 @@ Responda APENAS com JSON válido, sem markdown:
                       </div>
                     );
                   })()}
+                  {briefing.pilares_estrategicos && (
+                    <div style={{background:"rgba(240,165,0,0.08)",border:"2px solid rgba(240,165,0,0.4)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
+                      <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--gold)",marginBottom:6}}>🎯 Pilares Estratégicos desta Visita</div>
+                      <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.pilares_estrategicos}</p>
+                    </div>
+                  )}
                   {[
                     ["📍 Situação Atual", briefing.resumo_situacao, null],
                     ["🎯 Objetivo", briefing.objetivo_visita, "var(--gold)"],
