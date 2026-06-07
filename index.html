@@ -559,6 +559,11 @@ function Dashboard() {
   const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
+  useEffect(() => {
+    const handler = () => refreshIntel();
+    window.addEventListener("visitaSalva", handler);
+    return () => window.removeEventListener("visitaSalva", handler);
+  }, []);
 
   const [filterMesDash, setFilterMesDash] = useState("");
 
@@ -845,6 +850,7 @@ function Visitas() {
     setToast("Visita registrada!");
     setShowForm(false);
     refresh();
+    window.dispatchEvent(new Event("visitaSalva"));
   };
 
   const handleDelete = async (id) => {
@@ -1506,6 +1512,11 @@ function Inteligencia() {
   const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
   const { data: medicoTps } = useSupabase("medico_tps");
+  useEffect(() => {
+    const handler = () => refreshIntel();
+    window.addEventListener("visitaSalva", handler);
+    return () => window.removeEventListener("visitaSalva", handler);
+  }, []);
   const [filterMesIntel, setFilterMesIntel] = useState("");
   const [filterTierIntel, setFilterTierIntel] = useState("");
 
