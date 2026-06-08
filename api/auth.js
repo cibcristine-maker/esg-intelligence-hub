@@ -6,16 +6,32 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { password } = req.body || {};
-  const correctPassword = process.env.APP_PASSWORD;
+  const { username, password } = req.body || {};
 
-  if (!correctPassword) {
-    return res.status(500).json({ error: 'APP_PASSWORD não configurada no Vercel.' });
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Usuário e senha obrigatórios.' });
   }
 
-  if (!password || password !== correctPassword) {
-    return res.status(401).json({ error: 'Senha incorreta.' });
+  // APP_USERS = JSON string: {"marcell":"senha1","fernanda":"senha2",...}
+  const usersRaw = process.env.APP_USERS;
+  if (!usersRaw) {
+    return res.status(500).json({ error: 'APP_USERS não configurado no Vercel.' });
   }
 
-  return res.status(200).json({ ok: true, token: Buffer.from('esg-hub-' + Date.now()).toString('base64') });
+  let users;
+  try {
+    users = JSON.parse(usersRaw);
+  } catch (e) {
+    return res.status(500).json({ error: 'APP_USERS com formato inválido.' });
+  }
+
+  const userKey = username.toLowerCase().trim();
+  const expectedPassword = users[userKey];
+
+  if (!expectedPassword || password !== expectedPassword) {
+    return res.status(401).json({ error: 'Usuário ou senha incorretos.' });
+  }
+
+  const token = Buffer.from(userKey + '-' + Date.now()).toString('base64');
+  return res.status(200).json({ ok: true, token, displayName: username });
 }
