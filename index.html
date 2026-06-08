@@ -6313,8 +6313,139 @@ function FupProjetos() {
   );
 }
 
+
+// ─── LOGIN ─────────────────────────────────────────────────────────────────
+function useAuth() {
+  const [authed, setAuthed] = React.useState(() => {
+    return sessionStorage.getItem('esg_hub_auth') === 'true';
+  });
+  const login = (token) => {
+    sessionStorage.setItem('esg_hub_auth', 'true');
+    sessionStorage.setItem('esg_hub_token', token);
+    setAuthed(true);
+  };
+  const logout = () => {
+    sessionStorage.removeItem('esg_hub_auth');
+    sessionStorage.removeItem('esg_hub_token');
+    setAuthed(false);
+  };
+  return { authed, login, logout };
+}
+
+function LoginScreen({ onLogin }) {
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+  const [erro, setErro] = React.useState('');
+
+  const handleLogin = async () => {
+    if (!password) return;
+    setLoading(true);
+    setErro('');
+    try {
+      const res = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        onLogin(data.token);
+      } else {
+        setErro(data.error || 'Senha incorreta.');
+        setPassword('');
+      }
+    } catch (e) {
+      setErro('Erro de conexão. Tente novamente.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh', background: '#0a0e1a',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      fontFamily: "'DM Sans', sans-serif",
+    }}>
+      <div style={{
+        background: '#111827', border: '1px solid #1e2d45',
+        borderRadius: 16, padding: '48px 40px', width: '100%', maxWidth: 400,
+        boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+      }}>
+        {/* Logo */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36, justifyContent: 'center' }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: 10,
+            background: 'linear-gradient(135deg, #00bfa5, #d4af37)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 20, fontWeight: 800, color: '#0a0e1a',
+          }}>E</div>
+          <div>
+            <div style={{ color: '#e2e8f0', fontSize: 17, fontWeight: 700, letterSpacing: '-0.02em' }}>ESG Intelligence Hub</div>
+            <div style={{ color: '#64748b', fontSize: 12, fontFamily: 'DM Mono, monospace' }}>Área restrita</div>
+          </div>
+        </div>
+
+        {/* Campo senha */}
+        <div style={{ marginBottom: 16 }}>
+          <label style={{ color: '#64748b', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>
+            SENHA DE ACESSO
+          </label>
+          <input
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            placeholder="Digite a senha do time"
+            autoFocus
+            style={{
+              width: '100%', background: '#1a2235', border: '1px solid #1e2d45',
+              borderRadius: 8, color: '#e2e8f0', fontSize: 14, padding: '12px 16px',
+              outline: 'none', boxSizing: 'border-box',
+              fontFamily: "'DM Sans', sans-serif",
+              transition: 'border-color 0.15s',
+            }}
+            onFocus={e => e.target.style.borderColor = '#00bfa5'}
+            onBlur={e => e.target.style.borderColor = '#1e2d45'}
+          />
+        </div>
+
+        {/* Erro */}
+        {erro && (
+          <div style={{
+            background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+            borderRadius: 8, padding: '10px 14px', marginBottom: 16,
+            color: '#ef4444', fontSize: 13,
+          }}>
+            {erro}
+          </div>
+        )}
+
+        {/* Botão */}
+        <button
+          onClick={handleLogin}
+          disabled={loading || !password}
+          style={{
+            width: '100%', padding: '13px', borderRadius: 8, border: 'none',
+            background: loading || !password ? '#1a2235' : 'linear-gradient(135deg, #00bfa5, #00897b)',
+            color: loading || !password ? '#64748b' : '#0a0e1a',
+            fontSize: 14, fontWeight: 700, cursor: loading || !password ? 'not-allowed' : 'pointer',
+            fontFamily: "'DM Sans', sans-serif",
+            transition: 'all 0.15s',
+          }}
+        >
+          {loading ? 'Verificando...' : 'Entrar'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [tab, setTab] = useState("dashboard");
+  const { authed, login, logout } = useAuth();
+
+  if (!authed) return <LoginScreen onLogin={login} />;
 
   return (
     <div className="app">
@@ -6338,6 +6469,16 @@ function App() {
             </button>
           ))}
         </nav>
+        <button
+          onClick={logout}
+          style={{
+            background: 'none', border: '1px solid #1e2d45', borderRadius: 8,
+            color: '#64748b', fontSize: 12, padding: '6px 14px', cursor: 'pointer',
+            fontFamily: 'DM Sans, sans-serif', marginLeft: 8, whiteSpace: 'nowrap',
+            flexShrink: 0,
+          }}
+          title="Sair"
+        >Sair</button>
       </header>
       <main className="main">
         {tab === "dashboard" && <Dashboard />}
