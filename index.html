@@ -3803,7 +3803,7 @@ function PerfilDetalhe({ medico, onClose }) {
 const CATEGORIAS_BIBLIOTECA = ["Todos","Evidência Clínica","Marketing Médico","GEO / Digital","Comercial","Gestão","Regulatório","ESG Day","GLP-1"];
 
 const MATERIAIS_INICIAIS = [
-  { id:"1", titulo:"10 Tendências de Marketing Médico para 2026", categoria:"Marketing Médico", fonte:"Médico Celebridade Cast #131 — Vitor Jaci", resumo:"10 tendências em 3 eixos: Relação profunda (eventos presenciais, microcomunidades, social seller), Autoridade genuína (building in public, docu-style, funil educacional) e Tecnologia com inteligência (CRM com IA, BI, agentes de IA). Tese: aprofundar relacionamento vale mais que ampliar alcance em 2026.", tags:["CRM","IA","eventos presenciais","base de dados","LTV","2026"], link:"", destaque:["Pacientes inativos na própria base convertem 3-5x mais que leads frios","Agentes de IA com briefing pré-consulta = vantagem competitiva não copiável","Indicação: CAC R$60 vs Instagram R$380 — alocar recursos com precisão cirúrgica"], data:"2025-12", lido:false }
+  { id:"1", titulo:"10 Tendências de Marketing Médico para 2026", categoria:"Marketing Médico", fonte:"Médico Celebridade Cast #131 — Vitor Jaci", resumo:"10 tendências em 3 eixos: Relação profunda (eventos presenciais, microcomunidades, social seller), Autoridade genuína (building in public, docu-style, funil educacional) e Tecnologia com inteligência (CRM com IA, BI, agentes de IA). Tese: aprofundar relacionamento vale mais que ampliar alcance em 2026.", conteudo:"", tags:["CRM","IA","eventos presenciais","base de dados","LTV","2026"], link:"", destaque:["Pacientes inativos na própria base convertem 3-5x mais que leads frios","Agentes de IA com briefing pré-consulta = vantagem competitiva não copiável","Indicação: CAC R$60 vs Instagram R$380 — alocar recursos com precisão cirúrgica"], data:"2025-12", lido:false }
 ];
 
 function Biblioteca() {
@@ -3812,15 +3812,15 @@ function Biblioteca() {
   const [busca, setBusca] = React.useState("");
   const [showForm, setShowForm] = React.useState(false);
   const [expandido, setExpandido] = React.useState(null);
-  const [form, setForm] = React.useState({ titulo:"", categoria:"Marketing Médico", fonte:"", resumo:"", tags:"", link:"", d1:"", d2:"", d3:"" });
+  const [form, setForm] = React.useState({ titulo:"", categoria:"Marketing Médico", fonte:"", resumo:"", tags:"", link:"", d1:"", d2:"", d3:"", conteudo:"" });
   const setF = (k,v) => setForm(f => ({...f,[k]:v}));
   const salvar = (lista) => { setMateriais(lista); localStorage.setItem("esg_biblioteca", JSON.stringify(lista)); };
   const adicionar = () => {
     if (!form.titulo) return;
-    const novo = { id:Date.now().toString(), titulo:form.titulo, categoria:form.categoria, fonte:form.fonte, resumo:form.resumo, tags:form.tags.split(",").map(t=>t.trim()).filter(Boolean), link:form.link, destaque:[form.d1,form.d2,form.d3].filter(Boolean), data:new Date().toISOString().slice(0,7), lido:false };
+    const novo = { id:Date.now().toString(), titulo:form.titulo, categoria:form.categoria, fonte:form.fonte, resumo:form.resumo, conteudo:form.conteudo, tags:form.tags.split(",").map(t=>t.trim()).filter(Boolean), link:form.link, destaque:[form.d1,form.d2,form.d3].filter(Boolean), data:new Date().toISOString().slice(0,7), lido:false };
     salvar([novo,...materiais]);
     setShowForm(false);
-    setForm({ titulo:"", categoria:"Marketing Médico", fonte:"", resumo:"", tags:"", link:"", d1:"", d2:"", d3:"" });
+    setForm({ titulo:"", categoria:"Marketing Médico", fonte:"", resumo:"", tags:"", link:"", d1:"", d2:"", d3:"", conteudo:"" });
   };
   const toggleLido = (id) => salvar(materiais.map(m => m.id===id ? {...m,lido:!m.lido} : m));
   const remover = (id) => { if (window.confirm("Remover?")) salvar(materiais.filter(m=>m.id!==id)); };
@@ -3869,7 +3869,11 @@ function Biblioteca() {
           (m.tags||[]).length>0 && React.createElement("div", {style:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8}},
             (m.tags||[]).map(t => React.createElement("span", {key:t, style:{fontSize:10,background:"var(--surface2)",color:"var(--muted)",padding:"2px 8px",borderRadius:12}}, "#"+t))
           ),
-          React.createElement("div", {style:{textAlign:"right"}}, React.createElement("span", {style:{fontSize:11,color:"var(--muted)",cursor:"pointer"}, onClick:()=>setExpandido(null)}, "▲ fechar"))
+          m.conteudo && React.createElement("div", {style:{marginTop:10}},
+            React.createElement("div", {style:{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.06em",marginBottom:8}}, "📄 Conteúdo Completo"),
+            React.createElement("div", {style:{fontSize:12,color:"var(--text)",lineHeight:1.8,whiteSpace:"pre-wrap",background:"var(--bg)",borderRadius:8,padding:"12px 14px",maxHeight:400,overflowY:"auto"}}, m.conteudo)
+          ),
+          React.createElement("div", {style:{textAlign:"right",marginTop:8}}, React.createElement("span", {style:{fontSize:11,color:"var(--muted)",cursor:"pointer"}, onClick:()=>setExpandido(null)}, "▲ fechar"))
         )
       )),
       showForm && React.createElement("div", {className:"modal-overlay", onClick:e=>e.target===e.currentTarget&&setShowForm(false)},
@@ -3889,6 +3893,11 @@ function Biblioteca() {
               React.createElement("div", {className:"form-group form-full"},
                 React.createElement("label", {className:"form-label"}, "⭐ Destaques-chave (até 3)"),
                 ["d1","d2","d3"].map(k => React.createElement("input", {key:k, className:"form-input", style:{marginBottom:6}, value:form[k], onChange:e=>setF(k,e.target.value), placeholder:"Insight ou dado relevante..."}))
+              ),
+              React.createElement("div", {className:"form-group form-full"},
+                React.createElement("label", {className:"form-label"}, "📄 Conteúdo completo (cole o material inteiro aqui)"),
+                React.createElement("div", {style:{fontSize:11,color:"var(--muted)",marginBottom:6}}, "Cole o texto completo do artigo, podcast ou material. Fica salvo e pesquisável."),
+                React.createElement("textarea", {className:"form-textarea", style:{minHeight:200,fontSize:12}, value:form.conteudo, onChange:e=>setF("conteudo",e.target.value), placeholder:"Cole aqui o conteúdo completo do material..."})
               )
             ),
             React.createElement("div", {style:{display:"flex",gap:8,justifyContent:"flex-end",marginTop:8}},
