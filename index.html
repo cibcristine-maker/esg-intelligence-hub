@@ -6333,25 +6333,26 @@ function useAuth() {
 }
 
 function LoginScreen({ onLogin }) {
+  const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [erro, setErro] = React.useState('');
 
   const handleLogin = async () => {
-    if (!password) return;
+    if (!username || !password) return;
     setLoading(true);
     setErro('');
     try {
       const res = await fetch('/api/auth', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password }),
+        body: JSON.stringify({ username, password }),
       });
       const data = await res.json();
       if (res.ok && data.ok) {
         onLogin(data.token);
       } else {
-        setErro(data.error || 'Senha incorreta.');
+        setErro(data.error || 'Usuário ou senha incorretos.');
         setPassword('');
       }
     } catch (e) {
@@ -6361,11 +6362,18 @@ function LoginScreen({ onLogin }) {
     }
   };
 
+  const inputStyle = {
+    width: '100%', background: '#1a2235', border: '1px solid #1e2d45',
+    borderRadius: 8, color: '#e2e8f0', fontSize: 14, padding: '12px 16px',
+    outline: 'none', boxSizing: 'border-box',
+    fontFamily: "'DM Sans', sans-serif", transition: 'border-color 0.15s',
+  };
+
   return (
     <div style={{
       minHeight: '100vh', background: '#0a0e1a',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'DM Sans', sans-serif",
+      fontFamily: "'DM Sans', sans-serif", padding: '20px',
     }}>
       <div style={{
         background: '#111827', border: '1px solid #1e2d45',
@@ -6373,7 +6381,7 @@ function LoginScreen({ onLogin }) {
         boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
       }}>
         {/* Logo */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 36, justifyContent: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 40, justifyContent: 'center' }}>
           <div style={{
             width: 44, height: 44, borderRadius: 10,
             background: 'linear-gradient(135deg, #00bfa5, #d4af37)',
@@ -6386,25 +6394,34 @@ function LoginScreen({ onLogin }) {
           </div>
         </div>
 
+        {/* Campo usuário */}
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ color: '#64748b', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>USUÁRIO</label>
+          <input
+            type="text"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            placeholder="Seu usuário"
+            autoFocus
+            autoCapitalize="none"
+            autoCorrect="off"
+            style={inputStyle}
+            onFocus={e => e.target.style.borderColor = '#00bfa5'}
+            onBlur={e => e.target.style.borderColor = '#1e2d45'}
+          />
+        </div>
+
         {/* Campo senha */}
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ color: '#64748b', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>
-            SENHA DE ACESSO
-          </label>
+        <div style={{ marginBottom: 20 }}>
+          <label style={{ color: '#64748b', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>SENHA</label>
           <input
             type="password"
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleLogin()}
-            placeholder="Digite a senha do time"
-            autoFocus
-            style={{
-              width: '100%', background: '#1a2235', border: '1px solid #1e2d45',
-              borderRadius: 8, color: '#e2e8f0', fontSize: 14, padding: '12px 16px',
-              outline: 'none', boxSizing: 'border-box',
-              fontFamily: "'DM Sans', sans-serif",
-              transition: 'border-color 0.15s',
-            }}
+            placeholder="Sua senha"
+            style={inputStyle}
             onFocus={e => e.target.style.borderColor = '#00bfa5'}
             onBlur={e => e.target.style.borderColor = '#1e2d45'}
           />
@@ -6416,22 +6433,20 @@ function LoginScreen({ onLogin }) {
             background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
             borderRadius: 8, padding: '10px 14px', marginBottom: 16,
             color: '#ef4444', fontSize: 13,
-          }}>
-            {erro}
-          </div>
+          }}>{erro}</div>
         )}
 
         {/* Botão */}
         <button
           onClick={handleLogin}
-          disabled={loading || !password}
+          disabled={loading || !username || !password}
           style={{
             width: '100%', padding: '13px', borderRadius: 8, border: 'none',
-            background: loading || !password ? '#1a2235' : 'linear-gradient(135deg, #00bfa5, #00897b)',
-            color: loading || !password ? '#64748b' : '#0a0e1a',
-            fontSize: 14, fontWeight: 700, cursor: loading || !password ? 'not-allowed' : 'pointer',
-            fontFamily: "'DM Sans', sans-serif",
-            transition: 'all 0.15s',
+            background: (loading || !username || !password) ? '#1a2235' : 'linear-gradient(135deg, #00bfa5, #00897b)',
+            color: (loading || !username || !password) ? '#64748b' : '#0a0e1a',
+            fontSize: 14, fontWeight: 700,
+            cursor: (loading || !username || !password) ? 'not-allowed' : 'pointer',
+            fontFamily: "'DM Sans', sans-serif", transition: 'all 0.15s',
           }}
         >
           {loading ? 'Verificando...' : 'Entrar'}
