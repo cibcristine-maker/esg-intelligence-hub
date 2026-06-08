@@ -2169,6 +2169,8 @@ function BriefingIA() {
   const [gerando, setGerando] = React.useState(false);
   const [erro, setErro] = React.useState(null);
   const [contextoExtra, setContextoExtra] = React.useState("");
+  const [materiaisSelecionados, setMateriaisSelecionados] = React.useState([]);
+  const [showBiblioteca, setShowBiblioteca] = React.useState(false);
   const [feedback, setFeedback] = React.useState(null); // 'util' | 'impreciso'
   const [feedbackObs, setFeedbackObs] = React.useState("");
   const [feedbackEnviado, setFeedbackEnviado] = React.useState(false);
@@ -2447,6 +2449,24 @@ ${totalRealizados === 0 && totalMarcados > 0 ? "⚠ ATENÇÃO: há procedimentos
   : "⚠ ATENÇÃO: nenhum dado de ESG marcado ou realizado registrado nas visitas — perguntar ao médico na próxima visita"}
 `;
 
+    // Biblioteca — selecionar materiais relevantes automaticamente
+    const todabiblioteca = (() => { try { return JSON.parse(localStorage.getItem("esg_biblioteca")||"null")||MATERIAIS_INICIAIS; } catch { return MATERIAIS_INICIAIS; } })();
+    const ctxLowerBib = (contextoExtra||"").toLowerCase();
+    const segTier = segmentacao?.tier ? String(segmentacao.tier) : "";
+    const relevantes = todabiblioteca.filter(m => {
+      if (materiaisSelecionados.length > 0) return materiaisSelecionados.includes(m.id);
+      // Auto-selecionar por categoria e contexto
+      if (m.categoria === "Evidência Clínica") return true;
+      if (m.categoria === "GEO / Digital" && (ctxLowerBib.includes("geo") || ctxLowerBib.includes("digital") || ctxLowerBib.includes("visibilidade"))) return true;
+      if (m.categoria === "Marketing Médico" && (ctxLowerBib.includes("marketing") || ctxLowerBib.includes("evento") || ctxLowerBib.includes("esg day"))) return true;
+      return false;
+    });
+    const bibliotecaStr = relevantes.length > 0 ? `
+
+## BIBLIOTECA DE EVIDÊNCIAS E REFERÊNCIAS (use para embasar argumentos)
+${relevantes.map(m => `- **${m.titulo}** (${m.fonte}): ${m.resumo.slice(0,200)}${m.destaque&&m.destaque[0]?" | Destaque: "+m.destaque[0]:""}`).join("
+")}` : "";
+
     // FUP Projetos — contexto do Curso IAS Bariátricos
     const fupStr = fupMedico && fupMedico.length > 0 ? `
 
@@ -2493,7 +2513,7 @@ Gere um briefing de PRIMEIRA ABORDAGEM para o médico abaixo. Seja direto e prá
 
 MÉDICO: ${selectedMedico.nome} | Tier: ${selectedMedico.tier||"—"} | Especialidade: ${selectedMedico.especialidade||"—"} | Clínica: ${selectedMedico.clinica||"—"} | Região: ${selectedMedico.regiao||"—"}
 
-${segStr}${geoStr}${pipelineStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
@@ -2553,7 +2573,7 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ## HISTÓRICO
 ${historico}
 
-${segStr}${geoStr}${pipelineStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
@@ -2796,6 +2816,45 @@ Responda APENAS com JSON válido, sem markdown:
                   <div style={{fontSize:12,color:"var(--warn)"}}>⚠ Sem dados de ESG registrados — perguntar ao médico quantos tem agendados</div>
                 </div>
               )}
+
+              {selectedMedico && (() => {
+                const bib = (() => { try { return JSON.parse(localStorage.getItem("esg_biblioteca")||"null")||MATERIAIS_INICIAIS; } catch { return MATERIAIS_INICIAIS; } })();
+                const ctxL = (contextoExtra||"").toLowerCase();
+                const rel = bib.filter(m => materiaisSelecionados.length > 0 ? materiaisSelecionados.includes(m.id) : (m.categoria==="Evidência Clínica" || (m.categoria==="GEO / Digital" && (ctxL.includes("geo")||ctxL.includes("digital"))) || (m.categoria==="Marketing Médico" && (ctxL.includes("marketing")||ctxL.includes("evento")))));
+                return rel.length > 0 ? (
+                  <div style={{background:"rgba(0,135,158,0.06)",border:"1px solid rgba(0,135,158,0.25)",borderRadius:10,padding:"10px 14px",marginBottom:2}}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                      <div style={{fontSize:10,fontWeight:700,color:"var(--teal)",textTransform:"uppercase",letterSpacing:"0.06em"}}>📚 Evidências da Biblioteca ({rel.length})</div>
+                      <button onClick={()=>setShowBiblioteca(b=>!b)} style={{fontSize:10,color:"var(--teal)",background:"transparent",border:"none",cursor:"pointer",fontFamily:"inherit"}}>{showBiblioteca?"▲ fechar":"▼ ver"}</button>
+                    </div>
+                    {!showBiblioteca && <div style={{fontSize:11,color:"var(--muted)"}}>{rel.slice(0,2).map(m=>m.titulo.slice(0,50)+"…").join(" · ")}{rel.length>2?" +mais":""}</div>}
+                    {showBiblioteca && (
+                      <div>
+                        {bib.map(m => {
+                          const isRel = rel.find(r=>r.id===m.id);
+                          const isSel = materiaisSelecionados.includes(m.id);
+                          return (
+                            <div key={m.id} style={{display:"flex",alignItems:"center",gap:8,padding:"5px 0",borderBottom:"1px solid rgba(30,58,82,0.3)"}}>
+                              <input type="checkbox" checked={materiaisSelecionados.length>0?isSel:!!isRel} onChange={e=>{
+                                if (materiaisSelecionados.length===0) {
+                                  setMateriaisSelecionados(e.target.checked ? bib.map(x=>x.id) : rel.filter(r=>r.id!==m.id).map(r=>r.id));
+                                } else {
+                                  setMateriaisSelecionados(prev => e.target.checked ? [...prev,m.id] : prev.filter(id=>id!==m.id));
+                                }
+                              }} style={{cursor:"pointer"}} />
+                              <div>
+                                <div style={{fontSize:11,fontWeight:600,color:"var(--text)"}}>{m.titulo.slice(0,60)}{m.titulo.length>60?"…":""}</div>
+                                <div style={{fontSize:10,color:"var(--muted)"}}>{m.categoria}</div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                        <button onClick={()=>setMateriaisSelecionados([])} style={{fontSize:10,color:"var(--muted)",background:"transparent",border:"none",cursor:"pointer",fontFamily:"inherit",marginTop:6}}>↺ Restaurar seleção automática</button>
+                      </div>
+                    )}
+                  </div>
+                ) : null;
+              })()}
 
               <button onClick={gerarBriefing} disabled={gerando||!selectedMedico||(selectedMedico&&!ehNovoMedico&&!ultimaVisita)}
                 style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
