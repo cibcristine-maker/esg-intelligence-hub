@@ -3810,6 +3810,7 @@ const TABS = [
   { id:"historico",  label:"Histórico",        icon:"📅" },
   { id:"basedados",  label:"Base de Dados",    icon:"📋" },
 
+  { id:"biblioteca", label:"Biblioteca", icon:"📚" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
 ];
 
@@ -6181,6 +6182,7 @@ function App() {
         {tab === "basedados"  && <BaseDados />}
 
         {tab === "fup"        && <FupProjetos />}
+        {tab === "biblioteca"  && <Biblioteca />}
         {tab === "briefingIA"  && <BriefingIA />}
       </main>
     </div>
