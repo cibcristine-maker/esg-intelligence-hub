@@ -3813,6 +3813,7 @@ function Biblioteca() {
   const [showForm, setShowForm] = React.useState(false);
   const [expandido, setExpandido] = React.useState(null);
   const [form, setForm] = React.useState({ titulo:"", categoria:"Marketing Médico", fonte:"", resumo:"", tags:"", link:"", d1:"", d2:"", d3:"", conteudo:"" });
+  const [editandoId, setEditandoId] = React.useState(null);
   const setF = (k,v) => setForm(f => ({...f,[k]:v}));
   const salvar = (lista) => { setMateriais(lista); localStorage.setItem("esg_biblioteca", JSON.stringify(lista)); };
   const adicionar = () => {
@@ -3823,6 +3824,16 @@ function Biblioteca() {
     setForm({ titulo:"", categoria:"Marketing Médico", fonte:"", resumo:"", tags:"", link:"", d1:"", d2:"", d3:"", conteudo:"" });
   };
   const toggleLido = (id) => salvar(materiais.map(m => m.id===id ? {...m,lido:!m.lido} : m));
+  const abrirEdicao = (m) => {
+    setEditandoId(m.id);
+    setForm({ titulo:m.titulo, categoria:m.categoria, fonte:m.fonte||"", resumo:m.resumo||"", tags:(m.tags||[]).join(", "), link:m.link||"", d1:(m.destaque||[])[0]||"", d2:(m.destaque||[])[1]||"", d3:(m.destaque||[])[2]||"", conteudo:m.conteudo||"" });
+    setShowForm(true);
+  };
+  const salvarEdicao = () => {
+    salvar(materiais.map(m => m.id===editandoId ? {...m, titulo:form.titulo, categoria:form.categoria, fonte:form.fonte, resumo:form.resumo, conteudo:form.conteudo, tags:form.tags.split(",").map(t=>t.trim()).filter(Boolean), link:form.link, destaque:[form.d1,form.d2,form.d3].filter(Boolean) } : m));
+    setShowForm(false); setEditandoId(null);
+    setForm({ titulo:"", categoria:"Marketing Médico", fonte:"", resumo:"", tags:"", link:"", d1:"", d2:"", d3:"", conteudo:"" });
+  };
   const remover = (id) => { if (window.confirm("Remover?")) salvar(materiais.filter(m=>m.id!==id)); };
   const filtrados = materiais.filter(m => (filtro==="Todos"||m.categoria===filtro) && (!busca||m.titulo.toLowerCase().includes(busca.toLowerCase())||m.resumo.toLowerCase().includes(busca.toLowerCase())||(m.tags||[]).some(t=>t.toLowerCase().includes(busca.toLowerCase()))));
   const lidos = materiais.filter(m=>m.lido).length;
@@ -3853,6 +3864,7 @@ function Biblioteca() {
           ),
           React.createElement("div", {style:{display:"flex",gap:6,flexShrink:0}},
             React.createElement("button", {onClick:()=>toggleLido(m.id), style:{padding:"4px 10px",borderRadius:6,border:"1px solid var(--border)",background:"transparent",color:m.lido?"var(--success)":"var(--muted)",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}, m.lido?"✓ Lido":"Marcar lido"),
+            React.createElement("button", {onClick:()=>abrirEdicao(m), style:{padding:"4px 10px",borderRadius:6,border:"1px solid var(--border)",background:"transparent",color:"var(--teal)",fontSize:11,cursor:"pointer",fontFamily:"inherit"}}, "✎ Editar"),
             m.link && React.createElement("a", {href:m.link, target:"_blank", style:{padding:"4px 10px",borderRadius:6,border:"1px solid var(--border)",color:"var(--teal)",fontSize:11,textDecoration:"none"}}, "🔗"),
             React.createElement("button", {onClick:()=>remover(m.id), style:{padding:"4px 8px",borderRadius:6,border:"none",background:"transparent",color:"var(--muted)",fontSize:13,cursor:"pointer"}}, "×")
           )
@@ -3879,7 +3891,7 @@ function Biblioteca() {
       showForm && React.createElement("div", {className:"modal-overlay", onClick:e=>e.target===e.currentTarget&&setShowForm(false)},
         React.createElement("div", {className:"modal"},
           React.createElement("div", {className:"modal-header"},
-            React.createElement("div", {className:"modal-title"}, "📚 Adicionar Material"),
+            React.createElement("div", {className:"modal-title"}, editandoId ? "✎ Editar Material" : "📚 Adicionar Material"),
             React.createElement("button", {className:"modal-close", onClick:()=>setShowForm(false)}, "×")
           ),
           React.createElement("div", {className:"modal-body"},
@@ -3902,7 +3914,7 @@ function Biblioteca() {
             ),
             React.createElement("div", {style:{display:"flex",gap:8,justifyContent:"flex-end",marginTop:8}},
               React.createElement("button", {className:"btn btn-ghost", onClick:()=>setShowForm(false)}, "Cancelar"),
-              React.createElement("button", {className:"btn btn-primary", onClick:adicionar}, "✓ Salvar")
+              React.createElement("button", {className:"btn btn-primary", onClick:editandoId ? salvarEdicao : adicionar}, editandoId ? "✓ Salvar edição" : "✓ Salvar")
             )
           )
         )
