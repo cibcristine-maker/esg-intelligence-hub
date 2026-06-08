@@ -2447,6 +2447,20 @@ ${totalRealizados === 0 && totalMarcados > 0 ? "⚠ ATENÇÃO: há procedimentos
   : "⚠ ATENÇÃO: nenhum dado de ESG marcado ou realizado registrado nas visitas — perguntar ao médico na próxima visita"}
 `;
 
+    // Biblioteca de evidências — resumo compacto para o prompt
+    const bibliotecaStr = `
+
+## BIBLIOTECA DE EVIDÊNCIAS (use para embasar argumentos e material recomendado)
+- MERIT Trial (Lancet 2022): RCT com 209 pacientes. ESG+estilo de vida: 49,2% EWL vs 3,2% controle em 52 semanas. 77% atingiram ≥25% EWL. 80% melhoraram comorbidades metabólicas.
+- ESG vs Semaglutida (JAMA 2024): ESG mais custo-efetivo em 5 anos. ESG economizou US$33.583 vs semaglutida. Para não-dominância, semaglutida precisaria custar US$3.591/ano (atual: US$13.618).
+- ESG pós-GLP-1 (Medscape 2026): 103 pacientes que descontinuaram GLP-1. ESG: 17,9% perda vs 5% troca GLP-1 vs 0,8% estilo de vida. Melhor estratégia pós-GLP-1.
+- ESG + GLP-1 combinados (PMC 2025): combinação eleva perda para até 25%. Estudos brasileiros (Badurdeen, Hoff) confirmam benefício.
+- ESG 5 anos (CGH 2021): 15,9% TBWL mantido em 5 anos. 1,3% eventos adversos moderados, zero graves.
+- ESG 6 anos — 1.377 pacientes (Obesity Surgery 2026): maior coorte de longo prazo. Resolução de diabetes, hipertensão, apneia e dislipidemia confirmadas.
+- Diretriz ASGE–ESGE 2024: recomenda ESG para IMC ≥30 (ou ≥27 com comorbidade). Framework GRADE. Procedimento oficialmente endossado pelas 2 maiores sociedades de endoscopia do mundo.
+- ASMBS aprova ESG (jan/2026): CPT Code específico em vigor. MERIT: 13,6% TBWL | Séries: 15-17,5% TBWL.
+- Semaglutida: pacientes reganharam 2/3 do peso perdido 1 ano após descontinuação (STEP 1 extension). ESG oferece resultado mais duradouro.`;
+
     // FUP Projetos — contexto do Curso IAS Bariátricos
     const fupStr = fupMedico && fupMedico.length > 0 ? `
 
@@ -2493,7 +2507,7 @@ Gere um briefing de PRIMEIRA ABORDAGEM para o médico abaixo. Seja direto e prá
 
 MÉDICO: ${selectedMedico.nome} | Tier: ${selectedMedico.tier||"—"} | Especialidade: ${selectedMedico.especialidade||"—"} | Clínica: ${selectedMedico.clinica||"—"} | Região: ${selectedMedico.regiao||"—"}
 
-${segStr}${geoStr}${pipelineStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
@@ -2553,7 +2567,7 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ## HISTÓRICO
 ${historico}
 
-${segStr}${geoStr}${pipelineStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
