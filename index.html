@@ -2276,6 +2276,85 @@ function BriefingIA() {
         }).join('\n')
       : '';
 
+    // ── BASE DE CONHECIMENTO GEO — Relatórios dos médicos parceiros ──────────────
+    const GEO_RELATORIOS = {
+      "marcelo falcão": {
+        score_geo: "32/100 (Médio-Baixo)",
+        paradoxo: "Capital clínico robusto (PhD, 2.000+ cirurgias, IFSO/ASGE) mas invisível nos LLMs",
+        instagram: "11,8k seguidores | Score 7/10 | Alta frequência mas sem narrativa ESG",
+        google_business: "5,0★ (61 avaliações) | Score 8/10 — ponto forte",
+        youtube: "@marcelofalcaoPhD | 1.050 inscritos | 45 vídeos | média <15 views | Score 3/10",
+        doctoralia: "9 opiniões vs concorrentes com 100-280 | Score 4/10 — gap crítico",
+        site: "drmarcelofalcao.com.br + ifecbariatrica.com.br | Sem FAQ Schema | Score 4-5/10",
+        reddit: "Zero menções — gap máximo para treinamento de LLMs",
+        gaps_criticos: "1) FAQ Schema JSON-LD ausente em ambos os sites (impacto máximo) | 2) Zero presença Reddit/Quora | 3) YouTube sem autoridade | 4) Doctoralia subrepresentado (9 vs 201 opiniões do líder) | 5) Capital acadêmico PhD não materializado em conteúdo web",
+        concorrentes_llm: "Instituto Baiano de Obesidade (IBO), concorrentes Doctoralia Salvador com 100-280 avaliações",
+        oportunidade: "Resolução CFM 2.429/2025 reconhece ESG/BIB oficialmente — janela regulatória única. 34,66% da população baiana com obesidade. Paciente pós-GLP-1 com reganho = maior conversão para ESG/BIB em Salvador",
+        plano_30d: "FAQ Schema ambos sites + otimizar Google Business + Doctoralia com 50 avaliações meta + otimizar 45 vídeos YouTube existentes",
+        plano_60d: "2 vídeos estruturados YouTube + artigos blog baseados em evidências + press release portais saúde BA + LinkedIn autoridade",
+        plano_90d: "Teste GEO 10 perguntas nos LLMs + artigo MERIT Trial + meta 50 avaliações Doctoralia + parceria portal saúde baiano",
+        kpi_baseline: "0/10 citações LLMs | 9 avaliações Doctoralia | 0 artigos blog | FAQ Schema ausente",
+        instituicao: "IFEC — Instituto Falcão de Endoscopia e Cirurgia | Itaigara Memorial, Salvador-BA",
+        credenciais: "PhD UFPE | CRM-BA 14439 | RQE Cirurgia Digestiva + Endoscopia + Bariátrica | TSBCBM | ASGE | IFSO | Professor Adjunto EBMSP"
+      },
+      "sérgio barrichello": {
+        score_geo: "0/6 LLMs citados (paradoxo central)",
+        paradoxo: "64.300 seguidores Instagram + 19.600 inscritos YouTube + 656 vídeos + 2.969 posts = presença social excepcional. Resultado nos 6 LLMs testados: 0 citações",
+        instagram: "64.300 seguidores verificados | 2.969 posts | before/after bloqueados pela Meta Health&Wellness 2025",
+        youtube: "19.600 inscritos | 656 vídeos — maior acervo ESG/Balão pós-GLP-1 do Brasil | invisível para LLMs (conteúdo em vídeo não crawleável)",
+        doctoralia: "1/5 com 1 comentário NEGATIVO — bloqueio crítico para Perplexity que usa Doctoralia como fonte primária",
+        site: "drsergiobarrichello.com.br | Design limpo | FAQ em accordion JavaScript (não crawlável) | Sem schema JSON-LD | Sem páginas pós-GLP-1",
+        gaps_criticos: "1) Doctoralia destruída (1 review negativo — ação em 7 dias) | 2) 656 vídeos em formato invisível para LLMs | 3) Site sem schema e sem blog | 4) Robots.txt não libera GPTBot/ClaudeBot/PerplexityBot",
+        concorrentes_llm: "ChatGPT→Dr. Rodrigo Navarro | Gemini→Hospital Einstein/Sírio-Libanês | Perplexity→Obesicenter/Scoppo/Varca Neto/Bertolotto | Claude→Scarparo Scopia/Obesicenter/Bertin/Barreto | Grok→clínicas genéricas | Kimi→Dr. Gustavo Lima",
+        oportunidade: "Paciente AB São Paulo que parou Mounjaro em jan/2026 reganha peso evidente entre jul-out/2026 — janela de captura jul/2026-jan/2027. 656 vídeos são atalho exclusivo: transcrever os 30 melhores = artigos de blog com custo marginal mínimo. CPL GEO → zero após investimento inicial",
+        meta_ads_contexto: "Meta removeu segmentação saúde 2022 | LGPD 2023 colapso sinais | Jan/2025 Health&Wellness bloqueou conversões lower-funnel e before/after | CPL qualificado SP: de R$1.400 para R$2.800 | Segunda onda restrições 2026 em andamento",
+        plano_urgente: "Responder comentário negativo Doctoralia HOJE + campanha avaliações pacientes Google (24 reviews) + libertar robots.txt para bots LLMs + FAQ Schema site",
+        plano_90d: "18 artigos blog via transcrição vídeos + schema Physician JSON-LD + 50 perguntas FAQPage + página dedicada pós-GLP-1 + LinkedIn autoridade",
+        dados_iqvia: "Paciente GLP-1: 36 anos média | 66% mulheres | 53% classe B | 33% classe A | 59% Sudeste | 71% intenção trocar medicamento | 75% uso <1 ano | 67-73% reganho em 12 meses após parar",
+        cidade: "São Paulo, SP",
+        credenciais: "Pioneiro ESG no Brasil | Cornell Training | ASGE"
+      },
+      "felipe matz": {
+        score_geo: "Não citado nos LLMs testados (ChatGPT, Gemini, Perplexity, Grok, Manus)",
+        paradoxo: "17 anos expertise + 1.000+ procedimentos + Cornell/ASGE + rede 8 endereços — invisível nos LLMs",
+        site: "endodiagnostic.com.br | Pontos fortes: calculadora IMC, depoimentos vídeo, 8 endereços, credenciais Cornell/ASGE | Gaps: FAQ Schema ausente, Person Schema ausente, Medical Procedure Schema ausente, conteúdo pós-GLP-1 inexistente, blog ENDONEWS desatualizado",
+        gaps_criticos: "1) FAQ Schema JSON-LD ausente | 2) Person Schema (CRM, especialidade) ausente | 3) Medical Procedure Schema ausente | 4) Zero conteúdo pós-GLP-1/Mounjaro | 5) Blog ENDONEWS estagnado",
+        jornada_paciente: "Paciente sente reganho → busca Google → pergunta à IA (ANTES do Google) → pesquisa o indicado → agenda. O Dr. Matz aparece apenas na etapa Google — mas a decisão já foi formada na IA",
+        oportunidade: "Patente semaglutida expirou mar/2026 → genéricos até 70% mais baratos → mais usuários GLP-1 → mais reganho → mais candidatos ESG. Estudo NYU Langone/ASMBS 2025: bariátrica -24% vs GLP-1 -4,7% em 2 anos. Queda de volume não é crise de demanda — é crise de visibilidade digital",
+        plano_prioridade: "FAQ Schema + Person Schema + Medical Procedure Schema + página dedicada pós-GLP-1/Mounjaro + reativar blog ENDONEWS",
+        meta_ads: "Mercado Health&Wellness com restrições crescentes — GEO é o canal sem restrições regulatórias",
+        cidade: "Rio de Janeiro, RJ",
+        credenciais: "17 anos | +1.000 procedimentos | Cornell Training | ASGE | Endodiagnostic (rede 8 endereços)"
+      }
+    };
+
+    // Match médico selecionado com base GEO
+    const nomeLower = (selectedMedico.nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+    const geoRelatorio = Object.entries(GEO_RELATORIOS).find(([k]) => {
+      const kNorm = k.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+      return nomeLower.includes(kNorm) || kNorm.includes(nomeLower.split(" ").slice(-1)[0]);
+    })?.[1] || null;
+
+    const geoRelatorioStr = geoRelatorio ? `
+
+## BASE DE CONHECIMENTO GEO — RELATÓRIO DO DR. ${selectedMedico.nome.toUpperCase()}
+(Dados do diagnóstico GEO aprofundado — use para enriquecer acao_marketing e argumento_principal)
+Score GEO: ${geoRelatorio.score_geo}
+Paradoxo identificado: ${geoRelatorio.paradoxo}
+Instagram: ${geoRelatorio.instagram||"—"}
+YouTube: ${geoRelatorio.youtube||"—"}
+Doctoralia: ${geoRelatorio.doctoralia||"—"}
+Site: ${geoRelatorio.site||"—"}
+Gaps críticos: ${geoRelatorio.gaps_criticos}
+Quem aparece no lugar dele nos LLMs: ${geoRelatorio.concorrentes_llm||"—"}
+Oportunidade estratégica: ${geoRelatorio.oportunidade}
+${geoRelatorio.plano_30d ? "Plano 30 dias: "+geoRelatorio.plano_30d : ""}
+${geoRelatorio.plano_90d ? "Plano 90 dias: "+geoRelatorio.plano_90d : ""}
+${geoRelatorio.plano_urgente ? "AÇÃO URGENTE: "+geoRelatorio.plano_urgente : ""}
+Credenciais: ${geoRelatorio.credenciais||"—"}
+` : "";
+
+
     const MESES_ORDEM = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
     const meses3 = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => MESES_ORDEM.indexOf(a)-MESES_ORDEM.indexOf(b)).slice(-3);
     const historico = visitasMedico.length > 0
@@ -2602,7 +2681,7 @@ Gere um briefing de PRIMEIRA ABORDAGEM para o médico abaixo. Seja direto e prá
 
 MÉDICO: ${selectedMedico.nome} | Tier: ${selectedMedico.tier||"—"} | Especialidade: ${selectedMedico.especialidade||"—"} | Clínica: ${selectedMedico.clinica||"—"} | Região: ${selectedMedico.regiao||"—"}
 
-${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}${geoRelatorioStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
@@ -2664,7 +2743,7 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ## HISTÓRICO
 ${historico}
 
-${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}${feedbackStr}
+${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}${feedbackStr}${geoRelatorioStr}
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
