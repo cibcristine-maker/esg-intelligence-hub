@@ -17,13 +17,9 @@ const supabaseClient = window.supabase.createClient(
   "https://vumtiszgrcjzgekkpgmp.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bXRpc3pncmNqemdla2twZ21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MTk0NjUsImV4cCI6MjA5NTQ5NTQ2NX0.eWO05aayH7lmb5eOuEOwjyEoVx-SGWKh-MBZspfH_Xk"
 );
-
-
 // ─── CONFIG ────────────────────────────────────────────────────────────────
 const SUPABASE_URL = "https://vumtiszgrcjzgekkpgmp.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ1bXRpc3pncmNqemdla2twZ21wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk5MTk0NjUsImV4cCI6MjA5NTQ5NTQ2NX0.eWO05aayH7lmb5eOuEOwjyEoVx-SGWKh-MBZspfH_Xk";
-
-
 // ─── CONSTANTS ─────────────────────────────────────────────────────────────
 const RESPONSAVEIS = [
   "── COMERCIAL ──", "Inside Sales", "Marcell", "Fernanda", "Ana Marieta",
@@ -40,15 +36,12 @@ const BLOCOS_COLOR = {
 };
 const TIER_LABEL = { ST: "Star", 1: "T1", 2: "T2", 3: "T3", 4: "T4", 5: "T5" };
 const TIER_COLOR = { "ST": "#f59e0b", "1": "#ef4444", "2": "#f97316", "3": "#eab308", "4": "#3b82f6", "5": "#6b7280" };
-
 // ─── STYLES ────────────────────────────────────────────────────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
   
   body { background: #0a0e1a; }
-
   :root {
     --bg: #0a0e1a;
     --surface: #111827;
@@ -63,7 +56,6 @@ const css = `
     --success: #10b981;
     --warn: #f59e0b;
   }
-
   .app {
     font-family: 'DM Sans', sans-serif;
     background: var(--bg);
@@ -72,7 +64,6 @@ const css = `
     display: flex;
     flex-direction: column;
   }
-
   /* HEADER */
   .header {
     background: var(--surface);
@@ -114,7 +105,6 @@ const css = `
     color: var(--muted);
     font-family: 'DM Mono', monospace;
   }
-
   /* NAV */
   .nav {
     display: flex;
@@ -156,7 +146,6 @@ const css = `
   }
   .nav-btn.destaque:hover { background: rgba(0,191,165,0.15); box-shadow: 0 0 20px rgba(0,191,165,0.3); }
   .nav-btn.destaque.active { background: rgba(0,191,165,0.2); border-color: var(--teal); box-shadow: 0 0 20px rgba(0,191,165,0.4); }
-
   /* MAIN */
   .main {
     flex: 1;
@@ -165,7 +154,6 @@ const css = `
     margin: 0 auto;
     width: 100%;
   }
-
   /* CARDS */
   .card {
     background: var(--surface);
@@ -182,7 +170,6 @@ const css = `
     letter-spacing: 0.08em;
     margin-bottom: 1rem;
   }
-
   /* KPI ROW */
   .kpi-row {
     display: grid;
@@ -212,7 +199,6 @@ const css = `
     line-height: 1;
   }
   .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
-
   /* TABLE */
   .table-wrap { overflow-x: auto; border-radius: 8px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
@@ -236,7 +222,6 @@ const css = `
   tbody tr:hover { background: var(--surface2); }
   tbody td { padding: 10px 12px; color: var(--text); vertical-align: middle; }
   .td-muted { color: var(--muted); font-size: 12px; }
-
   /* BADGES */
   .badge {
     display: inline-flex;
@@ -253,11 +238,9 @@ const css = `
   .badge-medio { background: rgba(245,158,11,0.12); color: var(--warn); }
   .badge-baixo { background: rgba(239,68,68,0.12); color: var(--danger); }
   .badge-sem { background: var(--surface2); color: var(--muted); }
-
   /* PROGRESS BAR */
   .progress-wrap { background: var(--border); border-radius: 4px; height: 6px; overflow: hidden; }
   .progress-bar { height: 100%; border-radius: 4px; transition: width 0.3s; }
-
   /* FORM */
   .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
   .form-full { grid-column: 1 / -1; }
@@ -290,7 +273,6 @@ const css = `
     margin-top: 8px;
   }
   .form-checkbox input { accent-color: var(--teal); width: 15px; height: 15px; }
-
   /* BUTTONS */
   .btn {
     display: inline-flex;
@@ -319,7 +301,6 @@ const css = `
   .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
   .btn-sm { padding: 5px 12px; font-size: 12px; }
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
-
   /* TP GRID */
   .tp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
   .tp-card {
@@ -338,7 +319,6 @@ const css = `
   .tp-check.done { background: var(--success); border-color: var(--success); color: white; }
   .tp-name { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
   .tp-bloco { font-size: 11px; font-weight: 600; }
-
   /* MEDICO PROFILE */
   .medico-header {
     display: flex;
@@ -359,7 +339,6 @@ const css = `
     color: #0a0e1a;
     flex-shrink: 0;
   }
-
   /* LOADING / EMPTY */
   .loading {
     display: flex;
@@ -378,14 +357,12 @@ const css = `
     animation: spin 0.7s linear infinite;
   }
   @keyframes spin { to { transform: rotate(360deg); } }
-
   .empty {
     text-align: center;
     padding: 3rem;
     color: var(--muted);
     font-size: 13px;
   }
-
   /* SEARCH */
   .search-row {
     display: flex;
@@ -418,7 +395,6 @@ const css = `
     cursor: pointer;
   }
   .search-select:focus { border-color: var(--teal); }
-
   /* TOAST */
   .toast {
     position: fixed;
@@ -436,7 +412,6 @@ const css = `
     box-shadow: 0 8px 32px rgba(0,0,0,0.4);
   }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-
   /* CONFIG BANNER */
   .config-banner {
     background: rgba(245,158,11,0.1);
@@ -454,14 +429,12 @@ const css = `
     font-family: 'DM Mono', monospace;
     font-size: 12px;
   }
-
   /* RESPONSIVE */
   @media (max-width: 640px) {
     .main { padding: 1rem; }
     .kpi-row { grid-template-columns: repeat(2, 1fr); }
     .header-title { font-size: 13px; }
   }
-
   /* TIER BAR */
   .tier-row {
     display: flex;
@@ -473,7 +446,6 @@ const css = `
   .tier-row:last-child { border-bottom: none; }
   .tier-name { font-size: 13px; font-weight: 500; min-width: 130px; }
   .tier-count { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); min-width: 30px; }
-
   /* MODAL */
   .modal-overlay {
     position: fixed; inset: 0;
@@ -511,7 +483,6 @@ const css = `
     line-height: 1;
   }
   .modal-close:hover { color: var(--text); }
-
   /* SECTION HEADER */
   .section-header {
     display: flex;
@@ -524,21 +495,17 @@ const css = `
   .section-title { font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
   .section-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
 `;
-
 // ─── UTILS ─────────────────────────────────────────────────────────────────
 const initials = (name) => name ? name.split(" ").slice(0,2).map(w => w[0]).join("").toUpperCase() : "?";
 const isConfigured = true;
-
 function probBadge(prob) {
   const map = { Alto: "badge-alto", Médio: "badge-medio", Baixo: "badge-baixo", "Sem previsão": "badge-sem" };
   return <span className={`badge ${map[prob] || "badge-sem"}`}>{prob || "—"}</span>;
 }
-
 function Toast({ msg, onHide }) {
   useEffect(() => { const t = setTimeout(onHide, 2800); return () => clearTimeout(t); }, []);
   return <div className="toast">✓ {msg}</div>;
 }
-
 // ─── HOOKS ─────────────────────────────────────────────────────────────────
 function useSupabase(table, deps = []) {
   const [data, setData] = useState([]);
@@ -553,7 +520,6 @@ function useSupabase(table, deps = []) {
   useEffect(() => { fetch(); }, [fetch]);
   return { data, loading, refresh: fetch };
 }
-
 // ─── DASHBOARD ─────────────────────────────────────────────────────────────
 function Dashboard() {
   const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
@@ -564,36 +530,29 @@ function Dashboard() {
     window.addEventListener("visitaSalva", handler);
     return () => window.removeEventListener("visitaSalva", handler);
   }, []);
-
   const [filterMesDash, setFilterMesDash] = useState("");
-
   if (!isConfigured) return <ConfigBanner />;
-
   const mesesDash = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
     const ordem = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
     return ordem.indexOf(a) - ordem.indexOf(b);
   });
   const vf = filterMesDash ? visitas.filter(v => v.mes === filterMesDash) : visitas;
-
   const totalVisitas = vf.length;
   const presenciais = vf.filter(v => v.canal === "Presencial").length;
   const altoProb = vf.filter(v => v.probabilidade === "Alto").length;
   const suporteMkt = vf.filter(v => v.suporte_marketing).length;
   const totalTps = medicoTps.length;
   const tpsConcluidos = medicoTps.filter(t => t.concluido).length;
-
   const byCanal = CANAIS.reduce((acc, c) => {
     acc[c] = vf.filter(v => v.canal === c).length;
     return acc;
   }, {});
-
   const byResponsavel = {};
   vf.forEach(v => {
     if (v.responsavel && !v.responsavel.startsWith("──")) {
       byResponsavel[v.responsavel] = (byResponsavel[v.responsavel] || 0) + 1;
     }
   });
-
   const byTier = ["ST",1,2,3,4,5].map(t => ({
     tier: t,
     total: medicos.filter(m => String(m.tier) === String(t)).length,
@@ -602,7 +561,6 @@ function Dashboard() {
       return String(m?.tier) === String(t);
     }).length
   }));
-
   return (
     <div>
       <div className="section-header">
@@ -617,7 +575,6 @@ function Dashboard() {
           <button key={m} onClick={() => setFilterMesDash(m)} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:filterMesDash===m?"var(--teal)":"var(--surface2)",color:filterMesDash===m?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>{m}</button>
         ))}
       </div>
-
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
         <>
           <Alerta30Dias visitas={visitas} medicos={medicos} />
@@ -648,7 +605,6 @@ function Dashboard() {
               <div className="kpi-sub">na carteira</div>
             </div>
           </div>
-
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"14px 16px",marginBottom:16}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:10}}>📋 Parâmetros de Sucesso</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
@@ -679,7 +635,6 @@ function Dashboard() {
               </div>
             </div>
           </div>
-
           <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:"12px"}}>
             <div className="card">
               <div className="card-title">Visitas por Canal</div>
@@ -698,7 +653,6 @@ function Dashboard() {
                 </div>
               ))}
             </div>
-
             <div className="card">
               <div className="card-title">Cobertura por Tier</div>
               {byTier.map(({tier, total, visitados}) => (
@@ -716,7 +670,6 @@ function Dashboard() {
               ))}
             </div>
           </div>
-
           <div className="card" style={{marginTop:12}}>
             <div className="card-title">Visitas por Responsável</div>
             <div style={{display:"flex", flexWrap:"wrap", gap:8}}>
@@ -736,7 +689,6 @@ function Dashboard() {
     </div>
   );
 }
-
 // ─── VISITAS ───────────────────────────────────────────────────────────────
 function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
   const fmt = (val) => val || "—";
@@ -753,7 +705,6 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     if (!error) { setEditando(false); if (onUpdate) onUpdate(); }
     else alert("Erro ao salvar: " + error.message);
   };
-
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal" style={{maxWidth:600}}>
@@ -764,7 +715,6 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
           {[
             ["Canal", visita.canal],
@@ -781,6 +731,8 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             ["✅ Realizados", visita.proc_realizados_esg],
             ["Balões Estoque", visita.baloes_estoque],
             ["Proc. Marcados (Balão)", visita.proc_marcados_balao],
+            ["💛 Leão Plus abordado?", visita.leao_plus_abordado === true ? "✅ Sim" : visita.leao_plus_abordado === false ? "Não" : "—"],
+            ["Status Leão Plus", visita.leao_plus_status ? visita.leao_plus_status.replace(/_/g," ") : "—"],
           ].map(([label, val]) => (
             <div key={label} style={{background:"var(--surface2)",borderRadius:8,padding:"8px 10px",border:"1px solid var(--border)"}}>
               <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
@@ -788,7 +740,6 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             </div>
           ))}
         </div>
-
         <div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"10px 12px"}}>
           <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:6}}>AÇÃO PREVISTA</div>
           {editando
@@ -796,7 +747,6 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             : <div style={{fontSize:13,minHeight:20}}>{acao||"—"}</div>
           }
         </div>
-
         <div style={{marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
           <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:6}}>OBSERVAÇÕES</div>
           {editando
@@ -804,9 +754,6 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             : <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",minHeight:20}}>{obs||"—"}</div>
           }
         </div>
-
-
-
         <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
           <button className="btn btn-danger btn-sm" onClick={() => {
             if (confirm("Excluir esta visita? Esta ação não pode ser desfeita.")) onDelete(visita.id);
@@ -829,7 +776,6 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     </div>
   );
 }
-
 function Visitas() {
   const { data: visitas, loading, refresh } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
@@ -839,13 +785,11 @@ function Visitas() {
   const [filterMes, setFilterMes] = useState("");
   const [toast, setToast] = useState(null);
   const [selectedVisita, setSelectedVisita] = useState(null);
-
   // Meses disponíveis dinamicamente
   const mesesDisponiveis = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
     const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
     return ordem.indexOf(a) - ordem.indexOf(b);
   });
-
   const sorted = [...visitas]
     .sort((a,b) => new Date(b.data_contato) - new Date(a.data_contato))
     .filter(v => {
@@ -854,7 +798,6 @@ function Visitas() {
         && (!filterResp || v.responsavel === filterResp)
         && (!filterMes || v.mes === filterMes);
     });
-
   const handleSave = async (form) => {
     if (!isConfigured) return;
     const payload = {
@@ -877,6 +820,8 @@ function Visitas() {
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: form.baloes_estoque ? Number(form.baloes_estoque) : null,
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
+      leao_plus_abordado: form.leao_plus_abordado === "sim" ? true : form.leao_plus_abordado === "nao" ? false : null,
+      leao_plus_status: form.leao_plus_status || null,
     };
     const { error } = await supabaseClient.from("visitas").insert([payload]);
     if (error) { alert("Erro ao salvar: " + error.message); return; }
@@ -885,7 +830,6 @@ function Visitas() {
     refresh();
     window.dispatchEvent(new Event("visitaSalva"));
   };
-
   const handleDelete = async (id) => {
     const { error } = await supabaseClient.from("visitas").delete().eq("id", id);
     if (error) { alert("Erro ao excluir: " + error.message); return; }
@@ -893,7 +837,6 @@ function Visitas() {
     setSelectedVisita(null);
     refresh();
   };
-
   return (
     <div>
       <div className="section-header">
@@ -903,9 +846,7 @@ function Visitas() {
         </div>
         <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Nova Visita</button>
       </div>
-
       {!isConfigured && <ConfigBanner />}
-
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico ou observação..." value={search} onChange={e => setSearch(e.target.value)} />
         <select className="search-select" value={filterMes} onChange={e => setFilterMes(e.target.value)}>
@@ -917,7 +858,6 @@ function Visitas() {
           {RESPONSAVEIS.filter(r => !r.startsWith("──")).map(r => <option key={r}>{r}</option>)}
         </select>
       </div>
-
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
         <div className="card" style={{padding:0}}>
           <div className="table-wrap">
@@ -963,7 +903,6 @@ function Visitas() {
           </div>
         </div>
       )}
-
       {showForm && (
         <VisitaModal
           medicos={medicos}
@@ -983,7 +922,6 @@ function Visitas() {
     </div>
   );
 }
-
 function VisitaModal({ medicos, onSave, onClose }) {
   const [form, setForm] = useState({
     data_contato: new Date().toISOString().slice(0,10),
@@ -1005,9 +943,10 @@ function VisitaModal({ medicos, onSave, onClose }) {
     baloes_estoque: "",
     proc_marcados_balao: "",
     proc_realizados_esg: "",
+    leao_plus_abordado: "",
+    leao_plus_status: "",
   });
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
-
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
@@ -1096,6 +1035,32 @@ function VisitaModal({ medicos, onSave, onClose }) {
             <label className="form-label">Ação Prevista</label>
             <input className="form-input" value={form.acao_prevista} onChange={e => set("acao_prevista", e.target.value)} placeholder="Próximo passo planejado" />
           </div>
+          {/* LEÃO PLUS */}
+          <div className="form-group form-full" style={{borderTop:"1px solid var(--border)",paddingTop:12,marginTop:4}}>
+            <label className="form-label" style={{color:form.referidor==="Não"?"var(--warn)":"var(--muted)"}}>
+              💛 Leão Plus foi abordado nessa visita?
+              {form.referidor === "Não" && <span style={{color:"var(--danger)",marginLeft:4,fontWeight:700}}>*</span>}
+              {form.referidor === "Não" && <span style={{color:"var(--muted)",fontSize:10,marginLeft:6}}>(obrigatório para não referidores)</span>}
+            </label>
+            <select className="form-select" value={form.leao_plus_abordado} onChange={e => set("leao_plus_abordado", e.target.value)}
+              style={{borderColor: form.referidor==="Não" && !form.leao_plus_abordado ? "rgba(245,158,11,0.6)" : ""}}>
+              <option value="">Selecione...</option>
+              <option value="sim">Sim — foi abordado</option>
+              <option value="nao">Não — não foi abordado</option>
+            </select>
+          </div>
+          {form.leao_plus_abordado === "sim" && (
+            <div className="form-group form-full">
+              <label className="form-label">Status do médico em relação ao Leão Plus</label>
+              <select className="form-select" value={form.leao_plus_status} onChange={e => set("leao_plus_status", e.target.value)}>
+                <option value="">Selecione...</option>
+                <option value="desconhece">Desconhece</option>
+                <option value="conhece_nao_usa">Conhece mas não usa</option>
+                <option value="em_ativacao">Em processo de ativação</option>
+                <option value="ativado">✅ Ativado</option>
+              </select>
+            </div>
+          )}
           <div className="form-group form-full">
             <label className="form-label">Suporte Marketing?</label>
             <select className="form-select" value={form.suporte_marketing} onChange={e => set("suporte_marketing", e.target.value)}>
@@ -1117,6 +1082,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
         <div className="btn-row">
           <button className="btn btn-primary" onClick={() => {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
+            if (form.referidor === "Não" && !form.leao_plus_abordado) return alert("⚠ Leão Plus é obrigatório para não referidores. Informe se foi abordado.");
             onSave(form);
           }}>Salvar Visita</button>
           <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
@@ -1125,7 +1091,6 @@ function VisitaModal({ medicos, onSave, onClose }) {
     </div>
   );
 }
-
 // ─── MÉDICOS ────────────────────────────────────────────────────────────────
 function Medicos() {
   const { data: medicos, loading, refresh } = useSupabase("perfil_medico");
@@ -1136,14 +1101,12 @@ function Medicos() {
   const [editingAccount, setEditingAccount] = useState(null);
   const [accountVal, setAccountVal] = useState("");
   const [toast, setToast] = useState(null);
-
   const filtered = medicos.filter(m => {
     const q = search.toLowerCase();
     return (!q || m.nome?.toLowerCase().includes(q) || m.estado?.toLowerCase().includes(q))
       && (!filterTier || String(m.tier) === filterTier)
       && (!filterAccount || (m.account || "") === filterAccount);
   }).sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
-
   const saveAccount = async (medicoId, val) => {
     const { error } = await supabaseClient.from("perfil_medico").update({account: val || null}).eq("id", medicoId);
     if (error) { alert("Erro: " + error.message); return; }
@@ -1151,7 +1114,6 @@ function Medicos() {
     setEditingAccount(null);
     refresh();
   };
-
   return (
     <div>
       <div className="section-header">
@@ -1160,9 +1122,7 @@ function Medicos() {
           <div className="section-sub">{medicos.length} médicos cadastrados</div>
         </div>
       </div>
-
       {!isConfigured && <ConfigBanner />}
-
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico, estado..." value={search} onChange={e => setSearch(e.target.value)} />
         <select className="search-select" value={filterTier} onChange={e => setFilterTier(e.target.value)}>
@@ -1174,7 +1134,6 @@ function Medicos() {
           {[...new Set(medicos.map(m => m.account).filter(Boolean))].sort().map(a => <option key={a} value={a}>{a}</option>)}
         </select>
       </div>
-
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
         <div className="card" style={{padding:0}}>
           <div className="table-wrap">
@@ -1255,7 +1214,6 @@ function Medicos() {
     </div>
   );
 }
-
 function MedicoModal({ medico, onClose }) {
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -1303,19 +1261,15 @@ function MedicoModal({ medico, onClose }) {
     </div>
   );
 }
-
 // ─── ATIVAÇÃO TPs ──────────────────────────────────────────────────────────
-
 // ─── EDITABLE CELL ─────────────────────────────────────────────────────────
 function EditableCell({ value, onSave, placeholder, prefix }) {
   const [editing, setEditing] = React.useState(false);
   const [val, setVal] = React.useState(value || "");
-
   const handleSave = () => {
     setEditing(false);
     if (String(val) !== String(value || "")) onSave(val);
   };
-
   if (editing) return (
     <input
       className="form-input"
@@ -1328,7 +1282,6 @@ function EditableCell({ value, onSave, placeholder, prefix }) {
       onKeyDown={e => { if(e.key==="Enter") handleSave(); if(e.key==="Escape") setEditing(false); }}
     />
   );
-
   return (
     <div
       onClick={(e) => { e.stopPropagation(); setVal(value||""); setEditing(true); }}
@@ -1339,7 +1292,6 @@ function EditableCell({ value, onSave, placeholder, prefix }) {
     </div>
   );
 }
-
 function Ativacao() {
   const { data: medicos, refresh: refreshMedicos } = useSupabase("perfil_medico");
   const { data: tpsDef } = useSupabase("tps_definicoes");
@@ -1348,19 +1300,15 @@ function Ativacao() {
   const [toast, setToast] = useState(null);
   const [filterTier, setFilterTier] = useState("");
   const [filterAccount, setFilterAccount] = useState("");
-
   const medicosFilt = medicos.filter(m => (!filterTier || String(m.tier) === filterTier) && (!filterAccount || (m.account||"") === filterAccount))
     .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
-
   const getProgress = (medicoId) => {
     const mTps = medicoTps.filter(t => t.medico_id === medicoId);
     const done = mTps.filter(t => t.concluido).length;
     return { done, pct: Math.round(done/23*100), total: 23 };
   };
-
   const getTpStatus = (medicoId, tpId) =>
     medicoTps.find(t => t.medico_id === medicoId && t.tp_id === tpId);
-
   const toggleTp = async (medicoId, tpId) => {
     if (!isConfigured) return;
     const existing = getTpStatus(medicoId, tpId);
@@ -1382,7 +1330,6 @@ function Ativacao() {
     setToast("TP atualizado!");
     refresh();
   };
-
   return (
     <div>
       <div className="section-header">
@@ -1399,7 +1346,6 @@ function Ativacao() {
           {[...new Set(medicos.map(m => m.account).filter(Boolean))].sort().map(a => <option key={a} value={a}>{a}</option>)}
         </select>
       </div>
-
       {!isConfigured && <ConfigBanner />}
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
         <div>
@@ -1415,7 +1361,6 @@ function Ativacao() {
                   </div>
                 </div>
               </div>
-
               <div className="tp-grid">
                 {tpsDef.map(tp => {
                   const status = getTpStatus(selectedMedico.id, tp.id);
@@ -1543,8 +1488,6 @@ function Ativacao() {
     </div>
   );
 }
-
-
 // ─── INTELIGÊNCIA ESTRATÉGICA ──────────────────────────────────────────────
 function Inteligencia() {
   const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
@@ -1557,15 +1500,12 @@ function Inteligencia() {
   }, []);
   const [filterMesIntel, setFilterMesIntel] = useState("");
   const [filterTierIntel, setFilterTierIntel] = useState("");
-
   if (loading) return <div className="loading"><div className="spinner"/>Carregando...</div>;
-
   const mesesIntel = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
     const ordem = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
     return ordem.indexOf(a) - ordem.indexOf(b);
   });
   const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
-
   // Janela de 4 meses para análise de cobertura presencial
   const MESES_ORDEM_INTEL = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
   const getMeses4 = () => {
@@ -1576,22 +1516,17 @@ function Inteligencia() {
   };
   const meses4 = getMeses4();
   const vi4 = visitas.filter(v => meses4.includes(v.mes)); // últimos 4 meses para análise presencial
-
   // Filtro de tier aplicado à base de médicos
   const medicosTier = filterTierIntel ? medicos.filter(m => String(m.tier) === filterTierIntel) : medicos;
-
   const MARKETING = ["Cibele","Guilherme","Sarah","Catharina","Júlia"];
   const COMERCIAL = ["Marcell","Fernanda","Ana Marieta","Inside Sales"];
   const TIER_PRIORITY = ["ST","1","2","3"];
-
   // ── Médicos sem TP registrado (comercial only)
   const semTP = medicos.filter(m =>
     !vi.some(v => v.medico_nome === m.nome)
   ).filter(m => !filterTierIntel || String(m.tier) === filterTierIntel);
-
   // ── Alta probabilidade
   const altaProb = vi.filter(v => v.probabilidade === "Alto");
-
   // ── Cobertura por tier
   const tierCoverage = ["1","2","3","4","5"].map(tier => {
     const mTier = medicosTier.filter(m => String(m.tier) === tier);
@@ -1600,7 +1535,6 @@ function Inteligencia() {
     const alert = pct===0 ? "🔴 SEM PRESENCIAL" : pct>=60 ? "🟢 BOA COBERTURA" : pct>=30 ? "🟡 ATENÇÃO" : "🔴 CRÍTICO";
     return {tier, total:mTier.length, visitados:visitados.length, faltantes:mTier.length-visitados.length, pct, alert};
   });
-
   // ── Alerta T1/2/3 — detalhado
   const alertaMedicos = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && (!filterTierIntel || String(m.tier) === filterTierIntel))
@@ -1619,12 +1553,10 @@ function Inteligencia() {
       };
     })
     .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
-
   // ── GAP Estratégico — T ST/1/2/3 sem nenhuma ação
   const gapMedicos = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)) && (!filterTierIntel || String(m.tier) === filterTierIntel) && !vi.some(v => v.medico_nome === m.nome))
     .sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
-
   // ── Visitas Time Marketing
   const visMarketing = vi.filter(v => MARKETING.some(n => v.responsavel?.includes(n)));
   const mkByResp = MARKETING.map(resp => {
@@ -1647,7 +1579,6 @@ function Inteligencia() {
     whatsapp: visMarketing.filter(v => v.canal === "WhatsApp").length,
     medicos: new Set(visMarketing.map(v => v.medico_nome)).size,
   };
-
   // ── Estoque ESG (Fios) — puxado de visitas (último registro por médico)
   const estoqueESG = medicosTier.map(m => {
     const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
@@ -1660,7 +1591,6 @@ function Inteligencia() {
     const alerta = typeof saldo === "number" && saldo <= 2 ? "⚠ Agendar compra" : "—";
     return { nome: m.nome, account: m.account, tier: m.tier, fios, proc, necessarios, saldo, status, alerta };
   }).filter(m => m.fios !== "—" || m.proc !== "—");
-
   // ── Estoque Balões
   const estoqueBaloes = medicosTier.map(m => {
     const vs = vi.filter(v => v.medico_nome === m.nome).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato));
@@ -1672,17 +1602,14 @@ function Inteligencia() {
     const alerta = typeof saldo === "number" && saldo <= 1 ? "⚠ Agendar compra" : "—";
     return { nome: m.nome, account: m.account, tier: m.tier, baloes, proc, saldo, status, alerta };
   }).filter(m => m.baloes !== "—" || m.proc !== "—");
-
   // ── Referenciadores — visitas onde referidor=true
   const visRef = vi.filter(v => v.referidor);
   const refByResp = [...COMERCIAL, ...MARKETING].map(resp => {
     const v = visRef.filter(vi => vi.responsavel === resp);
     return { resp, total: v.length, presencial: v.filter(vi => vi.canal === "Presencial").length, whatsapp: v.filter(vi => vi.canal === "WhatsApp").length, pct: v.length ? Math.round(v.filter(vi => vi.canal==="Presencial").length/v.length*100) : 0 };
   }).filter(r => r.total > 0);
-
   const espDist = {};
   visRef.forEach(v => { if(v.especialidade) espDist[v.especialidade] = (espDist[v.especialidade]||0)+1; });
-
   return (
     <div>
       <div className="section-header">
@@ -1694,7 +1621,6 @@ function Inteligencia() {
           🔄 Atualizar
         </button>
       </div>
-
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
         <button onClick={() => setFilterMesIntel("")} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:!filterMesIntel?"var(--teal)":"var(--surface2)",color:!filterMesIntel?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Todos</button>
         {mesesIntel.map(m => (
@@ -1727,7 +1653,6 @@ function Inteligencia() {
           }
         </div>
       </div>
-
       {/* Cobertura por Tier */}
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">▶ Cobertura por Tier</div>
@@ -1754,7 +1679,6 @@ function Inteligencia() {
           </table>
         </div>
       </div>
-
       {/* Alerta T1/2/3 detalhado */}
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">🚨 Alerta — Médicos T1/2/3 Sem Visita Presencial</div>
@@ -1781,7 +1705,6 @@ function Inteligencia() {
           </table>
         </div>
       </div>
-
       {/* GAP Estratégico */}
       {gapMedicos.length > 0 && (
         <div className="card" style={{marginBottom:12}}>
@@ -1797,7 +1720,6 @@ function Inteligencia() {
           </div>
         </div>
       )}
-
       {/* Visitas Time Marketing */}
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">📣 Visitas do Time de Marketing</div>
@@ -1860,7 +1782,6 @@ function Inteligencia() {
           </table>
         </div>
       </div>
-
       {/* Estoque ESG Fios */}
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">🔧 Inteligência de Estoque — ESG (Fios)</div>
@@ -1893,7 +1814,6 @@ function Inteligencia() {
         ))}
       </div>
       <Alerta30Dias visitas={visitas} medicos={medicos} />
-
       {/* Estoque Balões */}
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">🎈 Inteligência de Estoque — Balões</div>
@@ -1918,7 +1838,6 @@ function Inteligencia() {
           </div>
         )}
       </div>
-
       {/* Referenciadores */}
       <div className="card" style={{marginBottom:12}}>
         <div className="card-title">🤝 Inteligência de Referenciadores</div>
@@ -1971,7 +1890,6 @@ function Inteligencia() {
           </div>
         )}
       </div>
-
       {/* Médicos sem presencial — todos */}
       <div className="card">
         <div className="card-title">📋 Médicos sem Visita Presencial — últimos {meses4.length} meses{meses4.length > 0 ? " ("+meses4[0]+" a "+meses4[meses4.length-1]+")" : ""}</div>
@@ -1990,8 +1908,6 @@ function Inteligencia() {
     </div>
   );
 }
-
-
 // ─── CONFIG BANNER ─────────────────────────────────────────────────────────
 // ─── HELPER: busca flexível de nomes ──────────────────────────────────────
 const normalizar = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9 ]/g,"").trim() : "";
@@ -2020,8 +1936,6 @@ const nomesBatem = (a, b) => {
   const spb = sb.split(" ").slice(0,2).join(" ");
   return spa === spb && spa.length > 4;
 };
-
-
 // ─── VISITA EXPANDÍVEL ────────────────────────────────────────────────────
 function VisitaExpandivel({ v }) {
   const [expandido, setExpandido] = React.useState(false);
@@ -2083,13 +1997,10 @@ function VisitaExpandivel({ v }) {
     </div>
   );
 }
-
-
 // ─── ALERTA 30 DIAS SEM PRESENCIAL ────────────────────────────────────────
 function Alerta30Dias({ visitas, medicos }) {
   const [expandido, setExpandido] = React.useState(false);
   const hoje = new Date();
-
   const semPresencial = medicos
     .filter(m => ["ST","1","2","3"].includes(String(m.tier)))
     .map(m => {
@@ -2106,14 +2017,11 @@ function Alerta30Dias({ visitas, medicos }) {
       const to = {"ST":0,"1":1,"2":2,"3":3};
       return (to[String(a.tier)]??9) - (to[String(b.tier)]??9) || b.dias - a.dias;
     });
-
   if (semPresencial.length === 0) return null;
-
   const criticos = semPresencial.filter(m => m.dias >= 60).length;
   const cor = criticos > 0 ? "rgba(239,68,68,0.12)" : "rgba(245,158,11,0.1)";
   const corBorda = criticos > 0 ? "rgba(239,68,68,0.4)" : "rgba(245,158,11,0.4)";
   const corTexto = criticos > 0 ? "#ef4444" : "var(--warn)";
-
   return (
     <div style={{background:cor,border:`1px solid ${corBorda}`,borderRadius:12,padding:"12px 14px",marginBottom:14}}>
       <div
@@ -2152,8 +2060,6 @@ function Alerta30Dias({ visitas, medicos }) {
     </div>
   );
 }
-
-
 // ─── BRIEFING IA ───────────────────────────────────────────────────────────
 function BriefingIA() {
   const { data: medicos, loading: loadingMed } = useSupabase("perfil_medico");
@@ -2172,39 +2078,33 @@ function BriefingIA() {
   const [feedback, setFeedback] = React.useState(null); // 'util' | 'impreciso'
   const [feedbackObs, setFeedbackObs] = React.useState("");
   const [feedbackEnviado, setFeedbackEnviado] = React.useState(false);
-
   const visitasMedico = selectedMedico
     ? [...todasVisitas].filter(v => nomesBatem(v.medico_nome, selectedMedico.nome)).sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))
     : [];
   const ultimaVisita = visitasMedico[0] || null;
   const segmentacao = selectedMedico ? (medicos.find(m => m.id === selectedMedico.id) || medicos.find(m => nomesBatem(m.nome, selectedMedico.nome))) : null;
-
   // Dados do FUP Projetos — todos os projetos
   const fupMedico = React.useMemo(() => {
     if (!fupData || !selectedMedico) return null;
     const projetos = [];
-
     // Curso IAS Bariátricos
     const medBar = (fupData.cursoBariatricos?.medicos||[]).find(m => nomesBatem(m.nome, selectedMedico.nome));
     if (medBar) {
       const fups = (fupData.cursoBariatricos?.followups||[]).filter(f => f.medicoId === medBar.id).sort((a,b) => new Date(b.data)-new Date(a.data));
       projetos.push({ projeto: "Curso IAS — Cirurgiões Bariátricos", status: medBar.status||"Ativo", followups: fups });
     }
-
     // Curso IAS Endoscopistas
     const medEnd = (fupData.cursoEndoscopistas?.medicos||[]).find(m => nomesBatem(m.nome, selectedMedico.nome));
     if (medEnd) {
       const fups = (fupData.cursoEndoscopistas?.followups||[]).filter(f => f.medicoId === medEnd.id).sort((a,b) => new Date(b.data)-new Date(a.data));
       projetos.push({ projeto: "Curso IAS — Endoscopistas", status: medEnd.status||"Ativo", followups: fups });
     }
-
     // Imersão Marketing
     const medMkt = (fupData.imersaoMarketing?.medicos||[]).find(m => nomesBatem(m.nome, selectedMedico.nome));
     if (medMkt) {
       const acoes = (fupData.imersaoMarketing?.acoes||[]).filter(a => a.medicoId === medMkt.id).sort((a,b) => new Date(b.data)-new Date(a.data));
       projetos.push({ projeto: "Imersão Marketing", status: medMkt.status||"Ativo", followups: acoes });
     }
-
     // ESG Day — vincular por médico responsável
     const esgDayMed = (fupData.esgDay||[]).filter(e =>
       nomesBatem(e.medico, selectedMedico.nome) ||
@@ -2229,22 +2129,17 @@ function BriefingIA() {
         };
       }) });
     }
-
     // Aulas Referidores
     const aulasRef = (fupData.aulasReferidores?.eventos||[]).filter(e => nomesBatem(e.medico, selectedMedico.nome));
     if (aulasRef.length > 0) {
       projetos.push({ projeto: "Aulas Referidores", status: aulasRef.length + " evento(s)", followups: aulasRef.slice(0,3).map(e => ({ data: e.data, obs: `Indicações: ${e.indicacoes||0}, Procedimentos: ${e.procedimentos||0}` })) });
     }
-
     return projetos.length > 0 ? projetos : null;
   }, [fupData, selectedMedico]);
-
   const MEDICOS_NOVOS = ["Daniela Castro Mattos Giron","Rodrigo Dallegre Correa da Silva","Isabella Palomeque Mazzuccato Rossi","Gabriel Braga Pereira","Rodrigo Nascimento Santana","Gonzalo Vieira da Cunha Zigano","Fabiola De Angeli Ferreira","Cristovam Miranda","Eduardo Lemos de Souza Bastos","Horacio Neto"];
   const ehNovoMedico = selectedMedico ? MEDICOS_NOVOS.some(n => nomesBatem(n, selectedMedico.nome)) : false;
   const medicosFiltrados = medicos.filter(m => !search || m.nome?.toLowerCase().includes(search.toLowerCase()));
-
   const selecionarMedico = (m) => { setSelectedMedico(m); setBriefing(null); setErro(null); };
-
   async function gerarBriefing() {
     // Pode gerar mesmo sem visitas — usa só segmentação
     // Guard: bloqueia médico não-novo sem visitas
@@ -2253,7 +2148,6 @@ function BriefingIA() {
       return;
     }
     setGerando(true); setBriefing(null); setErro(null);
-
     // Buscar feedbacks anteriores deste médico para enriquecer o prompt
     let feedbacksAnteriores = [];
     try {
@@ -2265,7 +2159,6 @@ function BriefingIA() {
         .limit(5);
       if (fbData && fbData.length > 0) feedbacksAnteriores = fbData;
     } catch(e) { /* silencioso */ }
-
     const feedbackStr = feedbacksAnteriores.length > 0
       ? `\n\n## FEEDBACKS DO TIME SOBRE BRIEFINGS ANTERIORES DESTE MÉDICO\nUse para calibrar: corrija o que foi impreciso, reforce o que foi util.\n` +
         feedbacksAnteriores.map(fb => {
@@ -2275,7 +2168,6 @@ function BriefingIA() {
           return `- [${data}] ${emoji}${obs}`;
         }).join('\n')
       : '';
-
     // ── BASE DE CONHECIMENTO GEO — Relatórios dos médicos parceiros ──────────────
     const GEO_RELATORIOS = {
       "marcelo falcão": {
@@ -2327,16 +2219,13 @@ function BriefingIA() {
         credenciais: "17 anos | +1.000 procedimentos | Cornell Training | ASGE | Endodiagnostic (rede 8 endereços)"
       }
     };
-
     // Match médico selecionado com base GEO
     const nomeLower = (selectedMedico.nome||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
     const geoRelatorio = Object.entries(GEO_RELATORIOS).find(([k]) => {
       const kNorm = k.normalize("NFD").replace(/[\u0300-\u036f]/g,"");
       return nomeLower.includes(kNorm) || kNorm.includes(nomeLower.split(" ").slice(-1)[0]);
     })?.[1] || null;
-
     const geoRelatorioStr = geoRelatorio ? `
-
 ## BASE DE CONHECIMENTO GEO — RELATÓRIO DO DR. ${selectedMedico.nome.toUpperCase()}
 (Dados do diagnóstico GEO aprofundado — use para enriquecer acao_marketing e argumento_principal)
 Score GEO: ${geoRelatorio.score_geo}
@@ -2353,8 +2242,6 @@ ${geoRelatorio.plano_90d ? "Plano 90 dias: "+geoRelatorio.plano_90d : ""}
 ${geoRelatorio.plano_urgente ? "AÇÃO URGENTE: "+geoRelatorio.plano_urgente : ""}
 Credenciais: ${geoRelatorio.credenciais||"—"}
 ` : "";
-
-
     const MESES_ORDEM = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
     const meses3 = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => MESES_ORDEM.indexOf(a)-MESES_ORDEM.indexOf(b)).slice(-3);
     const historico = visitasMedico.length > 0
@@ -2369,7 +2256,6 @@ Credenciais: ${geoRelatorio.credenciais||"—"}
           return mes + " (" + vMes.length + " visita" + (vMes.length!==1?"s":"") + "):\n" + linhas;
         }).join("\n\n")
       : "Nenhuma visita registrada — gerar briefing de PRIMEIRA ABORDAGEM baseado na segmentação.";
-
     // Diagnósticos GEO específicos por médico
     const GEO_DIAGNOSTICOS = {
       "jimi": {
@@ -2583,7 +2469,6 @@ Credenciais: ${geoRelatorio.credenciais||"—"}
         || nn.includes(ns2[0]||"") && nn.includes(ns2[1]||"");
     }) : null;
     const geoStr = geoDiag ? `
-
 ## DIAGNÓSTICO GEO REAL DO MÉDICO (use estes dados — não invente)
 Fonte: ${geoDiag.fonte}
 Paradoxo identificado: ${geoDiag.paradoxo}
@@ -2598,7 +2483,6 @@ Ativos fortes não explorados: ${geoDiag.ativos_fortes}
 Oportunidade de mercado: ${geoDiag.oportunidade}
 Status do diagnóstico GEO: ${geoDiag.acao_geo}
 ` : "";
-
     // Pipeline consolidado do médico
     // Snapshot da última visita — não acumula
     const ultimaComDados = visitasMedico.find(v => v.proc_marcados_esg || v.proc_realizados_esg);
@@ -2609,7 +2493,6 @@ Status do diagnóstico GEO: ${geoDiag.acao_geo}
     const tierMeta = segmentacao?.tier ? METAS_TIER[String(segmentacao.tier)] : null;
     const metaMes = tierMeta ? tierMeta.esg_mes : null;
     const temDadosPipeline = totalMarcados > 0 || totalRealizados > 0;
-
     const pipelineStr = `
 ## PIPELINE ESG DO MÉDICO
 ${temDadosPipeline
@@ -2620,10 +2503,8 @@ ${backlog > 0 ? "⚠ ATENÇÃO: há procedimentos marcados não realizados — v
 ${totalRealizados === 0 && totalMarcados > 0 ? "⚠ ATENÇÃO: há procedimentos marcados mas nenhum realizado foi informado" : ""}`
   : "⚠ ATENÇÃO: nenhum dado de ESG marcado ou realizado registrado nas visitas — perguntar ao médico na próxima visita"}
 `;
-
     // Biblioteca de evidências — resumo compacto para o prompt
     const bibliotecaStr = `
-
 ## BIBLIOTECA DE EVIDÊNCIAS (use para embasar argumentos e material recomendado)
 - MERIT Trial (Lancet 2022): RCT com 209 pacientes. ESG+estilo de vida: 49,2% EWL vs 3,2% controle em 52 semanas. 77% atingiram ≥25% EWL. 80% melhoraram comorbidades metabólicas.
 - ESG vs Semaglutida (JAMA 2024): ESG mais custo-efetivo em 5 anos. ESG economizou US$33.583 vs semaglutida. Para não-dominância, semaglutida precisaria custar US$3.591/ano (atual: US$13.618).
@@ -2634,10 +2515,8 @@ ${totalRealizados === 0 && totalMarcados > 0 ? "⚠ ATENÇÃO: há procedimentos
 - Diretriz ASGE–ESGE 2024: recomenda ESG para IMC ≥30 (ou ≥27 com comorbidade). Framework GRADE. Procedimento oficialmente endossado pelas 2 maiores sociedades de endoscopia do mundo.
 - ASMBS aprova ESG (jan/2026): CPT Code específico em vigor. MERIT: 13,6% TBWL | Séries: 15-17,5% TBWL.
 - Semaglutida: pacientes reganharam 2/3 do peso perdido 1 ano após descontinuação (STEP 1 extension). ESG oferece resultado mais duradouro.`;
-
     // FUP Projetos — contexto do Curso IAS Bariátricos
     const fupStr = fupMedico && fupMedico.length > 0 ? `
-
 ## FUP PROJETOS — PARTICIPAÇÃO DO MÉDICO
 ${fupMedico.map(p => `
 ### ${p.projeto} | Status: ${p.status}
@@ -2646,7 +2525,6 @@ ${p.followups.length > 0
   : "Nenhum follow-up registrado ainda."}
 `).join("\n")}
 ` : "";
-
     const segStr = segmentacao ? `
 ## MATRIZ DE SEGMENTAÇÃO (Base de Dados — fonte prioritária)
 Perfil Médico: ${segmentacao.perfil_medico||"—"}
@@ -2673,37 +2551,24 @@ Referidor Parceiro: ${segmentacao.referidor_parceiro||"—"}
 Comissiona Secretária: ${segmentacao.comissiona_secretaria||"—"}
 Core: ${segmentacao.core||"—"}
 ` : "ATENÇÃO: Segmentação não encontrada — baseie o briefing apenas no histórico de visitas.";
-
     // Prompt curto para primeira abordagem (sem visitas) — mais rápido
     const promptPrimeiraAbordagem = `Você é especialista em estratégia comercial médica de ESG (Sleeve Endoscópico) e BIB (Balão Intragástrico).
-
 Gere um briefing de PRIMEIRA ABORDAGEM para o médico abaixo. Seja direto e prático.
-
 MÉDICO: ${selectedMedico.nome} | Tier: ${selectedMedico.tier||"—"} | Especialidade: ${selectedMedico.especialidade||"—"} | Clínica: ${selectedMedico.clinica||"—"} | Região: ${selectedMedico.regiao||"—"}
-
 ${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}${geoRelatorioStr}
-
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
-
 ${feedbackStr}
-
 ${contextoExtra ? "\n\nCONTEXTO ADICIONAL: " + contextoExtra : ""}
-
 TOM OBRIGATÓRIO: pragmático, gentil e consultivo. PROIBIDO linguagem de energia, entusiasmo exagerado ou elogios efusivos (ex: "que energia!", "fantástico!", "incrível!"). Aberturas devem soar como parceiro estratégico retomando algo concreto.
-
 Seja CONCISO — máximo 2 frases por campo. Responda APENAS com JSON válido sem markdown:
 {"resposta_account":"OBRIGATÓRIO se houver CONTEXTO ADICIONAL. SE menciona GEO/relatório/visibilidade: use dados do DIAGNÓSTICO GEO neste prompt — score, concorrentes, gap, oportunidade. Sem diagnóstico GEO: explique paciente pós-GLP-1 pesquisa em IA, janela 2026-2028. Nunca fale de agenda ou datas. Sem contexto, null.",
   "resumo_situacao":"perfil do médico e contexto para primeira abordagem","objetivo_visita":"objetivo claro para primeiro contato","tp_recomendado":"TP mais adequado e por quê","abertura_sugerida":"frase de abertura PRAGMÁTICA e gentil — sem entusiasmo exagerado, sem exclamações de energia ou elogio efusivo. Tom profissional e consultivo, como um parceiro estratégico que vem com informação relevante. Ex: comece pelo contexto ou pela retomada de algo concreto da última visita","argumento_principal":"argumento personalizado ao perfil","material_recomendado":["material 1","material 2"],"sinais_de_avanco":["sinal 1","sinal 2"],"retomada":null,"pilares_estrategicos":"em 2-3 frases como ESG pós-GLP-1 + ancoragem + base de dados se aplicam a ESTE médico nesta visita específica","pilares_estrategicos":"2-3 frases aplicando ESG pós-GLP-1 + ancoragem + base de dados a este médico","alerta":"ponto de atenção ou null","proximos_tps":["TP desta visita","TP seguinte"],"acao_marketing":"ação digital baseada no perfil ou null"}`;
-
     const prompt = ehNovoMedico ? promptPrimeiraAbordagem : `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
-
 CONCEITOS ESTRATÉGICOS OBRIGATÓRIOS — incluir em TODO briefing, independente do médico:
 A. ESG COMO PRÓXIMO PASSO LÓGICO: Para pacientes em platô ou insucesso pós-GLP-1, ESG é a evolução natural do tratamento. Posicionar como complemento, nunca como concorrência ao GLP-1.
 B. ANCORAGEM: Mesmo pacientes que não farão ESG hoje precisam saber que o médico tem estratégia para a jornada de cuidado. Ancorar ESG em todas as consultas gera receita recorrente — esses pacientes ficarão na clínica por anos.
 C. BASE DE DADOS VALE OURO: Estimular o médico a buscar oportunidades na própria base. Pacientes com reganho pós-GLP-1 são os mais qualificados e com maior intenção de conversão.
-
 Esses três conceitos SEMPRE aparecem no briefing — no Argumento Principal ou na Sugestão de Abordagem — adaptados ao contexto do médico visitado.
-
 REGRAS ESSENCIAIS:
 0. DADOS REAIS APENAS: Use EXCLUSIVAMENTE os dados deste prompt. Se um campo for "—" ou ausente, escreva "sem registro". NUNCA invente eventos (ESG Day, cursos, conversões) não documentados em ÚLTIMA VISITA, HISTÓRICO ou FUP PROJETOS.
 1. "Ação Prevista" = próximo passo do representante, NUNCA perfil do médico. Proctoria/Preceptoria = médico da carteira é SEMPRE o professor/expert.
@@ -2717,7 +2582,6 @@ REGRAS ESSENCIAIS:
 9. Sempre cite a fonte ao usar dados de estudos.
    MATERIAL RECOMENDADO — REGRA ABSOLUTA: NUNCA sugira material personalizado (relatório GEO, diagnóstico digital, análise) de um médico para a visita de outro médico. Cada material é confidencial e exclusivo do médico para quem foi produzido. Se o médico visitado tem diagnóstico GEO, sugira o relatório DELE. Se não tem, sugira materiais científicos genéricos (MERIT Trial, DDW25, dados IQVIA) — jamais o relatório de outro médico da carteira.
 10. Caixa resposta_account: NUNCA vazia se houver contexto adicional — responda com dados reais.
-
 ## MÉDICO
 Nome: ${selectedMedico.nome}
 Tier: ${selectedMedico.tier||"—"}
@@ -2725,7 +2589,6 @@ Especialidade: ${ultimaVisita.especialidade||selectedMedico.especialidade||"—"
 Clínica: ${selectedMedico.clinica||"—"}
 Região: ${selectedMedico.regiao||"—"}
 Total de visitas: ${visitasMedico.length}
-
 ## ÚLTIMA VISITA
 ${ultimaVisita ? `Data: ${ultimaVisita.data_contato||"?"}
 Responsável: ${ultimaVisita.responsavel||"—"}
@@ -2739,24 +2602,19 @@ Proc. ESG marcados: ${ultimaVisita.proc_marcados_esg||"—"}
 Suporte marketing: ${ultimaVisita.suporte_marketing?"Sim":"Não"}
 Ação prevista: ${ultimaVisita.acao_prevista||"—"}
 Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar briefing de PRIMEIRA ABORDAGEM baseado no perfil de segmentação."}
-
 ## HISTÓRICO
 ${historico}
-
 ${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}${feedbackStr}${geoRelatorioStr}
-
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
 Evidências clínicas: MERIT Trial (Lancet 2022) — 15% perda peso, PROMISE (2023), ESG-APOLLO (2021), DDW25 (ESG+GLP-1 = resultados superiores).
 Programa INSPIRA: rede de pacientes embaixadores ESG.
-
 ## TPs DISPONÍVEIS (resumo):
 BLOCO TÉCNICO (só novos): TP1 Treinamento, TP2 Certificação IRCAD, TP3 Revisão pós-cert, TP4 Proctoria/Preceptoria, TP5 Infraestrutura, TP6 Fluxo operacional
 BLOCO ENGAJAMENTO: TP7 Investigar baixa adesão, TP8 Benefícios longo prazo ESG vs GLP-1, TP9 Posicionamento clínico (perfil A=Condutor, B=Técnico, C=Reativo), TP10 Material científico (MERIT, DDW25), TP11 ESG+GLP-1 sinergia
 BLOCO MARKETING: TP12 Mídias sociais, TP13 Estratégia conteúdo, TP14 Boas práticas materiais, TP15 Ativação captação, TP16 Materiais físicos, TP17 Vídeo institucional
 BLOCO COMERCIAL: TP18 Treinamento conversão, TP19 Suporte contínuo, TP20 Capacitação equipe, TP21 Jornada multidisciplinar
 BLOCO LEAP: TP22 Apresentação Leap, TP23 Ativação total Leap
-
 Responda APENAS com JSON válido, sem markdown:
 {
   "resposta_account": "OBRIGATÓRIO quando houver CONTEXTO ADICIONAL. Não repita a pergunta. SE menciona GEO, relatório, visibilidade, IAs, ChatGPT, Gemini: use os dados do DIAGNOSTICO GEO REAL DO MEDICO presentes neste prompt — cite score atual, quem aparece no lugar dele, gap crítico e oportunidade. Se não há diagnóstico GEO: diga que ainda não foi gerado e explique que pacientes pós-GLP-1 pesquisam nas IAs, janela 2026-2028. NUNCA mencione agenda, datas ou eventos neste campo. Sem contexto adicional, null.",
@@ -2773,7 +2631,6 @@ Responda APENAS com JSON válido, sem markdown:
   "proximos_tps": ["TP recomendado para esta visita", "TP para a visita seguinte"],
   "acao_marketing": "ação de marketing personalizada baseada no perfil digital e gaps (ou null)"
 }`;
-
     try {
       const response = await fetch("/api/briefing", {
         method: "POST",
@@ -2808,9 +2665,7 @@ Responda APENAS com JSON válido, sem markdown:
       console.error(e);
     } finally { setGerando(false); }
   }
-
   const loading = loadingMed || loadingVis;
-
   return (
     <div>
       <div className="section-header">
@@ -2854,7 +2709,6 @@ Responda APENAS com JSON válido, sem markdown:
             </div>
           )}
         </div>
-
         <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:14,padding:"1.5rem"}}>
           {!selectedMedico ? (
             <div style={{textAlign:"center",padding:"3rem 2rem"}}>
@@ -2883,7 +2737,6 @@ Responda APENAS com JSON válido, sem markdown:
                   <div style={{fontSize:10,color:"var(--muted)",fontWeight:600}}>VISITAS</div>
                 </div>
               </div>
-
               {segmentacao && (
                 <div style={{marginBottom:16}}>
                   <div className="card-title">Perfil de Segmentação</div>
@@ -2902,7 +2755,6 @@ Responda APENAS com JSON válido, sem markdown:
                   </div>
                 </div>
               )}
-
               {selectedMedico && !ehNovoMedico && !ultimaVisita && (
                 <div style={{background:"rgba(245,158,11,0.1)",border:"1px solid rgba(245,158,11,0.3)",borderRadius:10,padding:"12px 14px",marginBottom:10,fontSize:13,color:"var(--warn)"}}>
                   <strong>⚠ Sem visitas registradas</strong><br/>
@@ -2924,7 +2776,6 @@ Responda APENAS com JSON válido, sem markdown:
                   {ultimaVisita.acao_prevista && <div style={{marginTop:6,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"8px 12px"}}><div style={{fontSize:10,color:"var(--teal)",fontWeight:700,marginBottom:2}}>AÇÃO PREVISTA</div><div style={{fontSize:12}}>{ultimaVisita.acao_prevista}</div></div>}
                 </div>
               ) : <div style={{textAlign:"center",padding:"1.5rem",color:"var(--muted)",fontSize:13}}>Nenhuma visita registrada ainda.</div>}
-
               {visitasMedico.length > 1 && (
                 <div style={{marginBottom:16}}>
                   <div className="card-title">Histórico — Últimos 3 Meses</div>
@@ -2945,7 +2796,6 @@ Responda APENAS com JSON válido, sem markdown:
                   })()}
                 </div>
               )}
-
               <div style={{marginBottom:10}}>
                 <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",letterSpacing:"0.08em",textTransform:"uppercase",marginBottom:6}}>💬 Contexto adicional ou pergunta (opcional)</div>
                 <textarea
@@ -2986,12 +2836,10 @@ Responda APENAS com JSON válido, sem markdown:
                   <div style={{fontSize:12,color:"var(--warn)"}}>⚠ Sem dados de ESG registrados — perguntar ao médico quantos tem agendados</div>
                 </div>
               )}
-
               <button onClick={gerarBriefing} disabled={gerando||!selectedMedico||(selectedMedico&&!ehNovoMedico&&!ultimaVisita)}
                 style={{width:"100%",padding:14,borderRadius:12,border:"none",background:gerando?"var(--surface2)":"linear-gradient(135deg,var(--teal),#005f6b)",color:gerando?"var(--muted)":"#0a0e1a",fontFamily:"DM Sans,sans-serif",fontSize:14,fontWeight:700,cursor:gerando||!ultimaVisita?"not-allowed":"pointer",display:"flex",alignItems:"center",justifyContent:"center",gap:8,margin:"14px 0",boxShadow:gerando?"none":"0 4px 20px rgba(0,191,165,0.25)"}}>
                 {gerando ? "⚡ Gerando briefing..." : ehNovoMedico ? "⚡ Gerar Briefing de Primeira Abordagem" : "⚡ Gerar Briefing IA"}
               </button>
-
               {erro && (
                 <div style={{background: erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "rgba(239,68,68,0.08)" : "rgba(245,158,11,0.08)", border: `1px solid ${erro.includes('Crédito') || erro.includes('crédito') || erro.includes('billing') ? "rgba(239,68,68,0.3)" : "rgba(245,158,11,0.3)"}`, borderRadius:10, padding:"12px 14px", fontSize:12, marginBottom:12}}>
                   <div style={{display:"flex",gap:8,alignItems:"flex-start"}}>
@@ -3008,7 +2856,6 @@ Responda APENAS com JSON válido, sem markdown:
                   </div>
                 </div>
               )}
-
               {briefing && (
                 <div>
                   <div style={{display:"flex",alignItems:"center",gap:10,margin:"4px 0 14px",color:"var(--teal)",fontSize:11,fontWeight:700,letterSpacing:"0.08em"}}>
@@ -3018,7 +2865,6 @@ Responda APENAS com JSON válido, sem markdown:
                     // Gerar resposta contextual no JS quando menciona ESG Day
                     const ctxLower = contextoExtra.toLowerCase();
                     let respostaJS = briefing.resposta_account || null;
-
                     // Se menciona ESG Day e temos dados do FUP
                     if ((ctxLower.includes("esg day") || ctxLower.includes("esgday")) && fupMedico) {
                       const esgProj = fupMedico.find && fupMedico.find(p => p.projeto === "ESG Day");
@@ -3031,7 +2877,6 @@ Responda APENAS com JSON válido, sem markdown:
                         }
                       }
                     }
-
                     // Curso IAS Bariátricos
                     if (!respostaJS && (ctxLower.includes("bariátric") || ctxLower.includes("bariatric") || ctxLower.includes("curso ias") || ctxLower.includes("cirurgi")) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Bariátric"));
@@ -3045,7 +2890,6 @@ Responda APENAS com JSON válido, sem markdown:
                         }
                       }
                     }
-
                     // Imersão Marketing / GEO
                     if (!respostaJS && (ctxLower.includes("imersão") || ctxLower.includes("imersao") || ctxLower.includes("marketing") || ctxLower.includes("geo") || ctxLower.includes("digital")) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Imersão"));
@@ -3059,7 +2903,6 @@ Responda APENAS com JSON válido, sem markdown:
                         }
                       }
                     }
-
                     // Aulas Referidores
                     if (!respostaJS && (ctxLower.includes("referidor") || ctxLower.includes("aula") || ctxLower.includes("endocrinolog")) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Referidor"));
@@ -3073,7 +2916,6 @@ Responda APENAS com JSON válido, sem markdown:
                         }
                       }
                     }
-
                     // Pacientes Referidores
                     if (!respostaJS && (ctxLower.includes("paciente") && (ctxLower.includes("referi") || ctxLower.includes("indica"))) && fupMedico) {
                       const proj = Array.isArray(fupMedico) && fupMedico.find(p => p.projeto && p.projeto.includes("Pac."));
@@ -3082,7 +2924,6 @@ Responda APENAS com JSON válido, sem markdown:
                         respostaJS = `Em Pacientes Referidores — ${fups.length} lead(s) registrado(s). ${fups.length > 0 ? "Último: " + (fups[0].obs||"—").slice(0,100) + ". Verificar: follow-up realizado com os que não compareceram?" : "Verificar se há leads aguardando contato."}`;
                       }
                     }
-
                     // Resposta genérica quando há contexto mas sem projeto específico
                     if (!respostaJS && contextoExtra) {
                       const projList = Array.isArray(fupMedico) && fupMedico.length > 0
@@ -3094,7 +2935,6 @@ Responda APENAS com JSON válido, sem markdown:
                         respostaJS = `Contexto registrado: "${contextoExtra}". Considere este ponto ao usar o briefing abaixo — especialmente na abertura e no argumento principal.`;
                       }
                     }
-
                     return (
                       <div style={{background:"rgba(0,191,165,0.1)",border:"2px solid var(--teal)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
                         <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--teal)",marginBottom:6}}>💬 Pergunta do Account</div>
@@ -3121,7 +2961,6 @@ Responda APENAS com JSON válido, sem markdown:
                       <p style={{margin:0,fontSize:13,lineHeight:1.7,fontStyle:label.includes("Abertura")?"italic":"normal"}}>{val}</p>
                     </div>
                   ) : null)}
-
                   <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:10}}>
                     <div style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px"}}>
                       <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:6}}>📎 Material</div>
@@ -3132,20 +2971,15 @@ Responda APENAS com JSON válido, sem markdown:
                       {(briefing.sinais_de_avanco||[]).map((s,i) => <div key={i} style={{fontSize:12,color:"var(--success)",padding:"3px 0",borderBottom:i<(briefing.sinais_de_avanco.length-1)?"1px solid var(--border)":"none"}}>✓ {s}</div>)}
                     </div>
                   </div>
-
                   {briefing.retomada && (
                     <div style={{background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
                       <div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#8b5cf6",marginBottom:6}}>🔄 Retomada da Ação Prevista</div>
                       <p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.retomada}</p>
                     </div>
                   )}
-
                   {briefing.acao_marketing && <div style={{background:"rgba(139,92,246,0.08)",border:"1px solid rgba(139,92,246,0.3)",borderRadius:10,padding:"12px 14px",marginBottom:10}}><div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"#8b5cf6",marginBottom:6}}>📱 Ação de Marketing</div><p style={{margin:0,fontSize:13,lineHeight:1.7}}>{briefing.acao_marketing}</p></div>}
-
                   {briefing.alerta && <div style={{background:"rgba(245,158,11,0.08)",border:"1px solid rgba(245,158,11,0.3)",borderRadius:8,padding:"10px 12px",marginBottom:10,display:"flex",gap:8}}><span>⚠️</span><div><div style={{fontSize:10,fontWeight:700,marginBottom:3}}>PONTO DE ATENÇÃO</div><div style={{fontSize:12}}>{briefing.alerta}</div></div></div>}
-
                   {briefing.proximos_tps && <div style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px",marginBottom:10}}><div style={{fontSize:10,fontWeight:700,letterSpacing:"0.1em",textTransform:"uppercase",color:"var(--muted)",marginBottom:8}}>🗓️ Sequência de TPs</div>{briefing.proximos_tps.map((tp,i) => <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"8px 10px",background:"var(--bg)",borderRadius:8,marginBottom:4}}><div style={{width:22,height:22,borderRadius:"50%",background:i===0?"var(--teal)":"var(--border)",color:i===0?"#0a0e1a":"var(--muted)",fontSize:10,fontWeight:700,display:"flex",alignItems:"center",justifyContent:"center",flexShrink:0}}>{i+1}</div><span style={{fontSize:12,color:i===0?"var(--text)":"var(--muted)"}}>{tp}</span></div>)}</div>}
-
                   {!feedbackEnviado ? (
                     <div style={{marginBottom:12,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px"}}>
                       <div style={{fontSize:11,fontWeight:700,color:"var(--muted)",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:8}}>Este briefing foi útil?</div>
@@ -3196,8 +3030,6 @@ Responda APENAS com JSON válido, sem markdown:
     </div>
   );
 }
-
-
 function ConfigBanner() {
   return (
     <div className="config-banner">
@@ -3207,14 +3039,12 @@ function ConfigBanner() {
     </div>
   );
 }
-
 // ─── CARTILHA ──────────────────────────────────────────────────────────────
 function Cartilha() {
   const { data: tps, loading } = useSupabase("tps_definicoes");
   const [filterBloco, setFilterBloco] = useState("");
   const blocos = [...new Set(tps.map(t => t.bloco))];
   const filtered = tps.filter(t => !filterBloco || t.bloco === filterBloco);
-
   return (
     <div>
       <div className="section-header">
@@ -3227,7 +3057,6 @@ function Cartilha() {
           {blocos.map(b => <option key={b}>{b}</option>)}
         </select>
       </div>
-
       {!isConfigured && <ConfigBanner />}
       {loading ? <div className="loading"><div className="spinner" /> Carregando...</div> : (
         <div className="tp-grid">
@@ -3264,16 +3093,12 @@ function Cartilha() {
     </div>
   );
 }
-
-
-
 // ─── METAS MENSAIS ─────────────────────────────────────────────────────────
 const MESES = [
   "JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26",
   "JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"
 ];
 const TEAM = ["Marcell","Fernanda","Ana Marieta","Inside Sales","Cibele","Guilherme","Sarah","Catharina","Júlia"];
-
 function Metas() {
   const { data: visitas } = useSupabase("visitas");
   const { data: medicoTps } = useSupabase("medico_tps");
@@ -3282,22 +3107,18 @@ function Metas() {
   const [mes, setMes] = useState("JUNHO 26");
   const [editing, setEditing] = useState(null);
   const [toast, setToast] = useState(null);
-
   const fetchMetas = useCallback(async () => {
     if (!isConfigured) { setLoading(false); return; }
     const { data } = await supabaseClient.from("metas").select("*").eq("mes", mes);
     setMetas(data || []);
     setLoading(false);
   }, [mes]);
-
   useEffect(() => { fetchMetas(); }, [fetchMetas]);
-
   const getMeta = (resp) => metas.find(m => m.responsavel === resp) || {
     responsavel: resp, mes,
     meta_visitas: 0, meta_presenciais: 0,
     meta_procedimentos: 0, meta_receita: 0
   };
-
   const getReal = (resp) => {
     const v = visitas.filter(vi => vi.responsavel === resp && vi.mes === mes);
     const tpsDone = medicoTps.filter(t => t.concluido).length;
@@ -3309,7 +3130,6 @@ function Metas() {
       tps: tpsDone,
     };
   };
-
   const saveMeta = async (form) => {
     if (!isConfigured) return;
     const existing = metas.find(m => m.responsavel === form.responsavel);
@@ -3322,10 +3142,8 @@ function Metas() {
     setEditing(null);
     fetchMetas();
   };
-
   const pct = (real, meta) => meta > 0 ? Math.min(Math.round((real / meta) * 100), 100) : 0;
   const color = (p) => p >= 100 ? "var(--success)" : p >= 60 ? "var(--warn)" : "var(--danger)";
-
   const totais = TEAM.reduce((acc, r) => {
     const real = getReal(r);
     const meta = getMeta(r);
@@ -3340,7 +3158,6 @@ function Metas() {
     return acc;
   }, { visitas_real:0, presenciais_real:0, proc_real:0, receita_real:0,
        visitas_meta:0, presenciais_meta:0, proc_meta:0, receita_meta:0 });
-
   return (
     <div>
       <div className="section-header">
@@ -3352,9 +3169,7 @@ function Metas() {
           {MESES.map(m => <option key={m}>{m}</option>)}
         </select>
       </div>
-
       {!isConfigured && <ConfigBanner />}
-
       {/* KPIs do time */}
       <div className="kpi-row" style={{marginBottom:"1.25rem"}}>
         {[
@@ -3382,7 +3197,6 @@ function Metas() {
           );
         })}
       </div>
-
       {/* Tabela por responsável */}
       <div className="card" style={{padding:0}}>
         <div className="table-wrap">
@@ -3437,7 +3251,6 @@ function Metas() {
           </table>
         </div>
       </div>
-
       {editing && (
         <MetaModal
           meta={editing}
@@ -3450,7 +3263,6 @@ function Metas() {
     </div>
   );
 }
-
 function MetaModal({ meta, mes, onSave, onClose }) {
   const [form, setForm] = useState({
     responsavel: meta.responsavel,
@@ -3461,7 +3273,6 @@ function MetaModal({ meta, mes, onSave, onClose }) {
     meta_receita: meta.meta_receita || 0,
   });
   const set = (k, v) => setForm(f => ({...f, [k]: Number(v)}));
-
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal">
@@ -3496,9 +3307,6 @@ function MetaModal({ meta, mes, onSave, onClose }) {
     </div>
   );
 }
-
-
-
 // ─── HISTÓRICO SEMANAL ─────────────────────────────────────────────────────
 function Historico() {
   const { data: visitas, loading, refresh } = useSupabase("visitas");
@@ -3509,7 +3317,6 @@ function Historico() {
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
   const [selectedVisita, setSelectedVisita] = useState(null);
-
   const handleDelete = async (id) => {
     const { error } = await supabaseClient.from("visitas").delete().eq("id", id);
     if (error) { alert("Erro ao excluir: " + error.message); return; }
@@ -3517,7 +3324,6 @@ function Historico() {
     setSelectedVisita(null);
     refresh();
   };
-
   // Group by week
   const getSemana = (data) => {
     if (!data) return "Sem data";
@@ -3527,17 +3333,14 @@ function Historico() {
     const monday = new Date(d.setDate(diff));
     return monday.toLocaleDateString("pt-BR", {day:"2-digit",month:"2-digit",year:"numeric"});
   };
-
   const semanas = [...new Set(visitas.map(v => getSemana(v.data_contato)))].sort((a,b) => {
     const [da,ma,ya] = a.split("/"); const [db,mb,yb] = b.split("/");
     return new Date(`${yb}-${mb}-${db}`) - new Date(`${ya}-${ma}-${da}`);
   });
-
   const mesesHist = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
     const ordem = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
     return ordem.indexOf(a) - ordem.indexOf(b);
   });
-
   const filtered = [...visitas]
     .filter(v => {
       const q = search.toLowerCase();
@@ -3548,7 +3351,6 @@ function Historico() {
         && (!filterMesHist || v.mes === filterMesHist);
     })
     .sort((a,b) => new Date(b.data_contato||0) - new Date(a.data_contato||0));
-
   // KPIs of filtered
   const kpis = {
     total: filtered.length,
@@ -3558,7 +3360,6 @@ function Historico() {
     mktSupport: filtered.filter(v => v.suporte_marketing).length,
     altaProb: filtered.filter(v => v.probabilidade === "Alto").length,
   };
-
   return (
     <div>
       <div className="section-header">
@@ -3567,7 +3368,6 @@ function Historico() {
           <div className="section-sub">{visitas.length} visitas registradas no total</div>
         </div>
       </div>
-
       {/* KPIs */}
       <div className="kpi-row" style={{marginBottom:"1rem"}}>
         <div className="kpi"><div className="kpi-label">Visitas</div><div className="kpi-value">{kpis.total}</div></div>
@@ -3577,7 +3377,6 @@ function Historico() {
         <div className="kpi"><div className="kpi-label">Alta Prob.</div><div className="kpi-value" style={{color:"var(--success)"}}>{kpis.altaProb}</div></div>
         <div className="kpi"><div className="kpi-label">Suporte MKT</div><div className="kpi-value" style={{color:"#8b5cf6"}}>{kpis.mktSupport}</div></div>
       </div>
-
       {/* Filters */}
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico ou observação..." value={search} onChange={e => setSearch(e.target.value)} />
@@ -3598,7 +3397,6 @@ function Historico() {
           {CANAIS.map(c => <option key={c}>{c}</option>)}
         </select>
       </div>
-
       {loading ? <div className="loading"><div className="spinner"/>Carregando...</div> : (
         <div className="card" style={{padding:0}}>
           <div className="table-wrap">
@@ -3615,12 +3413,13 @@ function Historico() {
                   <th>Prob.</th>
                   <th>$ Esperado</th>
                   <th>MKT</th>
+                  <th>Leão Plus</th>
                   <th>Observação</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.length === 0 ? (
-                  <tr><td colSpan={11}><div className="empty">Nenhuma visita encontrada.</div></td></tr>
+                  <tr><td colSpan={12}><div className="empty">Nenhuma visita encontrada.</div></td></tr>
                 ) : filtered.map(v => (
                   <tr key={v.id} style={{cursor:"pointer",borderLeft:(!v.obs||!v.acao_prevista)?"3px solid var(--warn)":"3px solid transparent"}} onClick={() => setSelectedVisita(v)}>
                     <td className="td-muted" style={{fontFamily:"DM Mono",fontSize:12,whiteSpace:"nowrap"}}>
@@ -3635,6 +3434,13 @@ function Historico() {
                     <td>{v.probabilidade ? probBadge(v.probabilidade) : "—"}</td>
                     <td className="td-muted" style={{fontFamily:"DM Mono",fontSize:12}}>{v.valor_esperado ? `$${Number(v.valor_esperado).toLocaleString("pt-BR")}` : "—"}</td>
                     <td style={{fontSize:12,color: v.suporte_marketing ? "var(--teal)" : "var(--muted)"}}>{v.suporte_marketing ? "✓" : "—"}</td>
+                    <td style={{fontSize:11,whiteSpace:"nowrap"}}>
+                      {v.leao_plus_abordado === true
+                        ? <span style={{color:"var(--warn)",fontWeight:600}}>💛 {v.leao_plus_status ? v.leao_plus_status.replace(/_/g," ") : "Sim"}</span>
+                        : v.leao_plus_abordado === false
+                        ? <span style={{color:"var(--muted)"}}>Não</span>
+                        : <span style={{color:"var(--border)"}}>—</span>}
+                    </td>
                     <td className="td-muted" style={{maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{v.obs||"—"}</td>
                   </tr>
                 ))}
@@ -3655,7 +3461,6 @@ function Historico() {
     </div>
   );
 }
-
 // ─── BASE DE DADOS ─────────────────────────────────────────────────────────
 const PERFIL_FIELDS = [
   { key:"entrada", label:"Entrada/Treinamento", group:"Identificação" },
@@ -3711,26 +3516,21 @@ const PERFIL_FIELDS = [
   { key:"potencial_expansao", label:"Potencial de Expansão (12m)", group:"Resultados" },
   { key:"obs_extras", label:"Observações Extras", group:"Resultados" },
 ];
-
 function BaseDados() {
   const { data: medicos, loading: loadingM } = useSupabase("perfil_medico");
   const [selected, setSelected] = useState(null);
   const [search, setSearch] = useState("");
   const [toast, setToast] = useState(null);
-
   const [showNew, setShowNew] = useState(false);
   const [toast2, setToast2] = useState(null);
-
   const filtered = medicos.filter(m =>
     !search || m.nome?.toLowerCase().includes(search.toLowerCase()) ||
     m.estado?.toLowerCase().includes(search.toLowerCase())
   ).sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
-
   const completeness = (m) => {
     const filled = PERFIL_FIELDS.filter(f => m[f.key] && m[f.key] !== "").length;
     return Math.round((filled / PERFIL_FIELDS.length) * 100);
   };
-
   return (
     <div>
       <div className="section-header">
@@ -3739,12 +3539,10 @@ function BaseDados() {
           <div className="section-sub">{medicos.length} médicos · clique para editar</div>
         </div>
       </div>
-
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico, estado..." value={search} onChange={e => setSearch(e.target.value)} />
         <button className="btn btn-primary" onClick={() => setShowNew(true)}>+ Novo Médico</button>
       </div>
-
       {showNew && (
         <EditMedicoModal
           medico={{nome:"", tier:"", estado:"", regiao:"", clinica:""}}
@@ -3759,7 +3557,6 @@ function BaseDados() {
         />
       )}
       {toast2 && <Toast msg={toast2} onHide={() => setToast2(null)} />}
-
       {loadingM ? <div className="loading"><div className="spinner"/>Carregando...</div> : (
         <div className="card" style={{padding:0}}>
           <div className="table-wrap">
@@ -3800,7 +3597,6 @@ function BaseDados() {
           </div>
         </div>
       )}
-
       {selected && (
         <EditMedicoModal
           medico={selected}
@@ -3817,13 +3613,10 @@ function BaseDados() {
     </div>
   );
 }
-
 function EditMedicoModal({ medico, onSave, onClose }) {
   const [form, setForm] = useState({...medico});
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
-
   const groups = [...new Set(PERFIL_FIELDS.map(f => f.group))];
-
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal" style={{maxWidth:680}}>
@@ -3837,7 +3630,6 @@ function EditMedicoModal({ medico, onSave, onClose }) {
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-
         <div style={{marginBottom:"1.25rem"}}>
           <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,paddingBottom:4,borderBottom:"1px solid var(--border)"}}>
             Nome do Médico
@@ -3847,7 +3639,6 @@ function EditMedicoModal({ medico, onSave, onClose }) {
             <input className="form-input" value={form.nome || ""} onChange={e => set("nome", e.target.value)} placeholder="Ex: Dr. João Silva" />
           </div>
         </div>
-
         {groups.map(group => (
           <div key={group} style={{marginBottom:"1.25rem"}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,paddingBottom:4,borderBottom:"1px solid var(--border)"}}>
@@ -3870,7 +3661,6 @@ function EditMedicoModal({ medico, onSave, onClose }) {
             </div>
           </div>
         ))}
-
         <div className="btn-row">
           <button className="btn btn-primary" onClick={() => onSave(form)}>Salvar</button>
           <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
@@ -3879,19 +3669,16 @@ function EditMedicoModal({ medico, onSave, onClose }) {
     </div>
   );
 }
-
 // ─── CONSULTA MÉDICO ───────────────────────────────────────────────────────
 function ConsultaMedico() {
   const { data: medicos, loading } = useSupabase("perfil_medico");
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
-
   const filtered = medicos.filter(m =>
     !search || m.nome?.toLowerCase().includes(search.toLowerCase()) ||
     m.estado?.toLowerCase().includes(search.toLowerCase()) ||
     m.perfil_medico?.toLowerCase().includes(search.toLowerCase())
   ).sort((a,b) => { const to = {"ST":0,"1":1,"2":2,"3":3,"4":4,"5":5}; return (to[a.tier]??99) - (to[b.tier]??99); });
-
   return (
     <div>
       <div className="section-header">
@@ -3900,11 +3687,9 @@ function ConsultaMedico() {
           <div className="section-sub">Visão completa do perfil · puxado da Base de Dados</div>
         </div>
       </div>
-
       <div className="search-row">
         <input className="search-input" placeholder="Buscar médico, estado, perfil..." value={search} onChange={e => setSearch(e.target.value)} />
       </div>
-
       {loading ? <div className="loading"><div className="spinner"/>Carregando...</div> : (
         <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))",gap:10}}>
           {filtered.map(m => (
@@ -3943,12 +3728,10 @@ function ConsultaMedico() {
           ))}
         </div>
       )}
-
       {selected && <PerfilDetalhe medico={selected} onClose={() => setSelected(null)} />}
     </div>
   );
 }
-
 function PerfilDetalhe({ medico, onClose }) {
   const groups = [...new Set(PERFIL_FIELDS.map(f => f.group))];
   return (
@@ -3987,11 +3770,8 @@ function PerfilDetalhe({ medico, onClose }) {
     </div>
   );
 }
-
-
 // ─── BIBLIOTECA ──────────────────────────────────────────────────────────────
 const CATEGORIAS_BIBLIOTECA = ["Todos","Evidência Clínica","Marketing Médico","GEO / Digital","Comercial","Gestão","Regulatório","ESG Day","GLP-1"];
-
 const MATERIAIS_INICIAIS = [
   { id:"1", titulo:"10 Tendências de Marketing Médico para 2026", categoria:"Marketing Médico", fonte:"Médico Celebridade Cast #131 — Vitor Jaci", resumo:"10 tendências em 3 eixos: Relação profunda (eventos presenciais, microcomunidades, social seller), Autoridade genuína (building in public, docu-style, funil educacional) e Tecnologia com inteligência (CRM com IA, BI, agentes de IA). Tese: aprofundar relacionamento vale mais que ampliar alcance em 2026.", conteudo:"", tags:["CRM","IA","eventos presenciais","base de dados","LTV","2026"], link:"", destaque:["Pacientes inativos na própria base convertem 3-5x mais que leads frios","Agentes de IA com briefing pré-consulta = vantagem competitiva não copiável","Indicação: CAC R$60 vs Instagram R$380 — alocar recursos com precisão cirúrgica"], data:"2025-12", lido:false },
   { id:"2", titulo:"GEO para Médicos e Clínicas: Como Aparecer nas Respostas da IA em 2026", categoria:"GEO / Digital", fonte:"Raphael Henriques — raphaelhenriques.com", resumo:"Guia completo em PT-BR sobre GEO para profissionais de saúde. Apresenta 5 pilares: autoridade de conteúdo (E-E-A-T), estrutura em perguntas e respostas, presença em múltiplas fontes, Schema Markup e brand mentions. A maioria dos médicos brasileiros ainda não se adaptou ao GEO — janela de oportunidade real.", conteudo:"", tags:["GEO","SEO","médicos","IA","ChatGPT","Gemini","Schema","Brasil"], link:"https://raphaelhenriques.com/blog/geo-para-medicos-e-clinicas-inteligencia-artificial-2026/", destaque:["60% dos usuários usam IA para obter respostas antes de buscar no Google","GEO médico ainda em estágios iniciais no Brasil — barreira de entrada baixa","Médico que assina artigos com CRM visível e cita fontes científicas tem muito mais chance de ser citado pela IA"], data:"2026-03", lido:false },
@@ -4022,7 +3802,6 @@ const MATERIAIS_INICIAIS = [
   { id:"21", titulo:"STEP 4 — Manutenção com semaglutida: parar = reganho em 1 ano (JAMA 2021)", categoria:"GLP-1", fonte:"Rubino D et al. — JAMA, 2021", resumo:"Trial de manutenção. Participantes que perderam peso com semaglutida por 20 semanas randomizados para continuar ou trocar para placebo. Resultado: continuar = -7,9% adicional | Parar = +6,9% de reganho. Confirma que semaglutida precisa ser mantida para preservar resultados. Complementar ao STEP 1 extension.", conteudo:"", tags:["STEP 4","semaglutida","manutenção","reganho","JAMA","GLP-1","tratamento contínuo"], link:"https://jamanetwork.com/journals/jama/fullarticle/2779280", destaque:["Parar semaglutida após 20 semanas: +6,9% reganho em 48 semanas","Continuar semaglutida: -7,9% adicional — diferença de ~15 p.p.","Confirma: semaglutida é tratamento crônico, não agudo — parar = reverter resultados"], data:"2021-03", lido:false },
   { id:"16", titulo:"Diretriz ASGE–ESGE: Terapias Endoscópicas Bariátricas e Metabólicas para Obesidade (2024)", categoria:"Evidência Clínica", fonte:"Gastrointestinal Endoscopy — Jirapinyo P., Hadefi A., Thompson CC., 2024", resumo:"Diretriz conjunta oficial ASGE e ESGE — as duas maiores sociedades de endoscopia do mundo. Desenvolvida pelo framework GRADE. Recomenda EBMTs (incluindo ESG) + modificação de estilo de vida para IMC ≥30 kg/m² ou IMC 27-29,9 com comorbidade. Cobre ESG, Balão Intragástrico (IGB) e dispositivos de remodelação gástrica. Inclui análise de custo-efetividade, valores dos pacientes e impacto em equidade em saúde.", conteudo:"", tags:["ASGE","ESGE","diretriz","GRADE","ESG","balão","EBMTs","IMC 30","comorbidades","custo-efetividade"], link:"https://www.giejournal.org/article/S0016-5107(23)03148-6/abstract", destaque:["Diretriz conjunta oficial ASGE + ESGE — as duas maiores sociedades de endoscopia do mundo","Recomenda ESG para IMC ≥30 (ou ≥27 com comorbidade) + modificação de estilo de vida — Framework GRADE","Abrange ESG, Balão Intragástrico e dispositivos de remodelação gástrica com análise de evidências completa"], data:"2024-04", lido:false }
 ];
-
 function Biblioteca() {
   const [materiais, setMateriais] = React.useState(() => { try { return JSON.parse(localStorage.getItem("esg_biblioteca")||"null")||MATERIAIS_INICIAIS; } catch { return MATERIAIS_INICIAIS; } });
   const [filtro, setFiltro] = React.useState("Todos");
@@ -4142,8 +3921,6 @@ function Biblioteca() {
     )
   );
 }
-
-
 // ════════════════════════════════════════════════════════════════
 // FEEDBACKS IA — ESG Intelligence Hub
 // ════════════════════════════════════════════════════════════════
@@ -4153,7 +3930,6 @@ function FeedbacksIA() {
   const [filtroAvaliacao, setFiltroAvaliacao] = React.useState("todos");
   const [filtroMedico, setFiltroMedico] = React.useState("");
   const [erro, setErro] = React.useState(null);
-
   React.useEffect(() => {
     async function carregar() {
       setLoading(true);
@@ -4171,18 +3947,15 @@ function FeedbacksIA() {
     }
     carregar();
   }, []);
-
   const filtrados = feedbacks.filter(f => {
     const matchAvaliacao = filtroAvaliacao === "todos" || f.avaliacao === filtroAvaliacao;
     const matchMedico = !filtroMedico || (f.medico_nome||"").toLowerCase().includes(filtroMedico.toLowerCase());
     return matchAvaliacao && matchMedico;
   });
-
   const total = feedbacks.length;
   const uteis = feedbacks.filter(f => f.avaliacao === "util").length;
   const imprecisos = feedbacks.filter(f => f.avaliacao === "impreciso").length;
   const pctUtil = total > 0 ? Math.round((uteis/total)*100) : 0;
-
   // Médicos com mais feedbacks imprecisos
   const imprPorMedico = {};
   feedbacks.filter(f => f.avaliacao === "impreciso").forEach(f => {
@@ -4190,7 +3963,6 @@ function FeedbacksIA() {
     imprPorMedico[n] = (imprPorMedico[n] || 0) + 1;
   });
   const topImprecisos = Object.entries(imprPorMedico).sort((a,b) => b[1]-a[1]).slice(0,5);
-
   // Médicos com mais feedbacks úteis
   const utilPorMedico = {};
   feedbacks.filter(f => f.avaliacao === "util").forEach(f => {
@@ -4198,19 +3970,16 @@ function FeedbacksIA() {
     utilPorMedico[n] = (utilPorMedico[n] || 0) + 1;
   });
   const topUteis = Object.entries(utilPorMedico).sort((a,b) => b[1]-a[1]).slice(0,5);
-
   const C = {
     bg: "#0A0F14", card: "#111820", border: "#1E2D3D",
     text: "#E8EDF2", muted: "#7A9BB5", dim: "#4A6580",
     teal: "#00A693", green: "#22C55E", red: "#EF4444",
     yellow: "#F59E0B", surface2: "#16202B"
   };
-
   const cardStyle = {
     background: C.card, border: `1px solid ${C.border}`,
     borderRadius: 12, padding: "20px 24px", marginBottom: 16
   };
-
   const badgeStyle = (av) => ({
     display: "inline-block",
     padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
@@ -4218,29 +3987,24 @@ function FeedbacksIA() {
     color: av === "util" ? C.green : C.red,
     border: `1px solid ${av === "util" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`
   });
-
   if (loading) return (
     <div style={{padding:40, textAlign:"center", color: C.muted, fontFamily:"DM Sans,sans-serif"}}>
       Carregando feedbacks...
     </div>
   );
-
   if (erro) return (
     <div style={{padding:40, textAlign:"center", color: C.red, fontFamily:"DM Sans,sans-serif"}}>
       Erro ao carregar: {erro}<br/>
       <small style={{color:C.muted}}>Verifique se a tabela briefing_feedback existe no Supabase.</small>
     </div>
   );
-
   return (
     <div style={{padding:"24px 28px", background: C.bg, minHeight:"100vh", fontFamily:"DM Sans,sans-serif", color: C.text}}>
-
       {/* Header */}
       <div style={{marginBottom: 24}}>
         <div style={{fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4}}>💬 Feedbacks dos Briefings IA</div>
         <div style={{fontSize: 13, color: C.muted}}>Avaliações do time sobre a qualidade dos briefings gerados</div>
       </div>
-
       {/* Cards agregados */}
       <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:24}}>
         {[
@@ -4256,7 +4020,6 @@ function FeedbacksIA() {
           </div>
         ))}
       </div>
-
       {/* Barra de utilidade */}
       {total > 0 && (
         <div style={{...cardStyle, marginBottom:24}}>
@@ -4273,7 +4036,6 @@ function FeedbacksIA() {
           </div>
         </div>
       )}
-
       {/* Top médicos */}
       {total > 0 && (
         <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:24}}>
@@ -4305,7 +4067,6 @@ function FeedbacksIA() {
           </div>
         </div>
       )}
-
       {/* Filtros */}
       <div style={{...cardStyle, marginBottom:16}}>
         <div style={{display:"flex", gap:12, flexWrap:"wrap", alignItems:"center"}}>
@@ -4327,7 +4088,6 @@ function FeedbacksIA() {
           />
         </div>
       </div>
-
       {/* Lista de feedbacks */}
       <div style={cardStyle}>
         <div style={{fontSize:12, fontWeight:700, color:C.muted, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:14}}>
@@ -4371,7 +4131,6 @@ function FeedbacksIA() {
     </div>
   );
 }
-
 // ─── APP ROOT ──────────────────────────────────────────────────────────────
 const TABS = [
   { id:"dashboard",  label:"Dashboard",       icon:"◈" },
@@ -4383,16 +4142,13 @@ const TABS = [
   { id:"metas",      label:"Metas",            icon:"🎯" },
   { id:"historico",  label:"Histórico",        icon:"📅" },
   { id:"basedados",  label:"Base de Dados",    icon:"📋" },
-
   { id:"biblioteca", label:"Biblioteca", icon:"📚" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
   { id:"feedbacks", label:"Feedbacks IA", icon:"💬" },
 ];
-
 // ════════════════════════════════════════════════════════════════
 // FUP PROJETOS — ESG Intelligence Hub
 // ════════════════════════════════════════════════════════════════
-
 // ─── PALETTE ───────────────────────────────────────────────────────────────
 const FUP_C = {
   teal: "#00A693",
@@ -4413,10 +4169,8 @@ const FUP_C = {
   purple: "#A855F7",
   orange: "#F97316",
 };
-
 // ─── STORAGE KEY ───────────────────────────────────────────────────────────
 const FUP_STORAGE_KEY = "esg_hub_fup_projetos_v2";
-
 // ─── INITIAL STATE ─────────────────────────────────────────────────────────
 const fupInitialState = {
   esgDay: [],
@@ -4451,7 +4205,6 @@ const fupInitialState = {
     acoes: [],
   },
 };
-
 // ─── LOAD / SAVE ────────────────────────────────────────────────────────────
 function fupLoadData() {
   try {
@@ -4483,7 +4236,6 @@ function fupLoadData() {
     return fupInitialState;
   }
 }
-
 function fupSaveData(data) {
   try {
     localStorage.setItem(FUP_STORAGE_KEY, JSON.stringify(data));
@@ -4506,10 +4258,8 @@ async function fupSaveRemote(d) {
     return !error;
   } catch(e) { return false; }
 }
-
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const fupUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
-
 function FupKPICard({ label, value, sub, color = FUP_C.teal, icon }) {
   return (
     <div style={{
@@ -4527,7 +4277,6 @@ function FupKPICard({ label, value, sub, color = FUP_C.teal, icon }) {
     </div>
   );
 }
-
 function FupSectionTitle({ children, accent = FUP_C.teal }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
@@ -4536,7 +4285,6 @@ function FupSectionTitle({ children, accent = FUP_C.teal }) {
     </div>
   );
 }
-
 function FupPill({ label, color }) {
   const map = {
     verde: { bg: "#052D1A", color: FUP_C.green, border: "#0D4A2A" },
@@ -4554,7 +4302,6 @@ function FupPill({ label, color }) {
     }}>{label}</span>
   );
 }
-
 function FupInput({ label, value, onChange, type = "text", placeholder, required, style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
@@ -4576,7 +4323,6 @@ function FupInput({ label, value, onChange, type = "text", placeholder, required
     </div>
   );
 }
-
 function FupSelect({ label, value, onChange, options, style }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6, ...style }}>
@@ -4596,7 +4342,6 @@ function FupSelect({ label, value, onChange, options, style }) {
     </div>
   );
 }
-
 function FupBtn({ children, onClick, variant = "primary", size = "md", style }) {
   const styles = {
     primary: { background: FUP_C.teal, color: "#fff", border: "none" },
@@ -4619,7 +4364,6 @@ function FupBtn({ children, onClick, variant = "primary", size = "md", style }) 
     >{children}</button>
   );
 }
-
 function FupModal({ open, onClose, title, children, width = 680 }) {
   if (!open) return null;
   return (
@@ -4641,7 +4385,6 @@ function FupModal({ open, onClose, title, children, width = 680 }) {
     </div>
   );
 }
-
 const FUP_TOAST_DUR = 2800;
 function FupProjToast({ msg, type }) {
   const bg = type === "success" ? "#052D1A" : type === "error" ? "#2D0505" : "#051A2D";
@@ -4660,7 +4403,6 @@ function FupProjToast({ msg, type }) {
     </div>
   );
 }
-
 // ─── PROJECT CARDS (LANDING) ─────────────────────────────────────────────────
 const METAS_TIER = {
   "ST": { esg_mes: 15, visitas_presenciais_mes: 1, max_dias_sem_presencial: 30 },
@@ -4688,7 +4430,6 @@ const FUP_PROJECTS = [
   { id: "pacientesReferidores", label: "Pacientes Indicados — Referidores", icon: "👥", desc: "Funil de pacientes indicados por médicos referidores. SLA de contato e conversão.", color: "#F43F5E" },
   { id: "imersaoMarketing", label: "Imersão Marketing", icon: "📡", desc: "Visibilidade digital dos médicos parceiros. KPIs de GEO, presença online e conversão.", color: FUP_C.yellow },
 ];
-
 // ════════════════════════════════════════════════════════════════════════════
 // ESG DAY
 // ════════════════════════════════════════════════════════════════════════════
@@ -4704,9 +4445,7 @@ function EsgDayProject({ data, onChange }) {
     procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "",
   });
   const [activeTab, setActiveTab] = useState("form");
-
   const records = data || [];
-
   const totals = records.reduce((a, r) => {
     const procVisitas = (r.followups||[]).reduce((s,f) => s + (+f.procedimentosFechados||0), 0);
     const procTotal = (+r.procedimentos30d || 0) + procVisitas;
@@ -4718,20 +4457,17 @@ function EsgDayProject({ data, onChange }) {
       custo: a.custo + (+r.custoEvento || 0),
     };
   }, { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
-
   const conversaoMediaRaw = totals.compareceram > 0 ? (totals.procedimentos / totals.compareceram) * 100 : 0;
   const conversaoMedia = conversaoMediaRaw > 100 ? "100+" : conversaoMediaRaw.toFixed(1);
   const roi = totals.custo > 0
     ? (((totals.receita - totals.custo) / totals.custo) * 100).toFixed(0)
     : "—";
-
   const save = () => {
     const newRec = { ...form, id: fupUid() };
     onChange([...records, newRec]);
     setModal(false);
     setForm({ medico: "", clinica: "", cidade: "", data: "", responsavel: "", pacientesElegiveis: "", convidados: "", confirmados: "", compareceram: "", procedimentos30d: "", ticketMedio: "", custoEvento: "", obs: "" });
   };
-
   const del = (id) => onChange(records.filter((r) => r.id !== id));
   const saveEdit = (updated) => { onChange(records.map((r) => r.id === updated.id ? updated : r)); setEditModal(null); };
   const saveFup = () => {
@@ -4747,14 +4483,12 @@ function EsgDayProject({ data, onChange }) {
     setFupForm({ data: "", tipo: "Visita presencial", procedimentosFechados: "", obs: "" });
   };
   const updateProcedimentos = (id, val) => onChange(records.map((r) => r.id === id ? { ...r, procedimentos30d: val } : r));
-
   const chartData = records.map((r) => ({
     name: r.clinica || "—",
     Convidados: +r.convidados || 0,
     Compareceram: +r.compareceram || 0,
     Fechados: +r.procedimentos30d || 0,
   }));
-
   const roiData = records
     .filter((r) => +r.custoEvento > 0)
     .map((r) => {
@@ -4762,7 +4496,6 @@ function EsgDayProject({ data, onChange }) {
       const custo = +r.custoEvento;
       return { name: r.clinica, ROI: +((((rec - custo) / custo) * 100).toFixed(0)) };
     });
-
   return (
     <div>
       {/* KPIs */}
@@ -4774,7 +4507,6 @@ function EsgDayProject({ data, onChange }) {
         <FupKPICard label="Receita Total" value={totals.receita > 0 ? `$ ${(totals.receita / 1000).toFixed(1)}k` : "—"} color={FUP_C.teal} icon="💰" />
         <FupKPICard label="ROI Médio" value={`${roi}%`} color={FUP_C.purple} sub="Custo vs Receita" icon="📈" />
       </div>
-
       {/* Tabs */}
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["form", "dashboard"].map((t) => (
@@ -4787,7 +4519,6 @@ function EsgDayProject({ data, onChange }) {
         ))}
         <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto" }}>+ Novo Evento</FupBtn>
       </div>
-
       {activeTab === "form" ? (
         <div>
           {records.length === 0 ? (
@@ -4916,7 +4647,6 @@ function EsgDayProject({ data, onChange }) {
           </div>
         </div>
       )}
-
       {/* Modal Editar Evento */}
       <FupModal open={!!editModal} onClose={() => setEditModal(null)} title="Editar Evento ESG Day">
         {editModal && (
@@ -4937,7 +4667,6 @@ function EsgDayProject({ data, onChange }) {
           </div>
         )}
       </FupModal>
-
       {/* Modal Nova Visita de Seguimento */}
       <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Registrar Nova Visita de Seguimento">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -4951,7 +4680,6 @@ function EsgDayProject({ data, onChange }) {
           </div>
         </div>
       </FupModal>
-
       {/* Modal Novo Evento */}
       <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Evento ESG Day">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -4979,7 +4707,6 @@ function EsgDayProject({ data, onChange }) {
     </div>
   );
 }
-
 // ════════════════════════════════════════════════════════════════════════════
 // AULAS REFERIDORES
 // ════════════════════════════════════════════════════════════════════════════
@@ -4999,16 +4726,13 @@ function AulasReferidoresProject({ data, onChange }) {
   const [visitaForm, setVisitaForm] = useState({ data: "", tipo: "Visita presencial", indicacoes: "", procedimentos: "", obs: "" });
   const [editEventoModal, setEditEventoModal] = useState(null);
   const [editRefModal, setEditRefModal] = useState(null);
-
   const eventos = data?.eventos || [];
   const updateEventos = (e) => onChange({ eventos: e });
-
   const saveEvento = () => {
     updateEventos([...eventos, { ...eventoForm, id: fupUid(), referidores: [] }]);
     setEventoModal(false);
     setEventoForm({ nome: "", dataEvento: "", cidade: "", medicoExecutor: "", local: "", obs: "" });
   };
-
   const saveReferidor = () => {
     const updated = eventos.map((ev) =>
       ev.id === refModal
@@ -5019,7 +4743,6 @@ function AulasReferidoresProject({ data, onChange }) {
     setRefModal(null);
     setRefForm({ medico: "", especialidade: "", possuiCRM: "Não", indicacoesM1: "", indicacoesM2: "", indicacoesM3: "", procedimentosGerados: "", obs: "" });
   };
-
   const saveVisita = () => {
     if (!visitaModal) return;
     const { evId, refId } = visitaModal;
@@ -5031,7 +4754,6 @@ function AulasReferidoresProject({ data, onChange }) {
     setVisitaModal(null);
     setVisitaForm({ data: "", tipo: "Visita presencial", indicacoes: "", procedimentos: "", obs: "" });
   };
-
   const saveEditEvento = (ev) => { updateEventos(eventos.map((e) => e.id === ev.id ? ev : e)); setEditEventoModal(null); };
   const saveEditRef = ({ evId, ref }) => { updateEventos(eventos.map((ev) => ev.id === evId ? { ...ev, referidores: (ev.referidores||[]).map((r) => r.id === ref.id ? ref : r) } : ev)); setEditRefModal(null); };
   const saveEditVisita = ({ evId, refId, vi }) => {
@@ -5052,7 +4774,6 @@ function AulasReferidoresProject({ data, onChange }) {
   };
   const delEvento = (id) => updateEventos(eventos.filter((e) => e.id !== id));
   const delRef = (evId, refId) => updateEventos(eventos.map((ev) => ev.id === evId ? { ...ev, referidores: (ev.referidores||[]).filter((r) => r.id !== refId) } : ev));
-
   const totals = {
     eventos: eventos.length,
     referidores: eventos.reduce((a, ev) => a + (ev.referidores||[]).length, 0),
@@ -5060,7 +4781,6 @@ function AulasReferidoresProject({ data, onChange }) {
     indicacoes: eventos.reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.indicacoesM1||0) + (+r.indicacoesM2||0) + (+r.indicacoesM3||0) + (r.visitas||[]).reduce((c,v)=>c+(+v.indicacoes||0),0), a), 0),
     procedimentos: eventos.reduce((a, ev) => (ev.referidores||[]).reduce((b, r) => b + (+r.procedimentosGerados||0) + (r.visitas||[]).reduce((c,v)=>c+(+v.procedimentos||0),0), a), 0),
   };
-
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
@@ -5071,7 +4791,6 @@ function AulasReferidoresProject({ data, onChange }) {
         <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} icon="✓" />
         <FupKPICard label="Receita Est." value={totals.procedimentos > 0 ? `$ ${(totals.procedimentos * 1680 / 1000).toFixed(1)}k` : "—"} color={FUP_C.teal} icon="💰" />
       </div>
-
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["eventos", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
@@ -5083,7 +4802,6 @@ function AulasReferidoresProject({ data, onChange }) {
         ))}
         <FupBtn onClick={() => setEventoModal(true)} style={{ marginLeft: "auto" }}>+ Novo Evento</FupBtn>
       </div>
-
       {activeTab === "eventos" ? (
         eventos.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
@@ -5187,7 +4905,6 @@ function AulasReferidoresProject({ data, onChange }) {
           </div>
         </div>
       )}
-
       {/* Modal Novo Evento */}
       <FupModal open={eventoModal} onClose={() => setEventoModal(false)} title="Cadastrar Evento — Aula Referidores">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -5203,7 +4920,6 @@ function AulasReferidoresProject({ data, onChange }) {
           <FupBtn onClick={saveEvento}>Salvar Evento</FupBtn>
         </div>
       </FupModal>
-
       {/* Modal Editar Evento — Aulas Referidores */}
       <FupModal open={!!editEventoModal} onClose={() => setEditEventoModal(null)} title="Editar Evento">
         {editEventoModal && (
@@ -5264,7 +4980,6 @@ function AulasReferidoresProject({ data, onChange }) {
           <FupBtn onClick={saveVisita} style={{ background: FUP_C.blue, border: "none" }}>Registrar Visita</FupBtn>
         </div>
       </FupModal>
-
       {/* Modal Adicionar Referidor */}
       <FupModal open={!!refModal} onClose={() => setRefModal(null)} title="Adicionar Médico Referidor ao Evento">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -5301,10 +5016,8 @@ function CampanhaInternaProject({ data, onChange }) {
   });
   const [activeTab, setActiveTab] = useState("form");
   const records = data || [];
-
   const funilOrder = ["Novo Lead", "Tentativa 1", "Tentativa 2", "Contato Realizado", "Avaliação Agendada", "Avaliação Realizada", "Procedimento Agendado", "Procedimento Realizado", "Perdido"];
   const funil = funilOrder.map((s) => ({ status: s, count: records.filter((r) => r.statusFunil === s).length }));
-
   const totals = {
     total: records.length,
     contatados: records.filter((r) => !["Novo Lead", "Tentativa 1", "Tentativa 2"].includes(r.statusFunil) && r.statusFunil !== "Perdido").length,
@@ -5313,23 +5026,18 @@ function CampanhaInternaProject({ data, onChange }) {
     receita: records.filter((r) => r.conversao === "Sim").reduce((a, r) => a + (+r.valorProcedimento || ESG_PRICE_USD), 0),
   };
   const txConv = totals.total > 0 ? ((totals.convertidos / totals.total) * 100).toFixed(1) : 0;
-
   const save = () => {
     onChange([...records, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ dataLead: "", nomePaciente: "", telefone: "", colaboradorIndicador: "", telefoneIndicador: "", area: "", statusFunil: "Novo Lead", procedimento: "", origem: "Convenção", conversao: "Não", valorProcedimento: "", motivoPerda: "", obs: "" });
   };
-
   const saveEditC = (u) => { onChange(records.map((r) => r.id === u.id ? u : r)); setEditModal(null); };
   const saveFupC = () => { if (!fupModal) return; onChange(records.map((r) => r.id === fupModal ? { ...r, followups: [...(r.followups||[]), { ...fupForm, id: fupUid() }] } : r)); setFupModal(null); setFupForm({ data: "", tipo: "Visita presencial", statusContato: "", obs: "" }); };
   const updateStatus = (id, statusFunil) => onChange(records.map((r) => r.id === id ? { ...r, statusFunil } : r));
-
   const statusColor = { "Novo Lead": "azul", "Contato Realizado": "amarelo", "Avaliação Realizada": "roxo", "Procedimento Realizado": "verde", "Perdido": "vermelho" };
-
   const areaData = Object.entries(
     records.reduce((a, r) => { a[r.area || "Outros"] = (a[r.area || "Outros"] || 0) + 1; return a; }, {})
   ).map(([name, value]) => ({ name, value }));
-
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
@@ -5340,7 +5048,6 @@ function CampanhaInternaProject({ data, onChange }) {
         <FupKPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
         <FupKPICard label="Receita Gerada" value={`R$ ${(totals.receita / 1000).toFixed(0)}k`} color={FUP_C.teal} icon="💰" />
       </div>
-
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["form", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
@@ -5352,7 +5059,6 @@ function CampanhaInternaProject({ data, onChange }) {
         ))}
         <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.purple }}>+ Novo Lead</FupBtn>
       </div>
-
       {activeTab === "form" ? (
         records.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
@@ -5455,7 +5161,6 @@ function CampanhaInternaProject({ data, onChange }) {
           </div>
         </div>
       )}
-
       <FupModal open={modal} onClose={() => setModal(false)} title="Registrar Lead — Indicação Interna">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <FupInput label="Data do Lead" type="date" value={form.dataLead} onChange={(v) => setForm({ ...form, dataLead: v })} />
@@ -5479,7 +5184,6 @@ function CampanhaInternaProject({ data, onChange }) {
     </div>
   );
 }
-
 // ════════════════════════════════════════════════════════════════════════════
 // CURSO BARIATRICOS
 // ════════════════════════════════════════════════════════════════════════════
@@ -5494,13 +5198,10 @@ function CursoBariatricosProject({ data, onChange }) {
     qtdContatosEnviados: "", respostas: "", avaliacoes: "", procedimentos: "",
     scoreImpl: "", risco: "Verde", obs: "",
   });
-
   const medicos = data?.medicos || fupInitialState.cursoBariatricos.medicos;
   const followups = data?.followups || [];
-
   const update = (updated) => onChange({ medicos: updated, followups });
   const updateFUPs = (updated) => onChange({ medicos, followups: updated });
-
   const totals = {
     ativos: medicos.filter((m) => m.status === "Ativo").length,
     comCRM: medicos.filter((m) => m.possuiCRM === "Sim").length,
@@ -5511,20 +5212,16 @@ function CursoBariatricosProject({ data, onChange }) {
       ? (followups.reduce((a, f) => a + (+f.scoreImpl || 0), 0) / followups.length).toFixed(1)
       : 0,
   };
-
   const saveFUP = () => {
     updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
     setFupModal(null);
     setFupForm({ data: "", tipo: "Visita", encaminhouMaterial: "Sim", possuiCRM: "Não", qtdContatosEnviados: "", respostas: "", avaliacoes: "", procedimentos: "", scoreImpl: "", risco: "Verde", obs: "" });
   };
-
   const saveMedico = () => {
     update(medicos.map((m) => m.id === editMedico.id ? editMedico : m));
     setModal(false);
   };
-
   const medicoFups = (id) => followups.filter((f) => f.medicoId === id);
-
   const radarData = medicos.slice(0, 5).map((m) => {
     const fups = medicoFups(m.id);
     return {
@@ -5535,7 +5232,6 @@ function CursoBariatricosProject({ data, onChange }) {
       Procedimentos: Math.min((fups.reduce((a, f) => a + (+f.procedimentos || 0), 0)) * 2, 10),
     };
   });
-
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
@@ -5547,7 +5243,6 @@ function CursoBariatricosProject({ data, onChange }) {
         <FupKPICard label="Procedimentos ESG" value={totals.totalProcedimentos} color={FUP_C.green} icon="✓" />
         <FupKPICard label="Score Médio Impl." value={totals.mediaScore + "/10"} color={totals.mediaScore >= 7 ? FUP_C.green : totals.mediaScore >= 4 ? FUP_C.yellow : FUP_C.red} />
       </div>
-
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["medicos", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
@@ -5558,7 +5253,6 @@ function CursoBariatricosProject({ data, onChange }) {
           }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
         ))}
       </div>
-
       {activeTab === "medicos" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {medicos.map((m) => {
@@ -5655,7 +5349,6 @@ function CursoBariatricosProject({ data, onChange }) {
           </div>
         </div>
       )}
-
       {/* Edit Medico Modal */}
       <FupModal open={modal && !!editMedico} onClose={() => setModal(false)} title="Editar Médico">
         {editMedico && (
@@ -5674,7 +5367,6 @@ function CursoBariatricosProject({ data, onChange }) {
           </>
         )}
       </FupModal>
-
       {/* FUP Modal */}
       <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title={`Registrar Follow-up — ${medicos.find((m) => m.id === fupModal)?.nome?.split(" ")[0] || ""}`}>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -5700,7 +5392,6 @@ function CursoBariatricosProject({ data, onChange }) {
     </div>
   );
 }
-
 // ════════════════════════════════════════════════════════════════════════════
 // CURSO ENDOSCOPISTAS
 // ════════════════════════════════════════════════════════════════════════════
@@ -5715,25 +5406,20 @@ function CursoEndoscopistasProject({ data, onChange }) {
     procedimentos30d: "", avaliacoesAgendadas: "", possuiCRM: "Não",
     scoreImpl: "", risco: "Verde", obs: "",
   });
-
   const medicos = data?.medicos || fupInitialState.cursoEndoscopistas.medicos;
   const followups = data?.followups || [];
-
   const update = (m) => onChange({ medicos: m, followups });
   const updateFUPs = (f) => onChange({ medicos, followups: f });
-
   const totals = {
     totalProced: followups.reduce((a, f) => a + (+f.procedimentos30d || 0), 0),
     totalAval: followups.reduce((a, f) => a + (+f.avaliacoesAgendadas || 0), 0),
     comCRM: medicos.filter((m) => m.possuiCRM === "Sim").length,
   };
-
   const saveFUP = () => {
     updateFUPs([...followups, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
     setFupModal(null);
     setFupForm({ data: "", tipo: "Visita presencial", realizandoProcedimentos: "Sim", procedimentos30d: "", avaliacoesAgendadas: "", possuiCRM: "Não", scoreImpl: "", risco: "Verde", obs: "" });
   };
-
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
@@ -5742,7 +5428,6 @@ function CursoEndoscopistasProject({ data, onChange }) {
         <FupKPICard label="Avaliações Geradas" value={totals.totalAval} color={FUP_C.teal} />
         <FupKPICard label="Com CRM" value={totals.comCRM} color={FUP_C.blue} />
       </div>
-
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["medicos", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
@@ -5753,7 +5438,6 @@ function CursoEndoscopistasProject({ data, onChange }) {
           }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
         ))}
       </div>
-
       {activeTab === "medicos" ? (
         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
           {medicos.map((m, idx) => {
@@ -5830,7 +5514,6 @@ function CursoEndoscopistasProject({ data, onChange }) {
           </div>
         </div>
       )}
-
       <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Registrar Follow-up — Endoscopista">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
@@ -5850,7 +5533,6 @@ function CursoEndoscopistasProject({ data, onChange }) {
           <FupBtn onClick={saveFUP} style={{ background: FUP_C.green }}>Registrar FUP</FupBtn>
         </div>
       </FupModal>
-
       <FupModal open={editModal && !!editMedico} onClose={() => setEditModal(false)} title="Editar Endoscopista">
         {editMedico && (
           <>
@@ -5875,7 +5557,6 @@ function CursoEndoscopistasProject({ data, onChange }) {
     </div>
   );
 }
-
 // ════════════════════════════════════════════════════════════════════════════
 // PACIENTES REFERIDORES
 // ════════════════════════════════════════════════════════════════════════════
@@ -5895,12 +5576,10 @@ function PacientesReferidoresProject({ data, onChange }) {
   });
   const [activeTab, setActiveTab] = useState("funil");
   const records = data || [];
-
   const statusContatoOptions = ["Novo Lead", "Tentativa 1", "Tentativa 2", "Tentativa 3", "Contato Realizado", "Não Atende", "Não Quer Contato"];
   const statusAgendOptions = ["Não agendado", "Agendado", "Confirmado", "Remarcado", "Cancelado"];
   const statusCompOptions = ["Pendente", "Compareceu", "Faltou", "Remarcou"];
   const statusFunilOptions = ["Em andamento", "Aguardando retorno", "Perdido", "Convertido"];
-
   const totals = {
     total: records.length,
     contatados: records.filter((r) => r.statusContato === "Contato Realizado").length,
@@ -5909,10 +5588,8 @@ function PacientesReferidoresProject({ data, onChange }) {
     procedimentos: records.filter((r) => r.procedimentoFechado === "Sim" || (r.followups||[]).some(f => f.resultado && f.resultado.toLowerCase().includes("fechado"))).length,
     perdidos: records.filter((r) => r.statusFunil === "Perdido").length,
   };
-
   const convRate = totals.total > 0 ? ((totals.procedimentos / totals.total) * 100).toFixed(1) : 0;
   const slaOk = records.filter((r) => +r.tempoPrimContato <= 30 && r.tempoPrimContato !== "").length;
-
   const funilData = [
     { stage: "Leads Recebidos", value: totals.total },
     { stage: "Contatados", value: totals.contatados },
@@ -5920,17 +5597,14 @@ function PacientesReferidoresProject({ data, onChange }) {
     { stage: "Compareceram", value: totals.compareceram },
     { stage: "Procedimentos", value: totals.procedimentos },
   ];
-
   const save = () => {
     onChange([...records, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ dataEntrada: "", paciente: "", telefone: "", medicoReferidor: "", clinicaReferidor: "", cidade: "", owner: "", statusContato: "Novo Lead", dataContato1: "", tempoPrimContato: "", statusAgendamento: "Não agendado", dataAgendamento: "", dataConsulta: "", statusComparecimento: "Pendente", statusFunil: "Em andamento", procedimentoFechado: "Não", dataProcedimento: "", obs: "" });
   };
-
   const update = (id, field, val) => onChange(records.map((r) => r.id === id ? { ...r, [field]: val } : r));
   const saveEditP = (u) => { onChange(records.map((r) => r.id === u.id ? u : r)); setEditModal(null); };
   const saveFupP = () => { if (!fupModal) return; onChange(records.map((r) => r.id === fupModal ? { ...r, followups: [...(r.followups||[]), { ...fupForm, id: fupUid() }] } : r)); setFupModal(null); setFupForm({ data: "", tipo: "Call", resultado: "", obs: "" }); };
-
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
@@ -5943,7 +5617,6 @@ function PacientesReferidoresProject({ data, onChange }) {
         <FupKPICard label="Conversão" value={`${convRate}%`} color={convRate >= 40 ? FUP_C.green : convRate >= 25 ? FUP_C.yellow : FUP_C.red} sub="Meta: 40–50%" />
         <FupKPICard label="Perdidos" value={totals.perdidos} color={FUP_C.red} icon="✗" />
       </div>
-
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["funil", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
@@ -5955,7 +5628,6 @@ function PacientesReferidoresProject({ data, onChange }) {
         ))}
         <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: "#F43F5E", border: "none" }}>+ Novo Paciente</FupBtn>
       </div>
-
       {activeTab === "funil" ? (
         records.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
@@ -6083,7 +5755,6 @@ function PacientesReferidoresProject({ data, onChange }) {
           </div>
         </div>
       )}
-
       <FupModal open={!!editModal} onClose={() => setEditModal(null)} title="Editar Paciente">
         {editModal && (<div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <FupInput label="Paciente" value={editModal.paciente} onChange={(v) => setEditModal({ ...editModal, paciente: v })} />
@@ -6137,7 +5808,6 @@ function PacientesReferidoresProject({ data, onChange }) {
     </div>
   );
 }
-
 // ════════════════════════════════════════════════════════════════════════════
 // IMERSÃO MARKETING
 // ════════════════════════════════════════════════════════════════════════════
@@ -6152,13 +5822,10 @@ function ImersaoMarketingProject({ data, onChange }) {
     geoScore: "", llmVisivelChatGPT: "Não", llmVisivelGoogle: "Não",
     leadsOrganicos: "", procedimentosGerados: "", acoesConcluidas: "", obs: "",
   });
-
   const medicos = data?.medicos || [];
   const acoes = data?.acoes || [];
-
   const updateM = (m) => onChange({ medicos: m, acoes });
   const updateA = (a) => onChange({ medicos, acoes: a });
-
   const totals = {
     medicos: medicos.length,
     comSite: medicos.filter((m) => m.site).length,
@@ -6167,25 +5834,21 @@ function ImersaoMarketingProject({ data, onChange }) {
     procedimentos: acoes.reduce((a, f) => a + (+f.procedimentosGerados || 0), 0),
     mediaGEO: acoes.length > 0 ? (acoes.reduce((a, f) => a + (+f.geoScore || 0), 0) / acoes.length).toFixed(1) : 0,
   };
-
   const saveMedico = () => {
     updateM([...medicos, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ nome: "", especialidade: "", cidade: "", email: "", instagram: "", site: "" });
   };
-
   const saveFUP = () => {
     updateA([...acoes, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
     setFupModal(null);
     setFupForm({ data: "", tipo: "Visita", instagramAtivo: "Sim", seguidores: "", postsMes: "", geoScore: "", llmVisivelChatGPT: "Não", llmVisivelGoogle: "Não", leadsOrganicos: "", procedimentosGerados: "", acoesConcluidas: "", obs: "" });
   };
-
   const geoData = medicos.map((m) => {
     const mAcoes = acoes.filter((a) => a.medicoId === m.id);
     const last = mAcoes[mAcoes.length - 1];
     return { name: m.nome.split(" ")[0] || "—", GEO: +last?.geoScore || 0, Leads: +last?.leadsOrganicos || 0, Proced: +last?.procedimentosGerados || 0 };
   });
-
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
@@ -6196,7 +5859,6 @@ function ImersaoMarketingProject({ data, onChange }) {
         <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} />
         <FupKPICard label="GEO Score Médio" value={totals.mediaGEO + "/10"} color={totals.mediaGEO >= 6 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 6" />
       </div>
-
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
         {["medicos", "dashboard"].map((t) => (
           <button key={t} onClick={() => setActiveTab(t)} style={{
@@ -6208,7 +5870,6 @@ function ImersaoMarketingProject({ data, onChange }) {
         ))}
         <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.yellow, color: "#000", border: "none" }}>+ Novo Médico</FupBtn>
       </div>
-
       {activeTab === "medicos" ? (
         medicos.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
@@ -6276,7 +5937,6 @@ function ImersaoMarketingProject({ data, onChange }) {
           </div>
         </div>
       )}
-
       <FupModal open={modal} onClose={() => setModal(false)} title="Adicionar Médico — Imersão Marketing">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <FupInput label="Nome" value={form.nome} onChange={(v) => setForm({ ...form, nome: v })} required style={{ gridColumn: "span 2" }} />
@@ -6291,7 +5951,6 @@ function ImersaoMarketingProject({ data, onChange }) {
           <FupBtn onClick={saveMedico} style={{ background: FUP_C.yellow, color: "#000" }}>Adicionar</FupBtn>
         </div>
       </FupModal>
-
       <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Follow-up — Imersão Marketing">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
@@ -6316,7 +5975,6 @@ function ImersaoMarketingProject({ data, onChange }) {
     </div>
   );
 }
-
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN APP
 // ════════════════════════════════════════════════════════════════════════════
@@ -6326,7 +5984,6 @@ function FupProjetos() {
   const [toast, setToast] = useState(null);
   const [saveTimer, setSaveTimer] = useState(null);
   const [syncing, setSyncing] = useState(true);
-
   // Load from Supabase on mount
   useEffect(() => {
     fupLoadRemote().then((remote) => {
@@ -6337,7 +5994,6 @@ function FupProjetos() {
       setSyncing(false);
     });
   }, []);
-
   // Auto-save with debounce — saves to both localStorage and Supabase
   const persistData = useCallback((newState) => {
     if (saveTimer) clearTimeout(saveTimer);
@@ -6350,13 +6006,11 @@ function FupProjetos() {
     }, 600);
     setSaveTimer(timer);
   }, [saveTimer]);
-
   const updateProject = (key, value) => {
     const newState = { ...state, [key]: value };
     setState(newState);
     persistData(newState);
   };
-
   // Per-project stats for landing overview
   const pStats = {
     esgDay: {
@@ -6423,7 +6077,6 @@ function FupProjetos() {
       })(),
     },
   };
-
   // Grand totals
   const aggStats = {
     totalProcedimentos: pStats.esgDay.procedimentos + pStats.aulasRef.procedimentos + pStats.leap.convertidos + pStats.bariatricos.procedimentos + pStats.endoscopistas.procedimentos + pStats.pacRef.procedimentos + pStats.imersao.procedimentos,
@@ -6433,7 +6086,6 @@ function FupProjetos() {
     totalReceita: (pStats.esgDay.receita || 0) + (pStats.aulasRef.receita || 0) + (pStats.leap.receita || 0) + (pStats.pacRef.receita || 0),
     receitaESG: pStats.esgDay.receita,
   };
-
   const projectComponents = {
     esgDay: <EsgDayProject data={state.esgDay} onChange={(v) => updateProject("esgDay", v)} />,
     aulasReferidores: <AulasReferidoresProject data={state.aulasReferidores} onChange={(v) => updateProject("aulasReferidores", v)} />,
@@ -6443,9 +6095,7 @@ function FupProjetos() {
     pacientesReferidores: <PacientesReferidoresProject data={state.pacientesReferidores} onChange={(v) => updateProject("pacientesReferidores", v)} />,
     imersaoMarketing: <ImersaoMarketingProject data={state.imersaoMarketing} onChange={(v) => updateProject("imersaoMarketing", v)} />,
   };
-
   const activeProjectMeta = FUP_PROJECTS.find((p) => p.id === activeProject);
-
   return (
     <div style={{ background: FUP_C.bg, minHeight: "100vh", color: FUP_C.text, fontFamily: "'DM Sans', 'Sora', system-ui, sans-serif" }}>
       <style>{`
@@ -6457,7 +6107,6 @@ function FupProjetos() {
         input, select, textarea { font-family: inherit; }
         @keyframes slideIn { from { transform: translateX(100px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
       `}</style>
-
       {/* HEADER */}
       <div style={{
         background: FUP_C.card, borderBottom: `1px solid ${FUP_C.border}`,
@@ -6505,7 +6154,6 @@ function FupProjetos() {
           )}
         </div>
       </div>
-
       <div style={{ padding: "32px" }}>
         {!activeProject ? (
           <>
@@ -6537,7 +6185,6 @@ function FupProjetos() {
                 </div>
               ))}
             </div>
-
             {/* ── PER-PROJECT SNAPSHOT STRIP ── */}
             <div style={{ marginBottom: 28 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
@@ -6633,7 +6280,6 @@ function FupProjetos() {
                 </div>
               </div>
             </div>
-
             {/* PROJECT GRID */}
             <div style={{ marginBottom: 20 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
@@ -6652,7 +6298,6 @@ function FupProjetos() {
                   else if (p.id === "cursoEndoscopistas") count = state.cursoEndoscopistas?.medicos?.filter((m) => m.nome).length || 0;
                   else if (p.id === "pacientesReferidores") count = state.pacientesReferidores?.length || 0;
                   else if (p.id === "imersaoMarketing") count = state.imersaoMarketing?.medicos?.length || 0;
-
                   return (
                     <div key={p.id}
                       onClick={() => setActiveProject(p.id)}
@@ -6713,13 +6358,10 @@ function FupProjetos() {
           </div>
         )}
       </div>
-
       {toast && <FupProjToast msg={toast.msg} type={toast.type} />}
     </div>
   );
 }
-
-
 // ─── LOGIN ─────────────────────────────────────────────────────────────────
 function useAuth() {
   const [authed, setAuthed] = React.useState(() => {
@@ -6737,13 +6379,11 @@ function useAuth() {
   };
   return { authed, login, logout };
 }
-
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [erro, setErro] = React.useState('');
-
   const handleLogin = async () => {
     if (!username || !password) return;
     setLoading(true);
@@ -6767,14 +6407,12 @@ function LoginScreen({ onLogin }) {
       setLoading(false);
     }
   };
-
   const inputStyle = {
     width: '100%', background: '#1a2235', border: '1px solid #1e2d45',
     borderRadius: 8, color: '#e2e8f0', fontSize: 14, padding: '12px 16px',
     outline: 'none', boxSizing: 'border-box',
     fontFamily: "'DM Sans', sans-serif", transition: 'border-color 0.15s',
   };
-
   return (
     <div style={{
       minHeight: '100vh', background: '#0a0e1a',
@@ -6799,7 +6437,6 @@ function LoginScreen({ onLogin }) {
             <div style={{ color: '#64748b', fontSize: 12, fontFamily: 'DM Mono, monospace' }}>Área restrita</div>
           </div>
         </div>
-
         {/* Campo usuário */}
         <div style={{ marginBottom: 14 }}>
           <label style={{ color: '#64748b', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>USUÁRIO</label>
@@ -6817,7 +6454,6 @@ function LoginScreen({ onLogin }) {
             onBlur={e => e.target.style.borderColor = '#1e2d45'}
           />
         </div>
-
         {/* Campo senha */}
         <div style={{ marginBottom: 20 }}>
           <label style={{ color: '#64748b', fontSize: 12, fontWeight: 600, display: 'block', marginBottom: 8 }}>SENHA</label>
@@ -6832,7 +6468,6 @@ function LoginScreen({ onLogin }) {
             onBlur={e => e.target.style.borderColor = '#1e2d45'}
           />
         </div>
-
         {/* Erro */}
         {erro && (
           <div style={{
@@ -6841,7 +6476,6 @@ function LoginScreen({ onLogin }) {
             color: '#ef4444', fontSize: 13,
           }}>{erro}</div>
         )}
-
         {/* Botão */}
         <button
           onClick={handleLogin}
@@ -6861,13 +6495,10 @@ function LoginScreen({ onLogin }) {
     </div>
   );
 }
-
 function App() {
   const [tab, setTab] = useState("dashboard");
   const { authed, login, logout } = useAuth();
-
   if (!authed) return <LoginScreen onLogin={login} />;
-
   return (
     <div className="app">
       <style>{css}</style>
@@ -6911,7 +6542,6 @@ function App() {
         {tab === "metas"     && <Metas />}
         {tab === "historico"  && <Historico />}
         {tab === "basedados"  && <BaseDados />}
-
         {tab === "fup"        && <FupProjetos />}
         {tab === "feedbacks"   && <FeedbacksIA />}
         {tab === "biblioteca"  && <Biblioteca />}
@@ -6920,13 +6550,9 @@ function App() {
     </div>
   );
 }
-
 // ─── METAS (injected) ──────────────────────────────────────────────────────
-
-
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(<App />);
 </script>
 </body>
 </html>
-
