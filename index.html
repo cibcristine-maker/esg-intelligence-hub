@@ -2254,6 +2254,28 @@ function BriefingIA() {
     }
     setGerando(true); setBriefing(null); setErro(null);
 
+    // Buscar feedbacks anteriores deste médico para enriquecer o prompt
+    let feedbacksAnteriores = [];
+    try {
+      const { data: fbData } = await supabaseClient
+        .from('briefing_feedback')
+        .select('avaliacao, comentario, created_at')
+        .eq('medico_nome', selectedMedico?.nome || '')
+        .order('created_at', { ascending: false })
+        .limit(5);
+      if (fbData && fbData.length > 0) feedbacksAnteriores = fbData;
+    } catch(e) { /* silencioso */ }
+
+    const feedbackStr = feedbacksAnteriores.length > 0
+      ? `\n\n## FEEDBACKS DO TIME SOBRE BRIEFINGS ANTERIORES DESTE MÉDICO\nUse para calibrar: corrija o que foi impreciso, reforce o que foi util.\n` +
+        feedbacksAnteriores.map(fb => {
+          const data = fb.created_at ? new Date(fb.created_at).toLocaleDateString('pt-BR') : '?';
+          const emoji = fb.avaliacao === 'util' ? '(util)' : '(impreciso)';
+          const obs = fb.comentario ? ` — "${fb.comentario}"` : '';
+          return `- [${data}] ${emoji}${obs}`;
+        }).join('\n')
+      : '';
+
     const MESES_ORDEM = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
     const meses3 = [...new Set(visitasMedico.map(v => v.mes).filter(Boolean))].sort((a,b) => MESES_ORDEM.indexOf(a)-MESES_ORDEM.indexOf(b)).slice(-3);
     const historico = visitasMedico.length > 0
@@ -2584,6 +2606,8 @@ ${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}
 
 REGRAS: Nunca invente informações. Use apenas dados acima. Tier ST/1 = referência nacional.
 
+${feedbackStr}
+
 ${contextoExtra ? "\n\nCONTEXTO ADICIONAL: " + contextoExtra : ""}
 
 TOM OBRIGATÓRIO: pragmático, gentil e consultivo. PROIBIDO linguagem de energia, entusiasmo exagerado ou elogios efusivos (ex: "que energia!", "fantástico!", "incrível!"). Aberturas devem soar como parceiro estratégico retomando algo concreto.
@@ -2640,7 +2664,7 @@ Observações: ${ultimaVisita.obs||"—"}` : "Sem visitas registradas — gerar 
 ## HISTÓRICO
 ${historico}
 
-${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}
+${segStr}${geoStr}${pipelineStr}${bibliotecaStr}${fupStr}${feedbackStr}
 
 ## CONTEXTO ESTRATÉGICO
 ESG e GLP-1 são COMPLEMENTARES, nunca competitivos. Paciente pós-GLP-1 com reganho = maior conversão.
