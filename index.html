@@ -4064,6 +4064,235 @@ function Biblioteca() {
   );
 }
 
+
+// ════════════════════════════════════════════════════════════════
+// FEEDBACKS IA — ESG Intelligence Hub
+// ════════════════════════════════════════════════════════════════
+function FeedbacksIA() {
+  const [feedbacks, setFeedbacks] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const [filtroAvaliacao, setFiltroAvaliacao] = React.useState("todos");
+  const [filtroMedico, setFiltroMedico] = React.useState("");
+  const [erro, setErro] = React.useState(null);
+
+  React.useEffect(() => {
+    async function carregar() {
+      setLoading(true);
+      try {
+        const { data, error } = await supabaseClient
+          .from("briefing_feedback")
+          .select("*")
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        setFeedbacks(data || []);
+      } catch(e) {
+        setErro(e.message);
+      }
+      setLoading(false);
+    }
+    carregar();
+  }, []);
+
+  const filtrados = feedbacks.filter(f => {
+    const matchAvaliacao = filtroAvaliacao === "todos" || f.avaliacao === filtroAvaliacao;
+    const matchMedico = !filtroMedico || (f.medico_nome||"").toLowerCase().includes(filtroMedico.toLowerCase());
+    return matchAvaliacao && matchMedico;
+  });
+
+  const total = feedbacks.length;
+  const uteis = feedbacks.filter(f => f.avaliacao === "util").length;
+  const imprecisos = feedbacks.filter(f => f.avaliacao === "impreciso").length;
+  const pctUtil = total > 0 ? Math.round((uteis/total)*100) : 0;
+
+  // Médicos com mais feedbacks imprecisos
+  const imprPorMedico = {};
+  feedbacks.filter(f => f.avaliacao === "impreciso").forEach(f => {
+    const n = f.medico_nome || "Desconhecido";
+    imprPorMedico[n] = (imprPorMedico[n] || 0) + 1;
+  });
+  const topImprecisos = Object.entries(imprPorMedico).sort((a,b) => b[1]-a[1]).slice(0,5);
+
+  // Médicos com mais feedbacks úteis
+  const utilPorMedico = {};
+  feedbacks.filter(f => f.avaliacao === "util").forEach(f => {
+    const n = f.medico_nome || "Desconhecido";
+    utilPorMedico[n] = (utilPorMedico[n] || 0) + 1;
+  });
+  const topUteis = Object.entries(utilPorMedico).sort((a,b) => b[1]-a[1]).slice(0,5);
+
+  const C = {
+    bg: "#0A0F14", card: "#111820", border: "#1E2D3D",
+    text: "#E8EDF2", muted: "#7A9BB5", dim: "#4A6580",
+    teal: "#00A693", green: "#22C55E", red: "#EF4444",
+    yellow: "#F59E0B", surface2: "#16202B"
+  };
+
+  const cardStyle = {
+    background: C.card, border: `1px solid ${C.border}`,
+    borderRadius: 12, padding: "20px 24px", marginBottom: 16
+  };
+
+  const badgeStyle = (av) => ({
+    display: "inline-block",
+    padding: "3px 10px", borderRadius: 20, fontSize: 11, fontWeight: 700,
+    background: av === "util" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)",
+    color: av === "util" ? C.green : C.red,
+    border: `1px solid ${av === "util" ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`
+  });
+
+  if (loading) return (
+    <div style={{padding:40, textAlign:"center", color: C.muted, fontFamily:"DM Sans,sans-serif"}}>
+      Carregando feedbacks...
+    </div>
+  );
+
+  if (erro) return (
+    <div style={{padding:40, textAlign:"center", color: C.red, fontFamily:"DM Sans,sans-serif"}}>
+      Erro ao carregar: {erro}<br/>
+      <small style={{color:C.muted}}>Verifique se a tabela briefing_feedback existe no Supabase.</small>
+    </div>
+  );
+
+  return (
+    <div style={{padding:"24px 28px", background: C.bg, minHeight:"100vh", fontFamily:"DM Sans,sans-serif", color: C.text}}>
+
+      {/* Header */}
+      <div style={{marginBottom: 24}}>
+        <div style={{fontSize: 22, fontWeight: 800, color: C.text, marginBottom: 4}}>💬 Feedbacks dos Briefings IA</div>
+        <div style={{fontSize: 13, color: C.muted}}>Avaliações do time sobre a qualidade dos briefings gerados</div>
+      </div>
+
+      {/* Cards agregados */}
+      <div style={{display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:16, marginBottom:24}}>
+        {[
+          { label:"Total de Feedbacks", value: total, color: C.teal, icon:"💬" },
+          { label:"Úteis", value: uteis, color: C.green, icon:"👍" },
+          { label:"Imprecisos", value: imprecisos, color: C.red, icon:"👎" },
+          { label:"Taxa de Utilidade", value: pctUtil + "%", color: pctUtil >= 70 ? C.green : pctUtil >= 40 ? C.yellow : C.red, icon:"📊" },
+        ].map((item,i) => (
+          <div key={i} style={{...cardStyle, marginBottom:0, textAlign:"center"}}>
+            <div style={{fontSize:24, marginBottom:6}}>{item.icon}</div>
+            <div style={{fontSize:32, fontWeight:800, color:item.color, lineHeight:1}}>{item.value}</div>
+            <div style={{fontSize:11, color:C.muted, marginTop:4, textTransform:"uppercase", letterSpacing:"0.06em"}}>{item.label}</div>
+          </div>
+        ))}
+      </div>
+
+      {/* Barra de utilidade */}
+      {total > 0 && (
+        <div style={{...cardStyle, marginBottom:24}}>
+          <div style={{fontSize:12, fontWeight:700, color:C.muted, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:10}}>
+            Distribuição Útil vs Impreciso
+          </div>
+          <div style={{display:"flex", borderRadius:8, overflow:"hidden", height:20, background:C.surface2}}>
+            <div style={{width:`${pctUtil}%`, background:C.green, transition:"width 0.5s"}} />
+            <div style={{width:`${100-pctUtil}%`, background:C.red, transition:"width 0.5s"}} />
+          </div>
+          <div style={{display:"flex", justifyContent:"space-between", marginTop:6, fontSize:11, color:C.muted}}>
+            <span style={{color:C.green}}>👍 {pctUtil}% úteis</span>
+            <span style={{color:C.red}}>👎 {100-pctUtil}% imprecisos</span>
+          </div>
+        </div>
+      )}
+
+      {/* Top médicos */}
+      {total > 0 && (
+        <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:16, marginBottom:24}}>
+          <div style={cardStyle}>
+            <div style={{fontSize:12, fontWeight:700, color:C.muted, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:12}}>
+              👍 Médicos — Mais Úteis
+            </div>
+            {topUteis.length === 0 ? (
+              <div style={{color:C.dim, fontSize:12}}>Nenhum feedback útil ainda</div>
+            ) : topUteis.map(([nome,count],i) => (
+              <div key={i} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", borderBottom:`1px solid ${C.border}`}}>
+                <span style={{fontSize:13, color:C.text}}>{nome}</span>
+                <span style={{fontSize:12, fontWeight:700, color:C.green, background:"rgba(34,197,94,0.1)", padding:"2px 8px", borderRadius:12}}>{count}x</span>
+              </div>
+            ))}
+          </div>
+          <div style={cardStyle}>
+            <div style={{fontSize:12, fontWeight:700, color:C.muted, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:12}}>
+              👎 Médicos — Mais Imprecisos
+            </div>
+            {topImprecisos.length === 0 ? (
+              <div style={{color:C.dim, fontSize:12}}>Nenhum feedback impreciso ainda</div>
+            ) : topImprecisos.map(([nome,count],i) => (
+              <div key={i} style={{display:"flex", justifyContent:"space-between", alignItems:"center", padding:"6px 0", borderBottom:`1px solid ${C.border}`}}>
+                <span style={{fontSize:13, color:C.text}}>{nome}</span>
+                <span style={{fontSize:12, fontWeight:700, color:C.red, background:"rgba(239,68,68,0.1)", padding:"2px 8px", borderRadius:12}}>{count}x</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Filtros */}
+      <div style={{...cardStyle, marginBottom:16}}>
+        <div style={{display:"flex", gap:12, flexWrap:"wrap", alignItems:"center"}}>
+          <div style={{fontSize:12, fontWeight:700, color:C.muted, textTransform:"uppercase", letterSpacing:"0.06em"}}>Filtrar:</div>
+          {["todos","util","impreciso"].map(v => (
+            <button key={v} onClick={() => setFiltroAvaliacao(v)} style={{
+              padding:"5px 14px", borderRadius:20, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"DM Sans,sans-serif",
+              background: filtroAvaliacao===v ? (v==="util"?C.green:v==="impreciso"?C.red:C.teal) : "transparent",
+              color: filtroAvaliacao===v ? "#fff" : C.muted,
+              border: `1px solid ${filtroAvaliacao===v ? (v==="util"?C.green:v==="impreciso"?C.red:C.teal) : C.border}`
+            }}>
+              {v==="todos"?"Todos":v==="util"?"👍 Úteis":"👎 Imprecisos"}
+            </button>
+          ))}
+          <input
+            value={filtroMedico} onChange={e => setFiltroMedico(e.target.value)}
+            placeholder="Buscar médico..."
+            style={{marginLeft:"auto", padding:"5px 12px", borderRadius:8, border:`1px solid ${C.border}`, background:C.surface2, color:C.text, fontSize:12, fontFamily:"DM Sans,sans-serif", outline:"none", width:180}}
+          />
+        </div>
+      </div>
+
+      {/* Lista de feedbacks */}
+      <div style={cardStyle}>
+        <div style={{fontSize:12, fontWeight:700, color:C.muted, letterSpacing:"0.06em", textTransform:"uppercase", marginBottom:14}}>
+          Todos os Feedbacks ({filtrados.length})
+        </div>
+        {filtrados.length === 0 ? (
+          <div style={{textAlign:"center", padding:"32px 0", color:C.dim, fontSize:13}}>
+            {total === 0 ? "Nenhum feedback registrado ainda. O time precisa avaliar os briefings gerados!" : "Nenhum resultado para esse filtro."}
+          </div>
+        ) : (
+          <div style={{display:"flex", flexDirection:"column", gap:10}}>
+            {filtrados.map((f, i) => (
+              <div key={f.id||i} style={{background:C.surface2, border:`1px solid ${C.border}`, borderRadius:10, padding:"14px 16px"}}>
+                <div style={{display:"flex", justifyContent:"space-between", alignItems:"flex-start", marginBottom:6}}>
+                  <div style={{display:"flex", alignItems:"center", gap:10}}>
+                    <span style={{fontSize:14, fontWeight:700, color:C.text}}>{f.medico_nome || "Médico não identificado"}</span>
+                    <span style={badgeStyle(f.avaliacao)}>{f.avaliacao === "util" ? "👍 Útil" : "👎 Impreciso"}</span>
+                  </div>
+                  <span style={{fontSize:11, color:C.dim}}>
+                    {f.created_at ? new Date(f.created_at).toLocaleDateString("pt-BR", {day:"2-digit",month:"2-digit",year:"numeric", hour:"2-digit",minute:"2-digit"}) : ""}
+                  </span>
+                </div>
+                {f.responsavel && (
+                  <div style={{fontSize:11, color:C.muted, marginBottom:4}}>por {f.responsavel}</div>
+                )}
+                {f.comentario && (
+                  <div style={{fontSize:12, color:C.text, background:C.bg, borderRadius:6, padding:"8px 10px", marginTop:6, borderLeft:`3px solid ${f.avaliacao==="util"?C.green:C.red}`}}>
+                    "{f.comentario}"
+                  </div>
+                )}
+                {f.briefing_resumo && (
+                  <div style={{fontSize:11, color:C.dim, marginTop:6, fontStyle:"italic"}}>
+                    Briefing: {f.briefing_resumo}...
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── APP ROOT ──────────────────────────────────────────────────────────────
 const TABS = [
   { id:"dashboard",  label:"Dashboard",       icon:"◈" },
@@ -4078,6 +4307,7 @@ const TABS = [
 
   { id:"biblioteca", label:"Biblioteca", icon:"📚" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
+  { id:"feedbacks", label:"Feedbacks IA", icon:"💬" },
 ];
 
 // ════════════════════════════════════════════════════════════════
@@ -6604,6 +6834,7 @@ function App() {
         {tab === "basedados"  && <BaseDados />}
 
         {tab === "fup"        && <FupProjetos />}
+        {tab === "feedbacks"   && <FeedbacksIA />}
         {tab === "biblioteca"  && <Biblioteca />}
         {tab === "briefingIA"  && <BriefingIA />}
       </main>
