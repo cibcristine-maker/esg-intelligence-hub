@@ -691,82 +691,159 @@ function Dashboard() {
 }
 // ─── VISITAS ───────────────────────────────────────────────────────────────
 function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
-  const fmt = (val) => val || "—";
   const fmtDate = (d) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
-  const fmtMoney = (v) => v ? `$${Number(v).toLocaleString("pt-BR")}` : "—";
   const [editando, setEditando] = useState(false);
-  const [obs, setObs] = useState(visita.obs || "");
-  const [acao, setAcao] = useState(visita.acao_prevista || "");
   const [salvando, setSalvando] = useState(false);
+  const [form, setForm] = useState({
+    data_contato: visita.data_contato || "",
+    responsavel: visita.responsavel || "",
+    medico_nome: visita.medico_nome || "",
+    canal: visita.canal || "",
+    ultimo_tp: visita.ultimo_tp || "",
+    probabilidade: visita.probabilidade || "",
+    mes: visita.mes || "",
+    referidor: visita.referidor ? "Sim" : "Não",
+    especialidade: visita.especialidade || "",
+    suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
+    acao_mkt: visita.acao_mkt || "",
+    valor_esperado: visita.valor_esperado || "",
+    fios_esg_estoque: visita.fios_esg_estoque ?? "",
+    proc_marcados_esg: visita.proc_marcados_esg ?? "",
+    proc_realizados_esg: visita.proc_realizados_esg ?? "",
+    baloes_estoque: visita.baloes_estoque ?? "",
+    proc_marcados_balao: visita.proc_marcados_balao ?? "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
+    leao_plus_status: visita.leao_plus_status || "",
+    acao_prevista: visita.acao_prevista || "",
+    obs: visita.obs || "",
+  });
+  const set = (k, v) => setForm(f => ({...f, [k]: v}));
+  const cancelar = () => { setEditando(false); setForm({
+    data_contato: visita.data_contato || "", responsavel: visita.responsavel || "",
+    medico_nome: visita.medico_nome || "", canal: visita.canal || "",
+    ultimo_tp: visita.ultimo_tp || "", probabilidade: visita.probabilidade || "",
+    mes: visita.mes || "", referidor: visita.referidor ? "Sim" : "Não",
+    especialidade: visita.especialidade || "", suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
+    acao_mkt: visita.acao_mkt || "", valor_esperado: visita.valor_esperado || "",
+    fios_esg_estoque: visita.fios_esg_estoque ?? "", proc_marcados_esg: visita.proc_marcados_esg ?? "",
+    proc_realizados_esg: visita.proc_realizados_esg ?? "", baloes_estoque: visita.baloes_estoque ?? "",
+    proc_marcados_balao: visita.proc_marcados_balao ?? "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
+    leao_plus_status: visita.leao_plus_status || "", acao_prevista: visita.acao_prevista || "", obs: visita.obs || "",
+  }); };
   const salvar = async () => {
     setSalvando(true);
-    const { error } = await supabaseClient.from("visitas").update({ obs, acao_prevista: acao }).eq("id", visita.id);
+    const payload = {
+      data_contato: form.data_contato || null,
+      responsavel: form.responsavel || null,
+      medico_nome: form.medico_nome || null,
+      canal: form.canal || null,
+      ultimo_tp: form.ultimo_tp || null,
+      probabilidade: form.probabilidade || null,
+      mes: form.mes || null,
+      referidor: form.referidor === "Sim",
+      especialidade: form.especialidade || null,
+      suporte_marketing: form.suporte_marketing === "Sim",
+      acao_mkt: form.acao_mkt || null,
+      valor_esperado: form.valor_esperado ? Number(form.valor_esperado) : null,
+      fios_esg_estoque: form.fios_esg_estoque !== "" ? Number(form.fios_esg_estoque) : null,
+      proc_marcados_esg: form.proc_marcados_esg !== "" ? Number(form.proc_marcados_esg) : null,
+      proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
+      baloes_estoque: form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null,
+      proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
+      leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : null,
+      leao_plus_status: form.leao_plus_status || null,
+      acao_prevista: form.acao_prevista || null,
+      obs: form.obs || null,
+    };
+    const { error } = await supabaseClient.from("visitas").update(payload).eq("id", visita.id);
     setSalvando(false);
     if (!error) { setEditando(false); if (onUpdate) onUpdate(); }
     else alert("Erro ao salvar: " + error.message);
   };
+  const inp = (label, key, type="text", opts=null) => (
+    <div style={{marginBottom:8}}>
+      <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:3,textTransform:"uppercase"}}>{label}</div>
+      {!editando ? (
+        <div style={{fontSize:13,fontWeight:500,padding:"6px 0"}}>{form[key]||"—"}</div>
+      ) : opts ? (
+        <select value={form[key]} onChange={e=>set(key,e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"7px 10px",color:"var(--text)",fontSize:13}}>
+          <option value="">—</option>
+          {opts.map(o=><option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : type === "textarea" ? (
+        <textarea value={form[key]} onChange={e=>set(key,e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box"}} />
+      ) : (
+        <input type={type} value={form[key]} onChange={e=>set(key,e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"7px 10px",color:"var(--text)",fontSize:13,boxSizing:"border-box"}} />
+      )}
+    </div>
+  );
+  const MESES = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+  const CANAIS = ["Presencial","WhatsApp","Ligação","E-mail","Evento"];
+  const PROBS = ["Alta","Média","Baixa"];
+  const RESP = ["Marcell","Fernanda","Ana Marieta","Inside Sales","Cibele"];
+  const LEAO_STATUS = ["nao_abordado","em_conversa","confirmado","recusou"];
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{maxWidth:600}}>
-        <div className="modal-title">
+      <div className="modal" style={{maxWidth:640,maxHeight:"90vh",overflowY:"auto"}}>
+        <div className="modal-title" style={{position:"sticky",top:0,background:"var(--surface)",zIndex:10,paddingBottom:12}}>
           <div>
-            <div style={{fontSize:15,fontWeight:700}}>{visita.medico_nome}</div>
+            <div style={{fontSize:15,fontWeight:700}}>{editando ? "✏️ Editando visita" : visita.medico_nome}</div>
             <div style={{fontSize:12,color:"var(--muted)",fontWeight:400}}>{fmtDate(visita.data_contato)} · {visita.responsavel}</div>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-          {[
-            ["Canal", visita.canal],
-            ["Último TP", visita.ultimo_tp],
-            ["Probabilidade", visita.probabilidade],
-            ["Mês", visita.mes],
-            ["Referidor?", visita.referidor ? "Sim" : "Não"],
-            ["Especialidade", visita.especialidade],
-            ["Suporte MKT?", visita.suporte_marketing ? "Sim" : "Não"],
-            ["Ação MKT", visita.acao_mkt],
-            ["$ Esperado", fmtMoney(visita.valor_esperado)],
-            ["Fios ESG Estoque", visita.fios_esg_estoque],
-            ["ESGs agendados (snapshot)", visita.proc_marcados_esg],
-            ["✅ Realizados", visita.proc_realizados_esg],
-            ["Balões Estoque", visita.baloes_estoque],
-            ["Proc. Marcados (Balão)", visita.proc_marcados_balao],
-            ["💛 Leão Plus abordado?", visita.leao_plus_abordado === true ? "✅ Sim" : visita.leao_plus_abordado === false ? "Não" : "—"],
-            ["Status Leão Plus", visita.leao_plus_status ? visita.leao_plus_status.replace(/_/g," ") : "—"],
-          ].map(([label, val]) => (
-            <div key={label} style={{background:"var(--surface2)",borderRadius:8,padding:"8px 10px",border:"1px solid var(--border)"}}>
-              <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
-              <div style={{fontSize:13,fontWeight:500}}>{fmt(val)}</div>
-            </div>
-          ))}
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
+          {inp("Médico", "medico_nome")}
+          {inp("Data", "data_contato", "date")}
+          {inp("Responsável", "responsavel", "text", RESP)}
+          {inp("Canal", "canal", "text", CANAIS)}
+          {inp("Último TP", "ultimo_tp")}
+          {inp("Probabilidade", "probabilidade", "text", PROBS)}
+          {inp("Mês", "mes", "text", MESES)}
+          {inp("Especialidade", "especialidade")}
+          {inp("Referidor?", "referidor", "text", ["Sim","Não"])}
+          {inp("Suporte MKT?", "suporte_marketing", "text", ["Sim","Não"])}
+          {inp("Ação MKT", "acao_mkt")}
+          {inp("$ Esperado (USD)", "valor_esperado", "number")}
+          {inp("Fios ESG Estoque", "fios_esg_estoque", "number")}
+          {inp("ESGs Agendados", "proc_marcados_esg", "number")}
+          {inp("ESGs Realizados", "proc_realizados_esg", "number")}
+          {inp("Balões Estoque", "baloes_estoque", "number")}
+          {inp("Proc. Marcados (Balão)", "proc_marcados_balao", "number")}
+          {inp("💛 Leão Plus abordado?", "leao_plus_abordado", "text", ["Sim","Não"])}
+          {inp("Status Leão Plus", "leao_plus_status", "text", LEAO_STATUS)}
         </div>
-        <div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"10px 12px"}}>
-          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:6}}>AÇÃO PREVISTA</div>
-          {editando
-            ? <textarea value={acao} onChange={e => setAcao(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box"}} />
-            : <div style={{fontSize:13,minHeight:20}}>{acao||"—"}</div>
+
+        <div style={{marginBottom:8}}>
+          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:3,textTransform:"uppercase"}}>Ação Prevista</div>
+          {!editando
+            ? <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{form.acao_prevista||"—"}</div>
+            : <textarea value={form.acao_prevista} onChange={e=>set("acao_prevista",e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box"}} />
           }
         </div>
-        <div style={{marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
-          <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:6}}>OBSERVAÇÕES</div>
-          {editando
-            ? <textarea value={obs} onChange={e => setObs(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
-            : <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",minHeight:20}}>{obs||"—"}</div>
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:3,textTransform:"uppercase"}}>Observações</div>
+          {!editando
+            ? <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{form.obs||"—"}</div>
+            : <textarea value={form.obs} onChange={e=>set("obs",e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
           }
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+
+        <div style={{display:"flex",justifyContent:"space-between",gap:8,position:"sticky",bottom:0,background:"var(--surface)",paddingTop:8}}>
           <button className="btn btn-danger btn-sm" onClick={() => {
             if (confirm("Excluir esta visita? Esta ação não pode ser desfeita.")) onDelete(visita.id);
           }}>🗑 Excluir</button>
           <div style={{display:"flex",gap:8}}>
             {editando ? (
               <>
-                <button className="btn btn-ghost btn-sm" onClick={() => { setEditando(false); setObs(visita.obs||""); setAcao(visita.acao_prevista||""); }}>Cancelar</button>
+                <button className="btn btn-ghost btn-sm" onClick={cancelar}>Cancelar</button>
                 <button className="btn btn-primary btn-sm" onClick={salvar} disabled={salvando}>{salvando?"Salvando...":"✓ Salvar"}</button>
               </>
             ) : (
               <>
-                <button className="btn btn-ghost btn-sm" onClick={() => setEditando(true)}>✎ Editar</button>
+                <button className="btn btn-ghost btn-sm" onClick={() => setEditando(true)}>✎ Editar todos os campos</button>
                 <button className="btn btn-ghost btn-sm" onClick={onClose}>Fechar</button>
               </>
             )}
