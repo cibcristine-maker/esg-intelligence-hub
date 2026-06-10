@@ -1097,12 +1097,14 @@ function VisitaModal({ medicos, onSave, onClose }) {
             <input className="form-input" type="number" value={form.fios_esg_estoque} onChange={e => set("fios_esg_estoque", e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">ESGs agendados hoje</label>
-            <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)} />
+            <label className="form-label">ESGs agendados hoje <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
+            <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)}
+              style={{borderColor: form.proc_marcados_esg === "" ? "rgba(239,68,68,0.5)" : ""}} />
           </div>
           <div className="form-group">
-            <label className="form-label" style={{color:"var(--teal)"}}>✅ ESGs Realizados desde última visita</label>
-            <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)} />
+            <label className="form-label" style={{color:"var(--teal)"}}>✅ ESGs Realizados desde última visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
+            <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)}
+              style={{borderColor: form.proc_realizados_esg === "" ? "rgba(239,68,68,0.5)" : ""}} />
           </div>
           <div className="form-group">
             <label className="form-label">Balões em Estoque</label>
@@ -1159,7 +1161,9 @@ function VisitaModal({ medicos, onSave, onClose }) {
         <div className="btn-row">
           <button className="btn btn-primary" onClick={() => {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
-            if (form.referidor === "Não" && !form.leao_plus_abordado) return alert("⚠ Leão Plus é obrigatório para não referidores. Informe se foi abordado.");
+            if (form.proc_marcados_esg === "" || form.proc_marcados_esg === null || form.proc_marcados_esg === undefined) return alert("⚠ ESGs agendados hoje é obrigatório.");
+            if (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined) return alert("⚠ ESGs Realizados desde última visita é obrigatório.");
+            if (!form.leao_plus_abordado) return alert("⚠ Leão Plus é obrigatório. Informe se foi abordado nessa visita.");
             onSave(form);
           }}>Salvar Visita</button>
           <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
