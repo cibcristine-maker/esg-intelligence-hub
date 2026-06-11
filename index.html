@@ -1170,7 +1170,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
               <span style={{color:"var(--teal)",fontSize:10,fontWeight:600,marginLeft:8}}>🤖 Alimenta o Briefing IA</span>
             </label>
             <textarea className="form-textarea" value={form.acao_prevista} onChange={e => set("acao_prevista", e.target.value)}
-              placeholder="Qual o próximo passo concreto com esse médico? Ex: Agendar visita em 15 dias para follow-up de procedimento agendado."
+              placeholder="Descreva a ação prevista para o próximo contato com este médico..."
               style={{borderColor: !form.acao_prevista ? "rgba(239,68,68,0.4)" : ""}} />
             {!form.acao_prevista && <div style={{fontSize:10,color:"var(--muted)",marginTop:3}}>⚠ A ação prevista orienta o próximo briefing da IA para este médico.</div>}
           </div>
