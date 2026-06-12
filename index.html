@@ -510,10 +510,14 @@ function Toast({ msg, onHide }) {
 function useSupabase(table, deps = []) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const TENANTED = ['perfil_medico', 'visitas', 'medico_tps'];
   const fetch = useCallback(async () => {
     if (!isConfigured) { setLoading(false); return; }
     setLoading(true);
-    const { data: rows } = await supabaseClient.from(table).select("*");
+    const tenantVal = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
+    let q = supabaseClient.from(table).select("*");
+    if (TENANTED.includes(table)) q = q.eq('tenant', tenantVal);
+    const { data: rows } = await q;
     setData(rows || []);
     setLoading(false);
   }, deps);
@@ -823,7 +827,8 @@ function Visitas() {
       leao_plus_abordado: form.leao_plus_abordado === "sim" ? true : form.leao_plus_abordado === "nao" ? false : null,
       leao_plus_status: form.leao_plus_status || null,
     };
-    const { error } = await supabaseClient.from("visitas").insert([payload]);
+    const tenantIns = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
+    const { error } = await supabaseClient.from("visitas").insert([{...payload, tenant: tenantIns}]);
     if (error) { alert("Erro ao salvar: " + error.message); return; }
     setToast("Visita registrada!");
     setShowForm(false);
@@ -1323,7 +1328,8 @@ function Ativacao() {
       }).eq("id", existing.id);
       if (error) { alert("Erro: " + error.message); return; }
     } else {
-      const { error } = await supabaseClient.from("medico_tps").insert([{
+      const tenantTP = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
+      const { error } = await supabaseClient.from("medico_tps").insert([{tenant: tenantTP,
         medico_id: medicoId,
         tp_id: tpId,
         concluido: true,
@@ -3553,7 +3559,8 @@ function BaseDados() {
           isNew={true}
           onSave={async (form) => {
             if (!isConfigured) return;
-            await supabaseClient.from("perfil_medico").insert([form]);
+            const tenantPM = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
+      await supabaseClient.from("perfil_medico").insert([{...form, tenant: tenantPM}]);
             setToast2("Médico cadastrado!");
             setShowNew(false);
           }}
@@ -6372,17 +6379,25 @@ function useAuth() {
   const [authed, setAuthed] = React.useState(() => {
     return sessionStorage.getItem('esg_hub_auth') === 'true';
   });
-  const login = (token) => {
+  const [tenant, setTenant] = React.useState(() => sessionStorage.getItem('esg_hub_tenant') || 'bsci');
+  const [role, setRole] = React.useState(() => sessionStorage.getItem('esg_hub_role') || 'bsci');
+  const login = (token, userRole, userTenant) => {
     sessionStorage.setItem('esg_hub_auth', 'true');
     sessionStorage.setItem('esg_hub_token', token);
+    sessionStorage.setItem('esg_hub_role', userRole || 'bsci');
+    sessionStorage.setItem('esg_hub_tenant', userTenant || 'bsci');
+    setTenant(userTenant || 'bsci');
+    setRole(userRole || 'bsci');
     setAuthed(true);
   };
   const logout = () => {
     sessionStorage.removeItem('esg_hub_auth');
     sessionStorage.removeItem('esg_hub_token');
+    sessionStorage.removeItem('esg_hub_role');
+    sessionStorage.removeItem('esg_hub_tenant');
     setAuthed(false);
   };
-  return { authed, login, logout };
+  return { authed, tenant, role, login, logout };
 }
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = React.useState('');
@@ -6401,7 +6416,7 @@ function LoginScreen({ onLogin }) {
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        onLogin(data.token);
+        onLogin(data.token, data.role || 'bsci', data.tenant || 'bsci');
       } else {
         setErro(data.error || 'Usuário ou senha incorretos.');
         setPassword('');
@@ -6500,11 +6515,16 @@ function LoginScreen({ onLogin }) {
     </div>
   );
 }
+// ─── TENANT CONTEXT ───────────────────────────────────────────────────────
+const TenantContext = React.createContext({ tenant: 'bsci', role: 'bsci' });
+function useTenant() { return React.useContext(TenantContext); }
+
 function App() {
   const [tab, setTab] = useState("dashboard");
-  const { authed, login, logout } = useAuth();
+  const { authed, tenant, role, login, logout } = useAuth();
   if (!authed) return <LoginScreen onLogin={login} />;
   return (
+    <TenantContext.Provider value={{ tenant, role }}>
     <div className="app">
       <style>{css}</style>
       <header className="header">
@@ -6513,6 +6533,7 @@ function App() {
           <div>
             <div className="header-title">ESG Intelligence Hub</div>
             <div className="header-sub">Endobariatrica</div>
+            {(()=>{ const t=sessionStorage.getItem('esg_hub_tenant')||'bsci'; return t!=='bsci' ? <span style={{fontSize:10,background:'#f59e0b22',color:'#f59e0b',border:'1px solid #f59e0b44',borderRadius:4,padding:'1px 6px',marginTop:2,display:'inline-block'}}>DISTRIBUIDOR</span> : null; })()}
           </div>
         </div>
         <nav className="nav">
@@ -6553,6 +6574,7 @@ function App() {
         {tab === "briefingIA"  && <BriefingIA />}
       </main>
     </div>
+    </TenantContext.Provider>
   );
 }
 // ─── METAS (injected) ──────────────────────────────────────────────────────
