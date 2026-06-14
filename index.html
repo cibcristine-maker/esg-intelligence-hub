@@ -510,14 +510,10 @@ function Toast({ msg, onHide }) {
 function useSupabase(table, deps = []) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const TENANTED = ['perfil_medico', 'visitas', 'medico_tps'];
   const fetch = useCallback(async () => {
     if (!isConfigured) { setLoading(false); return; }
     setLoading(true);
-    const tenantVal = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
-    let q = supabaseClient.from(table).select("*");
-    if (TENANTED.includes(table)) q = q.eq('tenant', tenantVal);
-    const { data: rows } = await q;
+    const { data: rows } = await supabaseClient.from(table).select("*");
     setData(rows || []);
     setLoading(false);
   }, deps);
@@ -695,82 +691,159 @@ function Dashboard() {
 }
 // ─── VISITAS ───────────────────────────────────────────────────────────────
 function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
-  const fmt = (val) => val || "—";
   const fmtDate = (d) => d ? new Date(d + "T00:00:00").toLocaleDateString("pt-BR") : "—";
-  const fmtMoney = (v) => v ? `$${Number(v).toLocaleString("pt-BR")}` : "—";
   const [editando, setEditando] = useState(false);
-  const [obs, setObs] = useState(visita.obs || "");
-  const [acao, setAcao] = useState(visita.acao_prevista || "");
   const [salvando, setSalvando] = useState(false);
+  const [form, setForm] = useState({
+    data_contato: visita.data_contato || "",
+    responsavel: visita.responsavel || "",
+    medico_nome: visita.medico_nome || "",
+    canal: visita.canal || "",
+    ultimo_tp: visita.ultimo_tp || "",
+    probabilidade: visita.probabilidade || "",
+    mes: visita.mes || "",
+    referidor: visita.referidor ? "Sim" : "Não",
+    especialidade: visita.especialidade || "",
+    suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
+    acao_mkt: visita.acao_mkt || "",
+    valor_esperado: visita.valor_esperado || "",
+    fios_esg_estoque: visita.fios_esg_estoque ?? "",
+    proc_marcados_esg: visita.proc_marcados_esg ?? "",
+    proc_realizados_esg: visita.proc_realizados_esg ?? "",
+    baloes_estoque: visita.baloes_estoque ?? "",
+    proc_marcados_balao: visita.proc_marcados_balao ?? "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
+    leao_plus_status: visita.leao_plus_status || "",
+    acao_prevista: visita.acao_prevista || "",
+    obs: visita.obs || "",
+  });
+  const set = (k, v) => setForm(f => ({...f, [k]: v}));
+  const cancelar = () => { setEditando(false); setForm({
+    data_contato: visita.data_contato || "", responsavel: visita.responsavel || "",
+    medico_nome: visita.medico_nome || "", canal: visita.canal || "",
+    ultimo_tp: visita.ultimo_tp || "", probabilidade: visita.probabilidade || "",
+    mes: visita.mes || "", referidor: visita.referidor ? "Sim" : "Não",
+    especialidade: visita.especialidade || "", suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
+    acao_mkt: visita.acao_mkt || "", valor_esperado: visita.valor_esperado || "",
+    fios_esg_estoque: visita.fios_esg_estoque ?? "", proc_marcados_esg: visita.proc_marcados_esg ?? "",
+    proc_realizados_esg: visita.proc_realizados_esg ?? "", baloes_estoque: visita.baloes_estoque ?? "",
+    proc_marcados_balao: visita.proc_marcados_balao ?? "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
+    leao_plus_status: visita.leao_plus_status || "", acao_prevista: visita.acao_prevista || "", obs: visita.obs || "",
+  }); };
   const salvar = async () => {
     setSalvando(true);
-    const { error } = await supabaseClient.from("visitas").update({ obs, acao_prevista: acao }).eq("id", visita.id);
+    const payload = {
+      data_contato: form.data_contato || null,
+      responsavel: form.responsavel || null,
+      medico_nome: form.medico_nome || null,
+      canal: form.canal || null,
+      ultimo_tp: form.ultimo_tp || null,
+      probabilidade: form.probabilidade || null,
+      mes: form.mes || null,
+      referidor: form.referidor === "Sim",
+      especialidade: form.especialidade || null,
+      suporte_marketing: form.suporte_marketing === "Sim",
+      acao_mkt: form.acao_mkt || null,
+      valor_esperado: form.valor_esperado ? Number(form.valor_esperado) : null,
+      fios_esg_estoque: form.fios_esg_estoque !== "" ? Number(form.fios_esg_estoque) : null,
+      proc_marcados_esg: form.proc_marcados_esg !== "" ? Number(form.proc_marcados_esg) : null,
+      proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
+      baloes_estoque: form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null,
+      proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
+      leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : null,
+      leao_plus_status: form.leao_plus_status || null,
+      acao_prevista: form.acao_prevista || null,
+      obs: form.obs || null,
+    };
+    const { error } = await supabaseClient.from("visitas").update(payload).eq("id", visita.id);
     setSalvando(false);
     if (!error) { setEditando(false); if (onUpdate) onUpdate(); }
     else alert("Erro ao salvar: " + error.message);
   };
+  const inp = (label, key, type="text", opts=null) => (
+    <div style={{marginBottom:8}}>
+      <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:3,textTransform:"uppercase"}}>{label}</div>
+      {!editando ? (
+        <div style={{fontSize:13,fontWeight:500,padding:"6px 0"}}>{form[key]||"—"}</div>
+      ) : opts ? (
+        <select value={form[key]} onChange={e=>set(key,e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"7px 10px",color:"var(--text)",fontSize:13}}>
+          <option value="">—</option>
+          {opts.map(o=><option key={o} value={o}>{o}</option>)}
+        </select>
+      ) : type === "textarea" ? (
+        <textarea value={form[key]} onChange={e=>set(key,e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box"}} />
+      ) : (
+        <input type={type} value={form[key]} onChange={e=>set(key,e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"7px 10px",color:"var(--text)",fontSize:13,boxSizing:"border-box"}} />
+      )}
+    </div>
+  );
+  const MESES = ["MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+  const CANAIS = ["Presencial","WhatsApp","Ligação","E-mail","Evento"];
+  const PROBS = ["Alta","Média","Baixa"];
+  const RESP = ["Marcell","Fernanda","Ana Marieta","Inside Sales","Cibele"];
+  const LEAO_STATUS = ["nao_abordado","em_conversa","confirmado","recusou"];
   return (
     <div className="modal-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="modal" style={{maxWidth:600}}>
-        <div className="modal-title">
+      <div className="modal" style={{maxWidth:640,maxHeight:"90vh",overflowY:"auto"}}>
+        <div className="modal-title" style={{position:"sticky",top:0,background:"var(--surface)",zIndex:10,paddingBottom:12}}>
           <div>
-            <div style={{fontSize:15,fontWeight:700}}>{visita.medico_nome}</div>
+            <div style={{fontSize:15,fontWeight:700}}>{editando ? "✏️ Editando visita" : visita.medico_nome}</div>
             <div style={{fontSize:12,color:"var(--muted)",fontWeight:400}}>{fmtDate(visita.data_contato)} · {visita.responsavel}</div>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:8,marginBottom:12}}>
-          {[
-            ["Canal", visita.canal],
-            ["Último TP", visita.ultimo_tp],
-            ["Probabilidade", visita.probabilidade],
-            ["Mês", visita.mes],
-            ["Referidor?", visita.referidor ? "Sim" : "Não"],
-            ["Especialidade", visita.especialidade],
-            ["Suporte MKT?", visita.suporte_marketing ? "Sim" : "Não"],
-            ["Ação MKT", visita.acao_mkt],
-            ["$ Esperado", fmtMoney(visita.valor_esperado)],
-            ["Fios ESG Estoque", visita.fios_esg_estoque],
-            ["ESGs agendados (snapshot)", visita.proc_marcados_esg],
-            ["✅ Realizados", visita.proc_realizados_esg],
-            ["Balões Estoque", visita.baloes_estoque],
-            ["Proc. Marcados (Balão)", visita.proc_marcados_balao],
-            ["💛 Leão Plus abordado?", visita.leao_plus_abordado === true ? "✅ Sim" : visita.leao_plus_abordado === false ? "Não" : "—"],
-            ["Status Leão Plus", visita.leao_plus_status ? visita.leao_plus_status.replace(/_/g," ") : "—"],
-          ].map(([label, val]) => (
-            <div key={label} style={{background:"var(--surface2)",borderRadius:8,padding:"8px 10px",border:"1px solid var(--border)"}}>
-              <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
-              <div style={{fontSize:13,fontWeight:500}}>{fmt(val)}</div>
-            </div>
-          ))}
+
+        <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
+          {inp("Médico", "medico_nome")}
+          {inp("Data", "data_contato", "date")}
+          {inp("Responsável", "responsavel", "text", RESP)}
+          {inp("Canal", "canal", "text", CANAIS)}
+          {inp("Último TP", "ultimo_tp")}
+          {inp("Probabilidade", "probabilidade", "text", PROBS)}
+          {inp("Mês", "mes", "text", MESES)}
+          {inp("Especialidade", "especialidade")}
+          {inp("Referidor?", "referidor", "text", ["Sim","Não"])}
+          {inp("Suporte MKT?", "suporte_marketing", "text", ["Sim","Não"])}
+          {inp("Ação MKT", "acao_mkt")}
+          {inp("$ Esperado (USD)", "valor_esperado", "number")}
+          {inp("Fios ESG Estoque", "fios_esg_estoque", "number")}
+          {inp("ESGs Agendados", "proc_marcados_esg", "number")}
+          {inp("ESGs Realizados", "proc_realizados_esg", "number")}
+          {inp("Balões Estoque", "baloes_estoque", "number")}
+          {inp("Proc. Marcados (Balão)", "proc_marcados_balao", "number")}
+          {inp("💛 Leão Plus abordado?", "leao_plus_abordado", "text", ["Sim","Não"])}
+          {inp("Status Leão Plus", "leao_plus_status", "text", LEAO_STATUS)}
         </div>
-        <div style={{marginBottom:8,background:"rgba(0,191,165,0.05)",border:"1px solid rgba(0,191,165,0.2)",borderRadius:8,padding:"10px 12px"}}>
-          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:6}}>AÇÃO PREVISTA</div>
-          {editando
-            ? <textarea value={acao} onChange={e => setAcao(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box"}} />
-            : <div style={{fontSize:13,minHeight:20}}>{acao||"—"}</div>
+
+        <div style={{marginBottom:8}}>
+          <div style={{fontSize:10,color:"var(--teal)",fontWeight:600,marginBottom:3,textTransform:"uppercase"}}>Ação Prevista</div>
+          {!editando
+            ? <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{form.acao_prevista||"—"}</div>
+            : <textarea value={form.acao_prevista} onChange={e=>set("acao_prevista",e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--teal)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box"}} />
           }
         </div>
-        <div style={{marginBottom:8,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px"}}>
-          <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:6}}>OBSERVAÇÕES</div>
-          {editando
-            ? <textarea value={obs} onChange={e => setObs(e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
-            : <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap",minHeight:20}}>{obs||"—"}</div>
+        <div style={{marginBottom:12}}>
+          <div style={{fontSize:10,color:"var(--muted)",fontWeight:600,marginBottom:3,textTransform:"uppercase"}}>Observações</div>
+          {!editando
+            ? <div style={{fontSize:13,lineHeight:1.6,whiteSpace:"pre-wrap"}}>{form.obs||"—"}</div>
+            : <textarea value={form.obs} onChange={e=>set("obs",e.target.value)} style={{width:"100%",background:"var(--bg)",border:"1px solid var(--border)",borderRadius:6,padding:"8px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:100,fontFamily:"inherit",boxSizing:"border-box"}} />
           }
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",gap:8}}>
+
+        <div style={{display:"flex",justifyContent:"space-between",gap:8,position:"sticky",bottom:0,background:"var(--surface)",paddingTop:8}}>
           <button className="btn btn-danger btn-sm" onClick={() => {
             if (confirm("Excluir esta visita? Esta ação não pode ser desfeita.")) onDelete(visita.id);
           }}>🗑 Excluir</button>
           <div style={{display:"flex",gap:8}}>
             {editando ? (
               <>
-                <button className="btn btn-ghost btn-sm" onClick={() => { setEditando(false); setObs(visita.obs||""); setAcao(visita.acao_prevista||""); }}>Cancelar</button>
+                <button className="btn btn-ghost btn-sm" onClick={cancelar}>Cancelar</button>
                 <button className="btn btn-primary btn-sm" onClick={salvar} disabled={salvando}>{salvando?"Salvando...":"✓ Salvar"}</button>
               </>
             ) : (
               <>
-                <button className="btn btn-ghost btn-sm" onClick={() => setEditando(true)}>✎ Editar</button>
+                <button className="btn btn-ghost btn-sm" onClick={() => setEditando(true)}>✎ Editar todos os campos</button>
                 <button className="btn btn-ghost btn-sm" onClick={onClose}>Fechar</button>
               </>
             )}
@@ -827,8 +900,7 @@ function Visitas() {
       leao_plus_abordado: form.leao_plus_abordado === "sim" ? true : form.leao_plus_abordado === "nao" ? false : null,
       leao_plus_status: form.leao_plus_status || null,
     };
-    const tenantIns = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
-    const { error } = await supabaseClient.from("visitas").insert([{...payload, tenant: tenantIns}]);
+    const { error } = await supabaseClient.from("visitas").insert([payload]);
     if (error) { alert("Erro ao salvar: " + error.message); return; }
     setToast("Visita registrada!");
     setShowForm(false);
@@ -1024,18 +1096,16 @@ function VisitaModal({ medicos, onSave, onClose }) {
             <label className="form-label">Fios ESG em Estoque</label>
             <input className="form-input" type="number" value={form.fios_esg_estoque} onChange={e => set("fios_esg_estoque", e.target.value)} />
           </div>
-          {form.referidor !== "Sim" && (
-            <div className="form-group">
-              <label className="form-label">ESGs agendados hoje</label>
-              <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)} />
-            </div>
-          )}
-          {form.referidor !== "Sim" && (
-            <div className="form-group">
-              <label className="form-label" style={{color:"var(--teal)"}}>✅ ESGs Realizados desde última visita</label>
-              <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)} />
-            </div>
-          )}
+          <div className="form-group">
+            <label className="form-label">ESGs agendados hoje <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
+            <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)}
+              style={{borderColor: form.proc_marcados_esg === "" ? "rgba(239,68,68,0.5)" : ""}} />
+          </div>
+          <div className="form-group">
+            <label className="form-label" style={{color:"var(--teal)"}}>✅ ESGs Realizados desde última visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
+            <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)}
+              style={{borderColor: form.proc_realizados_esg === "" ? "rgba(239,68,68,0.5)" : ""}} />
+          </div>
           <div className="form-group">
             <label className="form-label">Balões em Estoque</label>
             <input className="form-input" type="number" value={form.baloes_estoque} onChange={e => set("baloes_estoque", e.target.value)} />
@@ -1084,14 +1154,34 @@ function VisitaModal({ medicos, onSave, onClose }) {
             </div>
           )}
           <div className="form-group form-full">
-            <label className="form-label">Observações</label>
-            <textarea className="form-textarea" value={form.obs} onChange={e => set("obs", e.target.value)} placeholder="Notas da visita, contexto, próximos passos..." />
+            <label className="form-label">
+              Observações <span style={{color:"var(--danger)",fontWeight:700}}>*</span>
+              <span style={{color:"var(--teal)",fontSize:10,fontWeight:600,marginLeft:8}}>🤖 Alimenta o Briefing IA</span>
+            </label>
+            <textarea className="form-textarea" value={form.obs} onChange={e => set("obs", e.target.value)}
+              placeholder="Notas da visita, contexto, comportamento do médico... Este campo alimenta diretamente o Briefing IA."
+              style={{borderColor: !form.obs ? "rgba(239,68,68,0.4)" : ""}} />
+            {!form.obs && <div style={{fontSize:10,color:"var(--muted)",marginTop:3}}>⚠ Quanto mais detalhado, melhor o briefing gerado pela IA.</div>}
           </div>
         </div>
+          <div className="form-group form-full">
+            <label className="form-label">
+              Ação Prevista <span style={{color:"var(--danger)",fontWeight:700}}>*</span>
+              <span style={{color:"var(--teal)",fontSize:10,fontWeight:600,marginLeft:8}}>🤖 Alimenta o Briefing IA</span>
+            </label>
+            <textarea className="form-textarea" value={form.acao_prevista} onChange={e => set("acao_prevista", e.target.value)}
+              placeholder="Descreva a ação prevista para o próximo contato com este médico..."
+              style={{borderColor: !form.acao_prevista ? "rgba(239,68,68,0.4)" : ""}} />
+            {!form.acao_prevista && <div style={{fontSize:10,color:"var(--muted)",marginTop:3}}>⚠ A ação prevista orienta o próximo briefing da IA para este médico.</div>}
+          </div>
         <div className="btn-row">
           <button className="btn btn-primary" onClick={() => {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
-            if (form.referidor === "Não" && !form.leao_plus_abordado) return alert("⚠ Leão Plus é obrigatório para não referidores. Informe se foi abordado.");
+            if (form.proc_marcados_esg === "" || form.proc_marcados_esg === null || form.proc_marcados_esg === undefined) return alert("⚠ ESGs agendados hoje é obrigatório.");
+            if (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined) return alert("⚠ ESGs Realizados desde última visita é obrigatório.");
+            if (!form.leao_plus_abordado) return alert("⚠ Leão Plus é obrigatório. Informe se foi abordado nessa visita.");
+            if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
+            if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
             onSave(form);
           }}>Salvar Visita</button>
           <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
@@ -1328,8 +1418,7 @@ function Ativacao() {
       }).eq("id", existing.id);
       if (error) { alert("Erro: " + error.message); return; }
     } else {
-      const tenantTP = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
-      const { error } = await supabaseClient.from("medico_tps").insert([{tenant: tenantTP,
+      const { error } = await supabaseClient.from("medico_tps").insert([{
         medico_id: medicoId,
         tp_id: tpId,
         concluido: true,
@@ -2216,6 +2305,155 @@ function BriefingIA() {
         cidade: "São Paulo, SP",
         credenciais: "Pioneiro ESG no Brasil | Cornell Training | ASGE"
       },
+      "luiz gustavo": {
+        score_geo: "28% — INVISÍVEL (consolidado 5 LLMs via GeoTrack, junho 2026)",
+        paradoxo: "Publicação Obesity Surgery 2026 (Springer Nature) + codiretor IRCAD América Latina + 20 anos experiência + IFSO/ASGE/FASGE — invisível em 4 de 5 LLMs",
+        scores_por_llm: "Grok 50% (via Instagram/Threads verificados) | ChatGPT 40% (buscas diretas, ausente pós-GLP-1) | Perplexity 30% (Doctoralia sub-otimizado) | Gemini 13% (sem Schema) | Claude 7% (sem lastro editorial multi-fonte)",
+        instagram: "@dr.luizgustavoquadros | 4.665 seguidores | 1.713 posts | conta verificada | Threads 906 seguidores verificado",
+        youtube: "Kaiser Clínica (7.530 inscritos) | vídeo ESG com 6.695 views desde 2017 | canal NÃO vinculado ao Google Scholar do médico",
+        doctoralia: "Perfil presente mas bio sem IRCAD, SOBRACIL, FASGE, YouTube Kaiser e sem publicação Obesity Surgery 2026 — Perplexity usa Doctoralia como fonte primária",
+        site: "kaiserclinica.com.br | sem FAQ Schema JSON-LD | sem Person Schema | sem conteúdo pós-GLP-1 | sem DOI Obesity Surgery 2026 vinculado",
+        google_scholar: "Verificado com e-mail institucional kaiserclinica.com.br | BIBC 2018 (Surgery for Obesity) com 155 citações | Obesity Surgery 2026 com DOI ativo não linkado no site",
+        ativos_nao_explorados: "DOI Obesity Surgery 2026 (co-autoria Galvão Neto) | BIBC 2018 (155 citações Scholar) | Codiretor Curso Endoscopia Bariátrica IRCAD América Latina | Chefe CET SOBED Hospital Beneficência Portuguesa SJRP | IFSO + ASGE + SOBRACIL + FASGE + GEDIIB + SBCBM",
+        gaps_criticos: "1) FAQ Schema JSON-LD ausente — maior ROI único (impacta todos os LLMs) | 2) Conteúdo pós-GLP-1 inexistente (3.100+ buscas/mês estimadas) | 3) Cobertura editorial multi-fonte ausente (Claude recompensa a partir de 3 fontes) | 4) YouTube não vinculado ao Google Scholar | 5) Doctoralia sem IRCAD/SOBRACIL/FASGE/Obesity Surgery 2026 | 6) Google Business sem procedimentos ESG/BIB e sem Q&A",
+        concorrentes_llm: "Gemini→Centro de Endoscopia Rio Preto e concorrentes genéricos SJRP | Perplexity→especialistas com Doctoralia completo | ChatGPT→Revista Saúde e Escavador (fontes já usadas) | Claude→médicos com lastro editorial multi-fonte",
+        oportunidade: "SJRP é oceano azul em GEO médico — nenhum endoscopista bariátrico da região tem FAQ Schema, blog ESG pós-GLP-1 ou landing page dedicada. Primeiro a estruturar captura posição regional difícil de deslocar em 12-24 meses. Área de captação: 2M+ habitantes da região noroeste SP. Janela: pacientes que pararam GLP-1 em jan/2026 reganhando peso jul-out/2026 — pesquisando alternativas AGORA",
+        quick_wins_72h: "HOJE: enriquecer Doctoralia com IRCAD+SOBRACIL+FASGE+Obesity Surgery 2026 (impacto Perplexity em 48h) | HOJE: vincular DOI no site kaiserclinica.com.br (impacto ChatGPT/Claude em 2-4 sem) | 48h: FAQ Schema 5 perguntas prioritárias | 48h: 10 Q&A Google Business com keywords ESG/BIB/SJRP | 72h: post Threads/Instagram sobre Obesity Surgery 2026",
+        plano_30d: "FAQ Schema JSON-LD + Person Schema completo (CRM 125.610) + DOI Obesity Surgery 2026 no site + Doctoralia enriquecido + Google Business Profile completo + artigo blog pós-GLP-1 SJRP",
+        plano_60d: "YouTube canal próprio (3 vídeos com transcrição) + artigos blog #2 e #3 + 3 coberturas editoriais (Claude requer multi-fonte) + Quora Brasil + Reddit r/emagrecimento + landing page /gastroplastia-pos-glp1 + Google Scholar/ORCID atualizado",
+        plano_90d: "Teste GeoTrack meta ≥70% | Wikidata entry (Claude prioriza médicos com Wikidata) | 5+ artigos blog | 5+ coberturas editoriais | podcast ou entrevista como convidado",
+        kpi_baseline: "Score GeoTrack: 28% | ChatGPT pós-GLP-1: ausente | Gemini: ausente | Claude: 7% | artigos blog: 0 | coberturas editoriais: 1 (Revista Saúde) | Doctoralia: básico",
+        meta_90d: "Score GeoTrack ≥70% (Referência Regional SJRP) | Claude ≥50% | 5+ artigos blog | 5+ coberturas editoriais",
+        cidade: "São José do Rio Preto, SP — polo médico interior paulista",
+        credenciais: "CRM 125.610 | Codiretor Curso Endoscopia Bariátrica IRCAD América Latina | Chefe CET SOBED Hospital Beneficência Portuguesa SJRP | IFSO | ASGE | SOBED | SOBRACIL | FASGE | GEDIIB | SBCBM | Publicação Obesity Surgery 2026 Springer Nature (DOI: 10.1007/s11695-026-08775-2) | BIBC 2018 (155 citações Scholar) | Kaiser Clínica SJRP"
+      },
+      "jefferson paes": {
+        score_geo: "ChatGPT 6/10 | Perplexity 3/10 | Gemini 2/10 | Claude 1/10",
+        paradoxo: "39k seguidores Instagram verificado + 45 vídeos YouTube + ativa presença digital — invisível para queries pós-GLP-1 em todos os LLMs",
+        instagram: "@jefferson_endoscopista | ~39k seguidores | verificado | conteúdo clínico ativo",
+        youtube: "45 vídeos publicados — sem otimização SEO, sem transcrições indexáveis",
+        doctoralia: "Presente mas sub-otimizado",
+        site: "Sem FAQ Schema JSON-LD | sem conteúdo pós-GLP-1",
+        gaps_criticos: "1) Blog zerado — zero artigos publicados | 2) Q&A Google Business vazio | 3) YouTube sem otimização de títulos/descrições/transcrições | 4) Invisível para queries pós-GLP-1/Mounjaro em todos os LLMs | 5) FAQ Schema ausente",
+        concorrentes_llm: "Concorrentes de Fortaleza com Doctoralia completo e blog ativo aparecem no lugar dele",
+        oportunidade: "Monopólio geográfico disponível no Nordeste — nenhum endoscopista bariátrico da região tem GEO estruturado. Fortaleza + região nordeste = área de captação de milhões de pacientes. Primeiro a estruturar domina a região por 12-24 meses",
+        plano_30d: "FAQ Schema JSON-LD + otimizar YouTube (títulos/descrições/transcrições) + Q&A Google Business + artigo blog pós-GLP-1 Fortaleza",
+        plano_90d: "6 artigos blog + landing page ESG pós-GLP-1 + Reddit/Quora Nordeste + YouTube canal otimizado + monitoramento GeoTrack",
+        cidade: "Fortaleza, CE",
+        credenciais: "CRM CE 7388 | RQE 8686 | Endoscopista especialista em GSE e Balão Intragástrico"
+      },
+      "admar concon": {
+        score_geo: "45% consolidado — ChatGPT 67% | Grok 50% | Perplexity 40% | Gemini 37% | Claude 30%",
+        paradoxo: "4.700+ avaliações Google com 4,7★ + SBCBM + BEWA + IRCAD + Oxford IBC Speaker 2021 — mas ausente nas queries críticas de reganho pós-GLP-1 (Q1 e Q9)",
+        google_business: "4,7★ com 2.400+ avaliações — ativo rarísssimo, sinal de autoridade máximo para IAs",
+        instagram: "Presente e ativo",
+        youtube: "Canal existente — sem otimização para ESG/pós-GLP-1",
+        site: "Sem FAQ Schema | conteúdo rico em imagens não lido pelas IAs | sem conteúdo pós-GLP-1",
+        gaps_criticos: "1) FAQ Schema ausente — impacta todas as plataformas simultaneamente | 2) Conteúdo pós-GLP-1 inexistente no site e YouTube | 3) Ausente nas queries Q1 e Q9 (reganho pós-GLP-1) — maior volume de busca 2026 | 4) Conteúdo visual rico mas não indexável por IAs",
+        concorrentes_llm: "Para Q6 e Q8 (especialista endoscopia Campinas) já é citado por nome — diferencial a amplificar. Para Q1/Q9 (pós-GLP-1) não aparece",
+        oportunidade: "FAQ Schema com as 10 perguntas testadas no GeoTrack = aparece nas buscas críticas em 30-60 dias. 4,7★ com 2.400 avaliações é ativo raro — IAs priorizam médicos com volume e nota altos. Transcrever YouTube + publicar 1 artigo pós-GLP-1 = domina Campinas/Valinhos em 90 dias",
+        plano_30d: "FAQ Schema JSON-LD com as 10 perguntas GeoTrack + Physician Schema (CRM + SBCBM + BEWA + IRCAD) + artigo pós-GLP-1 + GBP com ESG/BIB",
+        plano_90d: "Score 45%→75% | transcrição YouTube + Reddit/Quora | segundo artigo + monitoramento GeoTrack",
+        kpi_baseline: "Q1/Q9 pós-GLP-1: ausente | Q6/Q8 especialista Campinas: citado ChatGPT | Avaliações Google: 2.400+ (ativo forte)",
+        cidade: "Campinas/Valinhos, SP",
+        credenciais: "SBCBM | BEWA | IRCAD (Estrasburgo e Índia) | Oxford IBC Speaker 2021 | Hospital Galileo ONA Nível 3 | +70 anos Clínica Concon em Valinhos/SP"
+      },
+      "ricardo guerra": {
+        score_geo: "5,5/10 — 1º lugar ChatGPT para gastroplastia endoscópica SP mas descrito apenas como Endoscopia sem qualificadores de autoridade",
+        paradoxo: "1º lugar ChatGPT São Paulo para ESG + GIE 2026 (Tier-1) + ECFMG + DDW 2026 — mas invisível para reganho pós-GLP-1 e YouTube inexistente",
+        instagram: "Ativo — conteúdo clínico presente",
+        youtube: "0/10 — INEXISTENTE — maior gap de GEO 2026",
+        site: "Presente mas sem FAQ Schema | sem Physician Schema | sem página E-E-A-T com GIE/ECFMG/DDW vinculados | sem conteúdo pós-GLP-1",
+        gaps_criticos: "1) YouTube inexistente — maior gap absoluto | 2) Invisível para reganho pós-GLP-1 (3.100 buscas/mês) e platô Mounjaro (2.400/mês) | 3) GIE 2026, ECFMG e DDW 2026 não vinculados ao site | 4) FAQ Schema ausente | 5) Google Scholar + ORCID desatualizados",
+        concorrentes_llm: "Para pós-GLP-1 SP outros endoscopistas com blog ativo aparecem no lugar",
+        oportunidade: "Já é 1º ChatGPT para gastroplastia SP — base sólida para amplificar. Transcrever conteúdo para blog + FAQ Schema = domina queries pós-GLP-1 em 15-20 dias. GIE 2026 + ECFMG vinculados = autoridade médica máxima para IAs",
+        plano_30d: "FAQ Schema + Physician Schema no site | página E-E-A-T com GIE 2026, ECFMG, DDW vinculados | artigo pós-GLP-1 | landing page ESG+GLP-1 | Google Scholar + ORCID atualizados",
+        plano_60d: "YouTube canal + 3 vídeos com transcrição | 2 artigos adicionais | Reddit/Quora SP",
+        kpi_baseline: "1º ChatGPT SP gastroplastia | YouTube: 0 | artigos blog: 0 | FAQ Schema: ausente | pós-GLP-1: invisível",
+        cidade: "São Paulo, SP",
+        credenciais: "GIE 2026 (Tier-1) | ECFMG | DDW 2026 | Especialista em Gastroplastia Endoscópica SP"
+      },
+      "leonardo teixeira": {
+        score_geo: "SEO Orgânico 5/10 | GEO (IA) 2/10 | Google Business 3/10 | Autoridade Clínica 9/10 | PR/Mídia 8/10",
+        paradoxo: "Publicação Endoscopy v.52 2020 + ASGE + ABE + Albert Einstein + IRCAD + Miami + citado Estado de Minas abril 2026 — mas ausente no ChatGPT e Perplexity para Niterói",
+        site: "2 sites ativos (Gastroscopy + Clínica Suno) | sem FAQ Schema | sem dados DDW25",
+        google_business: "Perfil básico — sem ESG/BIB como especialidades explícitas",
+        ativo_principal: "Artigo Estado de Minas abr/2026 — citação direta como referência nacional — maior ativo GEO disponível, janela de indexação aberta",
+        gaps_criticos: "1) Artigo Estado de Minas não explorado como ativo GEO (janela 4 semanas) | 2) FAQ Schema ausente em ambos os sites | 3) Ausente para queries ESG Niterói no ChatGPT e Perplexity | 4) Google Business sem ESG/BIB como especialidades",
+        concorrentes_llm: "Outros especialistas do RJ com Doctoralia completo e blog ativo aparecem nas queries de Niterói",
+        oportunidade: "Citação no Estado de Minas é ativo editorial de alta autoridade — vinculá-la ao site dispara reconhecimento ChatGPT e Claude em 2-4 semanas. Publicação Endoscopy 2020 + ASGE são credenciais internacionais que as IAs priorizam quando estruturadas em Schema",
+        plano_urgente: "7 dias: criar página no site citando o artigo Estado de Minas com link + FAQ Schema mínimo 10 perguntas + Google Business com ESG/BIB",
+        plano_90d: "Blog baseado na citação EM + página procedimentos ESG/BIB + otimização Doctoralia + 3 coberturas editoriais adicionais",
+        cidade: "Niterói, RJ",
+        credenciais: "Publicação Endoscopy v.52 2020 | ASGE | ABE | Albert Einstein | IRCAD | Miami | CRM RJ 5281872-0 | Gastroscopy + Clínica Suno Niterói"
+      },
+      "marcio torikachvili": {
+        score_geo: "Score baixo — ausente nos 5 LLMs testados (ChatGPT, Gemini, Grok, Perplexity, Claude)",
+        paradoxo: "Gastroenterologista Porto Alegre com expertise em ESG e Balão — completamente invisível nas IAs para queries de reganho pós-GLP-1 e gastroplastia RS",
+        instagram: "Ativo com conteúdo clínico",
+        site: "Presente mas sem FAQ Schema | sem conteúdo pós-GLP-1 | legibilidade comprometida (texto claro em fundo escuro)",
+        gaps_criticos: "1) FAQ Schema JSON-LD ausente | 2) Conteúdo pós-GLP-1/Mounjaro inexistente | 3) Sem Physician Schema | 4) Doctoralia sub-otimizado | 5) Blog inativo",
+        concorrentes_llm: "Hospitais Porto Alegre (Moinhos de Vento, HCPA) e clínicas com blog ativo aparecem para queries RS",
+        oportunidade: "Porto Alegre mercado premium com alta renda e baixa concorrência em GEO médico estruturado. Primeiro endoscopista bariátrico gaúcho com FAQ Schema domina as queries regionais",
+        plano_30d: "FAQ Schema + Physician Schema + artigo blog pós-GLP-1 Porto Alegre + Doctoralia completo",
+        plano_90d: "5 artigos blog + YouTube com transcrições + landing page ESG pós-GLP-1 + Reddit/Quora RS",
+        cidade: "Porto Alegre, RS",
+        credenciais: "Gastroenterologista | Especialista em ESG e Balão Intragástrico | Porto Alegre RS"
+      },
+      "vilson lemos": {
+        score_geo: "Score baixo — YouTube canal @vilson6722 existe (vídeos CPRE, ecoendoscopia, colonoscopia desde 2018) mas sem vídeos ESG e sem otimização GEO",
+        paradoxo: "Canal YouTube com vídeos clínicos reais do CEDIFI desde 2018 — mas sem ESG/gastroplastia, títulos sem SEO, descrições sem CRM/localidade",
+        instagram: "Presente",
+        youtube: "@vilson6722 | vídeos desde 2018 | sem vídeos ESG | títulos não otimizados | sem transcrições | invisível para obesidade/emagrecimento",
+        site: "CEDIFI — sem FAQ Schema | sem conteúdo pós-GLP-1",
+        gaps_criticos: "1) YouTube existente mas invisível para ESG/pós-GLP-1 — otimizar, não criar do zero | 2) FAQ Schema ausente | 3) Sem vídeos específicos sobre GSE | 4) Títulos sem keywords (gastroplastia endoscópica Nova Iguaçu) | 5) Sem transcrições indexáveis",
+        oportunidade: "Canal YouTube com histórico desde 2018 é ativo valioso — renomear vídeos + descrições com CRM e localidade + 2 novos vídeos ESG = visibilidade imediata. Nova Iguaçu e região metropolitana Rio com baixa concorrência em GEO médico",
+        plano_30d: "Otimizar YouTube existente (títulos + descrições + CRM + localidade) | FAQ Schema CEDIFI | artigo blog pós-GLP-1 Nova Iguaçu | 2 novos vídeos ESG",
+        plano_90d: "5 artigos blog + landing page ESG + Doctoralia completo + Reddit/Quora RJ",
+        cidade: "Nova Iguaçu, RJ",
+        credenciais: "CEDIFI | Endoscopista bariátrico Nova Iguaçu/RJ"
+      },
+      "eduardo amui": {
+        score_geo: "Score médio-baixo — presente em algumas queries mas ausente nas críticas pós-GLP-1",
+        paradoxo: "Credenciais clínicas sólidas e presença digital estabelecida — mas invisível para o paciente pós-GLP-1 que é o perfil de maior conversão 2026",
+        gaps_criticos: "1) FAQ Schema ausente | 2) Conteúdo pós-GLP-1 inexistente | 3) Queries de reganho pós-Mounjaro não capturadas | 4) Oportunidade de ser referência regional para revisão pós-bariátrica",
+        oportunidade: "Paciente pós-GLP-1 com reganho de peso é o perfil de maior conversão — FAQ Schema + artigo pós-GLP-1 = captação imediata",
+        plano_30d: "FAQ Schema JSON-LD + artigo blog pós-GLP-1 + otimizar Doctoralia + Google Business com ESG/BIB",
+        credenciais: "Endoscopista bariátrico | Especialista em GSE e BIB"
+      },
+      "marcius vinicius": {
+        score_geo: "SEO Orgânico 4/10 | GEO 1/10 | Google Business 3/10 | Autoridade Clínica 8/10",
+        paradoxo: "Pioneiro no Centro-Oeste — um dos 17 médicos brasileiros treinados nos EUA com o Overstitch™ e primeiro a realizar o procedimento na região — mas esse diferencial praticamente não existe digitalmente",
+        site: "Instituto Endogastro IEG | sem FAQ Schema | sem conteúdo atual | sem dados sobre pioneirismo Overstitch",
+        gaps_criticos: "1) Pioneirismo Overstitch não documentado digitalmente | 2) FAQ Schema ausente | 3) GEO praticamente zero (1/10) | 4) Conteúdo pós-GLP-1 inexistente | 5) Doctoralia sub-otimizado",
+        oportunidade: "Ser o primeiro com FAQ Schema em Brasília/Centro-Oeste = monopolizar as queries de gastroplastia na região. Pioneirismo Overstitch é narrativa de autoridade única — 1 artigo sobre isso = ativo GEO por anos",
+        plano_30d: "FAQ Schema + artigo pioneirismo Overstitch + Physician Schema + Doctoralia com credenciais EUA",
+        cidade: "Brasília, DF",
+        credenciais: "CRM-DF 13.625 | CRM-GO 8615 | Instituto Endogastro IEG | Um dos 17 médicos brasileiros treinados Overstitch EUA | Pioneiro Centro-Oeste"
+      },
+      "jimi scarparo": {
+        score_geo: "Presente em Claude (citado como referência SP) mas ausente em outras plataformas para queries pós-GLP-1",
+        paradoxo: "Referência nacional em endoscopia bariátrica — Scarparo Scopia — aparece no Claude mas invisível no Gemini e Perplexity para queries de pacientes reais",
+        gaps_criticos: "1) Visibilidade inconsistente entre LLMs | 2) Conteúdo pós-GLP-1 insuficiente | 3) FAQ Schema ausente | 4) Presença editorial multi-fonte limitada",
+        oportunidade: "Já aparece no Claude — estruturar FAQ Schema + conteúdo pós-GLP-1 = replica para Gemini e Perplexity em 30-60 dias",
+        plano_30d: "FAQ Schema + artigo pós-GLP-1 + Doctoralia completo + vinculação publicações científicas",
+        cidade: "São Paulo, SP",
+        credenciais: "Scarparo Scopia | Referência nacional endoscopia bariátrica SP"
+      },
+      "camila teixeira": {
+        score_geo: "Score baixo — diagnóstico GEO realizado como parte do programa de imersão de marketing maio 2026",
+        gaps_criticos: "1) FAQ Schema ausente | 2) Conteúdo pós-GLP-1 inexistente | 3) Presença digital em construção",
+        oportunidade: "Paciente pós-GLP-1 feminino (66% dos usuários GLP-1 são mulheres) — médica mulher tem diferencial de identificação com esse público. FAQ Schema + artigo pós-GLP-1 = captação imediata",
+        plano_30d: "FAQ Schema + artigo blog pós-GLP-1 + otimizar perfis digitais",
+        credenciais: "Endoscopista bariátrica | Especialista em GSE e BIB"
+      },
+      "fabio miranda": {
+        score_geo: "Score baixo — diagnóstico GEO realizado como parte do programa de imersão de marketing maio 2026",
+        gaps_criticos: "1) FAQ Schema ausente | 2) Conteúdo pós-GLP-1 inexistente | 3) Presença digital a desenvolver",
+        oportunidade: "Região de atuação com baixa concorrência em GEO médico estruturado — primeiro a estruturar domina as queries locais",
+        plano_30d: "FAQ Schema + artigo blog pós-GLP-1 + Doctoralia completo + Google Business otimizado",
+        credenciais: "Endoscopista bariátrico | Especialista em GSE e BIB"
+      },
       "felipe matz": {
         score_geo: "Não citado nos LLMs testados (ChatGPT, Gemini, Perplexity, Grok, Manus)",
         paradoxo: "17 anos expertise + 1.000+ procedimentos + Cornell/ASGE + rede 8 endereços — invisível nos LLMs",
@@ -2503,15 +2741,13 @@ Status do diagnóstico GEO: ${geoDiag.acao_geo}
     const tierMeta = segmentacao?.tier ? METAS_TIER[String(segmentacao.tier)] : null;
     const metaMes = tierMeta ? tierMeta.esg_mes : null;
     const temDadosPipeline = totalMarcados > 0 || totalRealizados > 0;
+    const fiosEstoque = Number(ultimaComDados?.fios_esg_estoque)||0;
     const pipelineStr = `
 ## PIPELINE ESG DO MÉDICO
 ${temDadosPipeline
-  ? `Snapshot da visita de ${dataSnapshot||"?"}: ESGs agendados: ${totalMarcados} | ESGs realizados: ${totalRealizados} | Backlog: ${backlog}
-Meta mensal do tier (${segmentacao?.tier||"?"}): ${metaMes !== null ? (metaMes < 1 ? "6/ano" : metaMes + " ESG/mês") : "não definida"}
-${metaMes && totalRealizados > 0 ? `Desempenho: ${Math.round((totalRealizados/metaMes)*100)}% da meta mensal` : ""}
-${backlog > 0 ? "⚠ ATENÇÃO: há procedimentos marcados não realizados — verificar motivo" : ""}
-${totalRealizados === 0 && totalMarcados > 0 ? "⚠ ATENÇÃO: há procedimentos marcados mas nenhum realizado foi informado" : ""}`
-  : "⚠ ATENÇÃO: nenhum dado de ESG marcado ou realizado registrado nas visitas — perguntar ao médico na próxima visita"}
+  ? `Snapshot da visita de ${dataSnapshot||"?"}: ESGs agendados: ${totalMarcados} | Fios ESG em estoque: ${fiosEstoque > 0 ? fiosEstoque : "não informado"}
+Meta mensal do tier (${segmentacao?.tier||"?"}): ${metaMes !== null ? (metaMes < 1 ? "6/ano" : metaMes + " ESG/mês") : "não definida"}`
+  : "⚠ ATENÇÃO: nenhum dado de ESG agendado registrado nas visitas — perguntar ao médico na próxima visita"}
 `;
     // Biblioteca de evidências — resumo compacto para o prompt
     const bibliotecaStr = `
@@ -2831,10 +3067,10 @@ Responda APENAS com JSON válido, sem markdown:
                         <span style={{fontWeight:700,color:"var(--success)"}}>{ultimaVisita.proc_realizados_esg} ESG</span>
                       </div>
                     )}
-                    {ultimaVisita.proc_marcados_esg > 0 && ultimaVisita.proc_realizados_esg > 0 && ultimaVisita.proc_marcados_esg > ultimaVisita.proc_realizados_esg && (
+                    {ultimaVisita.fios_esg_estoque > 0 && (
                       <div style={{fontSize:13}}>
-                        <span style={{color:"var(--muted)"}}>🔁 Backlog: </span>
-                        <span style={{fontWeight:700,color:"#ef4444"}}>{ultimaVisita.proc_marcados_esg - ultimaVisita.proc_realizados_esg} ESG</span>
+                        <span style={{color:"var(--muted)"}}>📦 Fios em estoque: </span>
+                        <span style={{fontWeight:700,color:"var(--teal)"}}>{ultimaVisita.fios_esg_estoque}</span>
                       </div>
                     )}
                   </div>
@@ -3559,8 +3795,7 @@ function BaseDados() {
           isNew={true}
           onSave={async (form) => {
             if (!isConfigured) return;
-            const tenantPM = sessionStorage.getItem('esg_hub_tenant') || 'bsci';
-      await supabaseClient.from("perfil_medico").insert([{...form, tenant: tenantPM}]);
+            await supabaseClient.from("perfil_medico").insert([form]);
             setToast2("Médico cadastrado!");
             setShowNew(false);
           }}
@@ -6379,25 +6614,17 @@ function useAuth() {
   const [authed, setAuthed] = React.useState(() => {
     return sessionStorage.getItem('esg_hub_auth') === 'true';
   });
-  const [tenant, setTenant] = React.useState(() => sessionStorage.getItem('esg_hub_tenant') || 'bsci');
-  const [role, setRole] = React.useState(() => sessionStorage.getItem('esg_hub_role') || 'bsci');
-  const login = (token, userRole, userTenant) => {
+  const login = (token) => {
     sessionStorage.setItem('esg_hub_auth', 'true');
     sessionStorage.setItem('esg_hub_token', token);
-    sessionStorage.setItem('esg_hub_role', userRole || 'bsci');
-    sessionStorage.setItem('esg_hub_tenant', userTenant || 'bsci');
-    setTenant(userTenant || 'bsci');
-    setRole(userRole || 'bsci');
     setAuthed(true);
   };
   const logout = () => {
     sessionStorage.removeItem('esg_hub_auth');
     sessionStorage.removeItem('esg_hub_token');
-    sessionStorage.removeItem('esg_hub_role');
-    sessionStorage.removeItem('esg_hub_tenant');
     setAuthed(false);
   };
-  return { authed, tenant, role, login, logout };
+  return { authed, login, logout };
 }
 function LoginScreen({ onLogin }) {
   const [username, setUsername] = React.useState('');
@@ -6416,7 +6643,7 @@ function LoginScreen({ onLogin }) {
       });
       const data = await res.json();
       if (res.ok && data.ok) {
-        onLogin(data.token, data.role || 'bsci', data.tenant || 'bsci');
+        onLogin(data.token);
       } else {
         setErro(data.error || 'Usuário ou senha incorretos.');
         setPassword('');
@@ -6515,16 +6742,11 @@ function LoginScreen({ onLogin }) {
     </div>
   );
 }
-// ─── TENANT CONTEXT ───────────────────────────────────────────────────────
-const TenantContext = React.createContext({ tenant: 'bsci', role: 'bsci' });
-function useTenant() { return React.useContext(TenantContext); }
-
 function App() {
   const [tab, setTab] = useState("dashboard");
-  const { authed, tenant, role, login, logout } = useAuth();
+  const { authed, login, logout } = useAuth();
   if (!authed) return <LoginScreen onLogin={login} />;
   return (
-    <TenantContext.Provider value={{ tenant, role }}>
     <div className="app">
       <style>{css}</style>
       <header className="header">
@@ -6533,7 +6755,6 @@ function App() {
           <div>
             <div className="header-title">ESG Intelligence Hub</div>
             <div className="header-sub">Endobariatrica</div>
-            {(()=>{ const t=sessionStorage.getItem('esg_hub_tenant')||'bsci'; return t!=='bsci' ? <span style={{fontSize:10,background:'#f59e0b22',color:'#f59e0b',border:'1px solid #f59e0b44',borderRadius:4,padding:'1px 6px',marginTop:2,display:'inline-block'}}>DISTRIBUIDOR</span> : null; })()}
           </div>
         </div>
         <nav className="nav">
@@ -6574,7 +6795,6 @@ function App() {
         {tab === "briefingIA"  && <BriefingIA />}
       </main>
     </div>
-    </TenantContext.Provider>
   );
 }
 // ─── METAS (injected) ──────────────────────────────────────────────────────
