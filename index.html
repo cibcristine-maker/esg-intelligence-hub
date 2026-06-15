@@ -4718,7 +4718,7 @@ function EsgDayProject({ data, onChange }) {
   const [activeTab, setActiveTab] = useState("form");
   const records = data || [];
   const totals = records.reduce((a, r) => {
-    const procVisitas = (r.followups||[]).reduce((s,f) => s + (+f.procedimentosFechados||0), 0);
+    const procVisitas = (r.followups||[]).filter(f=>!f.syncedFromVisitas).reduce((s,f) => s + (+f.procedimentosFechados||0), 0);
     const procTotal = (+r.procedimentos30d || 0) + procVisitas;
     return {
       eventos: a.eventos + 1,
