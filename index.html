@@ -4837,7 +4837,7 @@ function EsgDayProject({ data, onChange }) {
                                       <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", flex: 1 }}>
                                         <span style={{ color: FUP_C.text, fontWeight: 600, fontSize: 12 }}>{"V" + (fi+1) + " · " + (f.data || "—") + " · " + (f.tipo || "")}</span>
                                         {f.procedimentosFechados && <span style={{ color: FUP_C.green, fontSize: 12 }}>{"✓ " + f.procedimentosFechados + " fechado(s)"}</span>}
-                                        {f.obs && <span style={{ color: FUP_C.textMuted, fontSize: 12, fontStyle: "italic" }}>{"💬 " + f.obs}</span>}
+                                        {f.obs && (() => { const [exp, setExp] = React.useState(false); return <span onClick={() => setExp(v=>!v)} style={{ color: FUP_C.textMuted, fontSize: 12, fontStyle: "italic", cursor: "pointer", display: "block", marginTop: 2 }}>{exp ? "💬 " + f.obs : "💬 " + f.obs.slice(0,70) + (f.obs.length > 70 ? "… ▼" : "")}</span>; })()}
                                       </div>
                                       <div style={{ display: "flex", gap: 4, marginLeft: 8 }}>
                                         <button onClick={() => { setFupForm({ data: f.data||"", tipo: f.tipo||"Visita presencial", procedimentosFechados: f.procedimentosFechados||"", obs: f.obs||"" }); setFupModal({ rid: r.id, fupId: fi }); }} style={{ background: "none", border: `1px solid ${FUP_C.border}`, borderRadius: 5, color: FUP_C.textMuted, fontSize: 11, cursor: "pointer", padding: "2px 6px" }}>✏️</button>
@@ -5358,7 +5358,7 @@ function CampanhaInternaProject({ data, onChange }) {
                             <div key={f.id || fi} style={{ background: FUP_C.card, borderRadius: 8, padding: "7px 12px", border: `1px solid ${FUP_C.border}`, borderLeft: `3px solid ${FUP_C.purple}`, marginBottom: 6, fontSize: 12 }}>
                               <span style={{ color: FUP_C.text, fontWeight: 600 }}>{"A" + (fi+1) + " · " + (f.data||"—") + " · " + (f.tipo||"")}</span>
                               {f.statusContato && <span style={{ color: FUP_C.textMuted, marginLeft: 12 }}>{f.statusContato}</span>}
-                              {f.obs && <span style={{ color: FUP_C.textMuted, marginLeft: 12, fontStyle: "italic" }}>{"💬 " + f.obs}</span>}
+                              {f.obs && (() => { const [exp, setExp] = React.useState(false); return <span onClick={() => setExp(v=>!v)} style={{ color: FUP_C.textMuted, marginLeft: 12, fontStyle: "italic", cursor: "pointer" }}>{exp ? "💬 " + f.obs : "💬 " + f.obs.slice(0,70) + (f.obs.length > 70 ? "… ▼" : "")}</span>; })()}
                             </div>
                           ))}
                         </div>
@@ -5548,7 +5548,7 @@ function CursoBariatricosProject({ data, onChange }) {
                                   {f.procedimentos && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos: <b style={{ color: FUP_C.green }}>{f.procedimentos}</b></span>}
                                   {f.scoreImpl && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +f.scoreImpl >= 7 ? FUP_C.green : FUP_C.yellow }}>{f.scoreImpl}/10</b></span>}
                                 </div>
-                                {f.obs && <div style={{ color: FUP_C.textMuted, fontSize: 12, marginTop: 6, fontStyle: "italic" }}>💬 {f.obs}</div>}
+                                {f.obs && (() => { const [exp, setExp] = React.useState(false); return <div onClick={() => setExp(v=>!v)} style={{ color: FUP_C.textMuted, fontSize: 12, marginTop: 6, fontStyle: "italic", cursor: "pointer" }}>{exp ? "💬 " + f.obs : "💬 " + f.obs.slice(0,70) + (f.obs.length > 70 ? "… ▼" : "")}</div>; })()}
                               </div>
                             ))}
                           </div>
@@ -5724,7 +5724,7 @@ function CursoEndoscopistasProject({ data, onChange }) {
                               {f.avaliacoesAgendadas && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Avaliações: <b style={{ color: FUP_C.teal }}>{f.avaliacoesAgendadas}</b></span>}
                               {f.scoreImpl && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Score: <b style={{ color: +f.scoreImpl >= 7 ? FUP_C.green : FUP_C.yellow }}>{f.scoreImpl}/10</b></span>}
                             </div>
-                            {f.obs && <div style={{ color: FUP_C.textMuted, fontSize: 12, marginTop: 6, fontStyle: "italic" }}>💬 {f.obs}</div>}
+                            {f.obs && (() => { const [exp, setExp] = React.useState(false); return <div onClick={() => setExp(v=>!v)} style={{ color: FUP_C.textMuted, fontSize: 12, marginTop: 6, fontStyle: "italic", cursor: "pointer" }}>{exp ? "💬 " + f.obs : "💬 " + f.obs.slice(0,70) + (f.obs.length > 70 ? "… ▼" : "")}</div>; })()}
                           </div>
                         ))}
                       </div>
@@ -5943,7 +5943,7 @@ function PacientesReferidoresProject({ data, onChange }) {
                             <div key={f.id || fi} style={{ background: FUP_C.card, borderRadius: 8, padding: "7px 12px", border: `1px solid ${FUP_C.border}`, borderLeft: "3px solid #F43F5E", marginBottom: 6, fontSize: 12 }}>
                               <span style={{ color: FUP_C.text, fontWeight: 600 }}>{"A" + (fi+1) + " · " + (f.data||"—") + " · " + (f.tipo||"")}</span>
                               {f.resultado && <span style={{ color: FUP_C.teal, marginLeft: 12 }}>{f.resultado}</span>}
-                              {f.obs && <span style={{ color: FUP_C.textMuted, marginLeft: 12, fontStyle: "italic" }}>{"💬 " + f.obs}</span>}
+                              {f.obs && (() => { const [exp, setExp] = React.useState(false); return <span onClick={() => setExp(v=>!v)} style={{ color: FUP_C.textMuted, marginLeft: 12, fontStyle: "italic", cursor: "pointer" }}>{exp ? "💬 " + f.obs : "💬 " + f.obs.slice(0,70) + (f.obs.length > 70 ? "… ▼" : "")}</span>; })()}
                             </div>
                           ))}
                         </div>
