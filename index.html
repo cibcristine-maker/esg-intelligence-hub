@@ -6297,10 +6297,10 @@ function FupProjetos() {
       const entry = visitaToFupEntry(v);
       const jaExiste = (arr) => (arr||[]).some(f => f.visitaId === entry.visitaId);
 
-      // ESG Day
+      // ESG Day — compara medico E clinica (pode estar cadastrado por qualquer um)
       if (next.esgDay) {
         next.esgDay = next.esgDay.map(ev =>
-          fupMatch(ev.medico, v.medico_nome) && !jaExiste(ev.followups)
+          (fupMatch(ev.medico, v.medico_nome) || fupMatch(ev.clinica, v.medico_nome)) && !jaExiste(ev.followups)
             ? { ...ev, followups: [...(ev.followups||[]), entry] }
             : ev
         );
