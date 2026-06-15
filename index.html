@@ -4507,6 +4507,12 @@ async function fupSaveRemote(d) {
 }
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 const fupUid = () => Date.now().toString(36) + Math.random().toString(36).slice(2);
+// Sanitiza ticketMedio — evita valores absurdos salvos por engano
+const safeTicket = (val, def = 1680) => {
+  const n = +val;
+  return (n > 0 && n <= 30000) ? n : def;
+};
+
 // Formata receita: < 1000 → "R$ 850", < 1M → "R$ 850k", >= 1M → "R$ 1.1M"
 function fmtReceita(val, prefix = "$") {
   if (!val || val === 0) return "—";
@@ -4724,7 +4730,7 @@ function EsgDayProject({ data, onChange }) {
       eventos: a.eventos + 1,
       compareceram: a.compareceram + (+r.compareceram || 0),
       procedimentos: a.procedimentos + procTotal,
-      receita: a.receita + (procTotal * (+r.ticketMedio || 1680)),
+      receita: a.receita + (procTotal * (safeTicket(r.ticketMedio))),
       custo: a.custo + (+r.custoEvento || 0),
     };
   }, { eventos: 0, compareceram: 0, procedimentos: 0, receita: 0, custo: 0 });
@@ -4763,7 +4769,7 @@ function EsgDayProject({ data, onChange }) {
   const roiData = records
     .filter((r) => +r.custoEvento > 0)
     .map((r) => {
-      const rec = (+r.procedimentos30d || 0) * (+r.ticketMedio || 0);
+      const rec = (+r.procedimentos30d || 0) * (safeTicket(r.ticketMedio, 0));
       const custo = +r.custoEvento;
       return { name: r.clinica, ROI: +((((rec - custo) / custo) * 100).toFixed(0)) };
     });
@@ -4810,7 +4816,7 @@ function EsgDayProject({ data, onChange }) {
                 </thead>
                 <tbody>
                   {records.map((r) => {
-                    const rec = (+r.procedimentos30d || 0) * (+r.ticketMedio || 0);
+                    const rec = (+r.procedimentos30d || 0) * (safeTicket(r.ticketMedio, 0));
                     const custo = +r.custoEvento || 0;
                     const roi = custo > 0 ? (((rec - custo) / custo) * 100).toFixed(0) + "%" : "—";
                     return (
@@ -6426,7 +6432,7 @@ function FupProjetos() {
       eventos: state.esgDay?.length || 0,
       compareceram: state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0,
       procedimentos: state.esgDay?.reduce((a, r) => a + (+r.procedimentos30d||0) + (r.followups||[]).filter(f=>!f.syncedFromVisitas).reduce((s,f)=>s+(+f.procedimentosFechados||0),0), 0) || 0,
-      receita: state.esgDay?.reduce((a, r) => a + ((+r.procedimentos30d||0) + (r.followups||[]).filter(f=>!f.syncedFromVisitas).reduce((s,f)=>s+(+f.procedimentosFechados||0),0)) * (+r.ticketMedio || 1680), 0) || 0,
+      receita: state.esgDay?.reduce((a, r) => a + ((+r.procedimentos30d||0) + (r.followups||[]).filter(f=>!f.syncedFromVisitas).reduce((s,f)=>s+(+f.procedimentosFechados||0),0)) * (safeTicket(r.ticketMedio)), 0) || 0,
       conv: (() => {
         const comp = state.esgDay?.reduce((a, r) => a + (+r.compareceram || 0), 0) || 0;
         const proc = state.esgDay?.reduce((a, r) => a + (+r.procedimentos30d||0) + (r.followups||[]).filter(f=>!f.syncedFromVisitas).reduce((s,f)=>s+(+f.procedimentosFechados||0),0), 0) || 0;
