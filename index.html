@@ -2214,7 +2214,7 @@ function BriefingIA() {
       projetos.push({ projeto: "ESG Day", status: esgDayMed.length + " evento(s)", followups: esgDayMed.slice(0,3).map(e => {
         const comp = Number(e.compareceram)||0;
         // procedimentos = procedimentos30d + soma dos followups
-        const procFups = (e.followups||[]).reduce((s,f) => s + (Number(f.procedimentosFechados)||0), 0);
+        const procFups = (e.followups||[]).filter(f=>!f.syncedFromVisitas).reduce((s,f) => s + (Number(f.procedimentosFechados)||0), 0);
         const proc = (Number(e.procedimentos30d)||0) + procFups;
         const naoFecharam = Math.max(0, comp - proc);
         const conv = comp > 0 ? Math.round((proc/comp)*100) : 0;
@@ -4823,7 +4823,7 @@ function EsgDayProject({ data, onChange }) {
                         <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.data || "—"}</td>
                         <td style={{ padding: "12px 12px", color: FUP_C.textMuted }}>{r.responsavel || "—"}</td>
                         <td style={{ padding: "12px 12px", color: FUP_C.text, textAlign: "center" }}>{r.compareceram || 0}</td>
-                        <td style={{ padding: "12px 12px", textAlign: "center", fontWeight: 700 }}>{(() => { const total = (+r.procedimentos30d||0) + (r.followups||[]).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); const over = (+r.compareceram||0) > 0 && total > (+r.compareceram||0); return <span style={{color: over ? FUP_C.yellow : FUP_C.green}}>{total}{over?" ⚠":""}</span>; })()}</td>
+                        <td style={{ padding: "12px 12px", textAlign: "center", fontWeight: 700 }}>{(() => { const total = (+r.procedimentos30d||0) + (r.followups||[]).filter(f=>!f.syncedFromVisitas).reduce((s,f)=>s+(+f.procedimentosFechados||0),0); const over = (+r.compareceram||0) > 0 && total > (+r.compareceram||0); return <span style={{color: over ? FUP_C.yellow : FUP_C.green}}>{total}{over?" ⚠":""}</span>; })()}</td>
                         <td style={{ padding: "12px 12px", color: FUP_C.teal }}>{rec > 0 ? fmtReceita(rec, "R$") : "—"}</td>
                         <td style={{ padding: "12px 12px" }}>
                           <FupPill label={roi} color={roi !== "—" && +roi >= 0 ? "verde" : "vermelho"} />
