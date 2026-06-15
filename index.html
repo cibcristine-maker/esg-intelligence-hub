@@ -6241,6 +6241,144 @@ function FupProjetos() {
       setSyncing(false);
     });
   }, []);
+
+  // ─── SYNC: visitas da aba Visitas → FUP Projetos ──────────────────────────
+
+  // Matching semântico robusto: ignora acentos, Dr/Dra, títulos, espaços duplos
+  const fupNorm = (s) => (s||"")
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g, "")  // remove acentos
+    .replace(/\b(dr|dra|prof|profa|doutor|doutora)\.?\s*/g, "")  // remove títulos
+    .replace(/[^a-z0-9 ]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Dois nomes batem se compartilham pelo menos 2 tokens significativos (>= 3 chars)
+  const fupMatch = (a, b) => {
+    const ta = fupNorm(a).split(" ").filter(t => t.length >= 3);
+    const tb = fupNorm(b).split(" ").filter(t => t.length >= 3);
+    if (!ta.length || !tb.length) return false;
+    const hits = ta.filter(t => tb.some(u => u.startsWith(t) || t.startsWith(u)));
+    return hits.length >= Math.min(2, Math.min(ta.length, tb.length));
+  };
+
+  // Converte visita do Supabase → entry padrão do FUP
+  const visitaToFupEntry = (v) => ({
+    id: "sync_" + v.id,
+    data: v.data_contato || new Date().toISOString().slice(0,10),
+    tipo: v.canal || "Visita presencial",
+    obs: "[Visitas] " + (v.obs || "—") + (v.responsavel ? " · " + v.responsavel : ""),
+    syncedFromVisitas: true,
+    visitaId: v.id,
+  });
+
+  // Aplica lista de visitas do Supabase sobre um estado FUP (sem duplicar por visitaId)
+  const applyVisitasToState = (prev, todasVisitas) => {
+    const next = JSON.parse(JSON.stringify(prev)); // deep clone
+
+    todasVisitas.forEach(v => {
+      if (!v.medico_nome) return;
+      const entry = visitaToFupEntry(v);
+      const jaExiste = (arr) => (arr||[]).some(f => f.visitaId === entry.visitaId);
+
+      // ESG Day
+      if (next.esgDay) {
+        next.esgDay = next.esgDay.map(ev =>
+          fupMatch(ev.medico, v.medico_nome) && !jaExiste(ev.followups)
+            ? { ...ev, followups: [...(ev.followups||[]), entry] }
+            : ev
+        );
+      }
+
+      // Aulas Referidores
+      if (next.aulasReferidores?.eventos) {
+        next.aulasReferidores.eventos = next.aulasReferidores.eventos.map(ev => ({
+          ...ev,
+          referidores: (ev.referidores||[]).map(r =>
+            fupMatch(r.medico, v.medico_nome) && !jaExiste(r.visitas)
+              ? { ...r, visitas: [...(r.visitas||[]), entry] }
+              : r
+          )
+        }));
+      }
+
+      // Curso Bariátricos
+      if (next.cursoBariatricos?.medicos) {
+        const med = next.cursoBariatricos.medicos.find(m => fupMatch(m.nome, v.medico_nome));
+        if (med && !jaExiste(next.cursoBariatricos.followups?.filter(f => f.medicoId === med.id))) {
+          next.cursoBariatricos.followups = [
+            ...(next.cursoBariatricos.followups||[]),
+            { ...entry, medicoId: med.id, medicoNome: med.nome }
+          ];
+        }
+      }
+
+      // Curso Endoscopistas
+      if (next.cursoEndoscopistas?.medicos) {
+        const med = next.cursoEndoscopistas.medicos.find(m => fupMatch(m.nome, v.medico_nome));
+        if (med && !jaExiste(next.cursoEndoscopistas.followups?.filter(f => f.medicoId === med.id))) {
+          next.cursoEndoscopistas.followups = [
+            ...(next.cursoEndoscopistas.followups||[]),
+            { ...entry, medicoId: med.id, medicoNome: med.nome }
+          ];
+        }
+      }
+
+      // Imersão Marketing
+      if (next.imersaoMarketing?.medicos) {
+        const med = next.imersaoMarketing.medicos.find(m => fupMatch(m.nome, v.medico_nome));
+        if (med && !jaExiste(next.imersaoMarketing.acoes?.filter(f => f.medicoId === med.id))) {
+          next.imersaoMarketing.acoes = [
+            ...(next.imersaoMarketing.acoes||[]),
+            { ...entry, medicoId: med.id, medicoNome: med.nome }
+          ];
+        }
+      }
+    });
+
+    return next;
+  };
+
+  // 1. CARGA INICIAL — puxa TODAS as visitas históricas ao montar
+  useEffect(() => {
+    if (!isConfigured || !supabaseClient) return;
+    supabaseClient
+      .from("visitas")
+      .select("id,medico_nome,data_contato,canal,obs,responsavel")
+      .order("data_contato", { ascending: true })
+      .then(({ data: todas }) => {
+        if (!todas || todas.length === 0) return;
+        setState(prev => {
+          const next = applyVisitasToState(prev, todas);
+          fupSaveData(next);
+          fupSaveRemote(next);
+          return next;
+        });
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [syncing]); // roda após Supabase carregar o estado remoto
+
+  // 2. TEMPO REAL — escuta novas visitas salvas pela aba Visitas
+  useEffect(() => {
+    const onVisitaSalva = async () => {
+      if (!isConfigured || !supabaseClient) return;
+      const { data: recentes } = await supabaseClient
+        .from("visitas")
+        .select("id,medico_nome,data_contato,canal,obs,responsavel")
+        .order("created_at", { ascending: false })
+        .limit(1);
+      if (!recentes || recentes.length === 0) return;
+      setState(prev => {
+        const next = applyVisitasToState(prev, recentes);
+        setTimeout(() => { fupSaveData(next); fupSaveRemote(next); }, 400);
+        return next;
+      });
+    };
+    window.addEventListener("visitaSalva", onVisitaSalva);
+    return () => window.removeEventListener("visitaSalva", onVisitaSalva);
+  }, []);
+  // ─────────────────────────────────────────────────────────────────────────
+
   // Auto-save with debounce — saves to both localStorage and Supabase
   const persistData = useCallback((newState) => {
     if (saveTimer) clearTimeout(saveTimer);
