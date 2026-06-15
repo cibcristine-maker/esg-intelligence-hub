@@ -6283,13 +6283,14 @@ function FupProjetos() {
     .replace(/\s+/g, " ")
     .trim();
 
-  // Dois nomes batem se compartilham pelo menos 2 tokens significativos (>= 3 chars)
+  // Match semântico: 1 token se qualquer lado tem só 1 token; 2 tokens se ambos têm 2+
   const fupMatch = (a, b) => {
     const ta = fupNorm(a).split(" ").filter(t => t.length >= 3);
     const tb = fupNorm(b).split(" ").filter(t => t.length >= 3);
     if (!ta.length || !tb.length) return false;
     const hits = ta.filter(t => tb.some(u => u.startsWith(t) || t.startsWith(u)));
-    return hits.length >= Math.min(2, Math.min(ta.length, tb.length));
+    const needed = Math.min(ta.length, tb.length) >= 2 ? 2 : 1;
+    return hits.length >= needed;
   };
 
   // Converte visita do Supabase → entry padrão do FUP
