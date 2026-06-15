@@ -4934,7 +4934,7 @@ function EsgDayProject({ data, onChange }) {
             <FupInput label="Responsável" value={editModal.responsavel} onChange={(v) => setEditModal({ ...editModal, responsavel: v })} />
             <FupInput label="Compareceram" type="number" value={editModal.compareceram} onChange={(v) => setEditModal({ ...editModal, compareceram: v })} />
             <FupInput label="Procedimentos 30d" type="number" value={editModal.procedimentos30d} onChange={(v) => setEditModal({ ...editModal, procedimentos30d: v })} />
-            <FupInput label="Ticket Médio R$" type="number" value={editModal.ticketMedio} onChange={(v) => setEditModal({ ...editModal, ticketMedio: v })} />
+            <FupInput label="Ticket Médio (USD)" type="number" value={editModal.ticketMedio} onChange={(v) => { const n = +v; if (n > 9999 || n < 0) return; setEditModal({ ...editModal, ticketMedio: v }); }} placeholder="Ex: 1680" />
             <FupInput label="Custo Evento R$" type="number" value={editModal.custoEvento} onChange={(v) => setEditModal({ ...editModal, custoEvento: v })} />
             <div style={{ gridColumn: "span 2" }}><FupInput label="Obs" value={editModal.obs} onChange={(v) => setEditModal({ ...editModal, obs: v })} /></div>
             <div style={{ gridColumn: "span 2", display: "flex", justifyContent: "flex-end", gap: 12 }}>
@@ -4970,7 +4970,7 @@ function EsgDayProject({ data, onChange }) {
           <FupInput label="Confirmados" type="number" value={form.confirmados} onChange={(v) => setForm({ ...form, confirmados: v })} />
           <FupInput label="Compareceram" type="number" value={form.compareceram} onChange={(v) => setForm({ ...form, compareceram: v })} />
           <FupInput label="Procedimentos Fechados (30d)" type="number" value={form.procedimentos30d} onChange={(v) => setForm({ ...form, procedimentos30d: v })} />
-          <FupInput label="Ticket Médio (R$)" type="number" value={form.ticketMedio} onChange={(v) => setForm({ ...form, ticketMedio: v })} />
+          <FupInput label="Ticket Médio (USD)" type="number" value={form.ticketMedio} onChange={(v) => { const n = +v; if (n > 9999 || n < 0) return; setForm({ ...form, ticketMedio: v }); }} placeholder="Ex: 1680" />
           <FupInput label="Custo do Evento (R$)" type="number" value={form.custoEvento} onChange={(v) => setForm({ ...form, custoEvento: v })} />
           <div style={{ gridColumn: "span 2" }}>
             <FupInput label="Observações" value={form.obs} onChange={(v) => setForm({ ...form, obs: v })} />
