@@ -6175,6 +6175,48 @@ function ImersaoMarketingProject({ data, onChange }) {
                       <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</FupBtn>
                     </div>
                   </div>
+                  {/* Visitas de seguimento sincronizadas da aba Visitas */}
+                  {(() => {
+                    const visitasSinc = mAcoes.filter(a => a.syncedFromVisitas).sort((a,b) => new Date(b.data)-new Date(a.data));
+                    const fupsMkt = mAcoes.filter(a => !a.syncedFromVisitas).sort((a,b) => new Date(b.data)-new Date(a.data));
+                    return (
+                      <div style={{ marginTop: 14, borderTop: `1px solid ${FUP_C.border}`, paddingTop: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+                        {fupsMkt.length > 0 && (
+                          <div>
+                            <div style={{ color: FUP_C.yellow, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>📊 FUPs Marketing</div>
+                            {fupsMkt.map((f, fi) => (
+                              <div key={fi} style={{ background: FUP_C.bg, borderRadius: 8, padding: "8px 12px", marginBottom: 6, borderLeft: `3px solid ${FUP_C.yellow}` }}>
+                                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4 }}>
+                                  <span style={{ color: FUP_C.textMuted, fontSize: 11 }}>{f.data || "—"}</span>
+                                  <span style={{ color: FUP_C.yellow, fontSize: 11, fontWeight: 600 }}>{f.tipo || "FUP"}</span>
+                                  {f.geoScore && <span style={{ color: FUP_C.textMuted, fontSize: 11 }}>GEO: <b style={{ color: FUP_C.yellow }}>{f.geoScore}/10</b></span>}
+                                  {f.leadsOrganicos && <span style={{ color: FUP_C.textMuted, fontSize: 11 }}>Leads: <b style={{ color: FUP_C.teal }}>{f.leadsOrganicos}</b></span>}
+                                </div>
+                                {f.obs && <div style={{ color: FUP_C.textMuted, fontSize: 12, lineHeight: 1.4 }}>{f.obs}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {visitasSinc.length > 0 && (
+                          <div>
+                            <div style={{ color: FUP_C.teal, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 6 }}>🗓 Visitas de Seguimento</div>
+                            {visitasSinc.map((v, vi) => (
+                              <div key={vi} style={{ background: FUP_C.bg, borderRadius: 8, padding: "8px 12px", marginBottom: 6, borderLeft: `3px solid ${FUP_C.teal}` }}>
+                                <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4 }}>
+                                  <span style={{ color: FUP_C.textMuted, fontSize: 11 }}>{v.data || "—"}</span>
+                                  <span style={{ color: FUP_C.teal, fontSize: 11, fontWeight: 600 }}>{v.tipo || "Visita"}</span>
+                                </div>
+                                {v.obs && <div style={{ color: FUP_C.textMuted, fontSize: 12, lineHeight: 1.4 }}>{v.obs.replace("[Visitas] ", "")}</div>}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {fupsMkt.length === 0 && visitasSinc.length === 0 && (
+                          <div style={{ color: FUP_C.textDim, fontSize: 12, textAlign: "center", padding: "8px 0" }}>Nenhum FUP registrado ainda.</div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
