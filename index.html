@@ -1097,13 +1097,14 @@ function VisitaModal({ medicos, onSave, onClose }) {
             <input className="form-input" type="number" value={form.fios_esg_estoque} onChange={e => set("fios_esg_estoque", e.target.value)} />
           </div>
           <div className="form-group">
-            <label className="form-label">ESGs agendados hoje</label>
+            <label className="form-label">ESGs agendados hoje <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
             <input className="form-input" type="number" value={form.proc_marcados_esg} onChange={e => set("proc_marcados_esg", e.target.value)}
               style={{borderColor: form.proc_marcados_esg === "" ? "rgba(239,68,68,0.5)" : ""}} />
           </div>
           <div className="form-group">
-            <label className="form-label" style={{color:"var(--teal)"}}>✅ ESGs Realizados desde última visita</label>
-            <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)} />
+            <label className="form-label" style={{color:"var(--teal)"}}>✅ ESGs Realizados desde última visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
+            <input className="form-input" type="number" placeholder="Perguntar ao médico" value={form.proc_realizados_esg} onChange={e => set("proc_realizados_esg", e.target.value)}
+              style={{borderColor: form.proc_realizados_esg === "" ? "rgba(239,68,68,0.5)" : ""}} />
           </div>
           <div className="form-group">
             <label className="form-label">Balões em Estoque</label>
@@ -1176,7 +1177,8 @@ function VisitaModal({ medicos, onSave, onClose }) {
         <div className="btn-row">
           <button className="btn btn-primary" onClick={() => {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
-
+            if (form.proc_marcados_esg === "" || form.proc_marcados_esg === null || form.proc_marcados_esg === undefined) return alert("⚠ ESGs agendados hoje é obrigatório.");
+            if (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined) return alert("⚠ ESGs Realizados desde última visita é obrigatório.");
             if (!form.leao_plus_abordado) return alert("⚠ Leão Plus é obrigatório. Informe se foi abordado nessa visita.");
             if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
             if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
@@ -6087,33 +6089,64 @@ function PacientesReferidoresProject({ data, onChange }) {
 // ════════════════════════════════════════════════════════════════════════════
 function ImersaoMarketingProject({ data, onChange }) {
   const [modal, setModal] = useState(false);
+  const [fupModal, setFupModal] = useState(null);
+  const [expandedImersao, setExpandedImersao] = useState(null);
+  const [activeTab, setActiveTab] = useState("medicos");
   const [form, setForm] = useState({ nome: "", especialidade: "", cidade: "", email: "", instagram: "", site: "" });
+  const [fupForm, setFupForm] = useState({
+    data: "", tipo: "Visita", instagramAtivo: "Sim", seguidores: "", postsMes: "",
+    geoScore: "", llmVisivelChatGPT: "Não", llmVisivelGoogle: "Não",
+    leadsOrganicos: "", procedimentosGerados: "", acoesConcluidas: "", obs: "",
+  });
   const medicos = data?.medicos || [];
   const acoes = data?.acoes || [];
   const updateM = (m) => onChange({ medicos: m, acoes });
+  const updateA = (a) => onChange({ medicos, acoes: a });
   const totals = {
     medicos: medicos.length,
     comSite: medicos.filter((m) => m.site).length,
     comInsta: medicos.filter((m) => m.instagram).length,
-    comVisita: medicos.filter((m) => acoes.some(a => a.medicoId === m.id && a.syncedFromVisitas)).length,
+    leadsGerados: acoes.reduce((a, f) => a + (+f.leadsOrganicos || 0), 0),
+    procedimentos: acoes.reduce((a, f) => a + (+f.procedimentosGerados || 0), 0),
+    mediaGEO: acoes.length > 0 ? (acoes.reduce((a, f) => a + (+f.geoScore || 0), 0) / acoes.length).toFixed(1) : 0,
   };
   const saveMedico = () => {
     updateM([...medicos, { ...form, id: fupUid() }]);
     setModal(false);
     setForm({ nome: "", especialidade: "", cidade: "", email: "", instagram: "", site: "" });
   };
+  const saveFUP = () => {
+    updateA([...acoes, { ...fupForm, medicoId: fupModal, id: fupUid() }]);
+    setFupModal(null);
+    setFupForm({ data: "", tipo: "Visita", instagramAtivo: "Sim", seguidores: "", postsMes: "", geoScore: "", llmVisivelChatGPT: "Não", llmVisivelGoogle: "Não", leadsOrganicos: "", procedimentosGerados: "", acoesConcluidas: "", obs: "" });
+  };
+  const geoData = medicos.map((m) => {
+    const mAcoes = acoes.filter((a) => a.medicoId === m.id);
+    const last = mAcoes[mAcoes.length - 1];
+    return { name: m.nome.split(" ")[0] || "—", GEO: +last?.geoScore || 0, Leads: +last?.leadsOrganicos || 0, Proced: +last?.procedimentosGerados || 0 };
+  });
   return (
     <div>
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 28 }}>
         <FupKPICard label="Médicos" value={totals.medicos} icon="📡" />
         <FupKPICard label="Com Site" value={totals.comSite} color={FUP_C.blue} />
         <FupKPICard label="Com Instagram" value={totals.comInsta} color={FUP_C.purple} />
-        <FupKPICard label="Com Visita" value={totals.comVisita} color={FUP_C.teal} />
+        <FupKPICard label="Leads Orgânicos" value={totals.leadsGerados} color={FUP_C.teal} />
+        <FupKPICard label="Procedimentos" value={totals.procedimentos} color={FUP_C.green} />
+        <FupKPICard label="GEO Score Médio" value={totals.mediaGEO + "/10"} color={totals.mediaGEO >= 6 ? FUP_C.green : FUP_C.yellow} sub="Meta: ≥ 6" />
       </div>
       <div style={{ display: "flex", gap: 8, marginBottom: 20 }}>
+        {["medicos", "dashboard"].map((t) => (
+          <button key={t} onClick={() => setActiveTab(t)} style={{
+            padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer",
+            background: activeTab === t ? FUP_C.yellow : "transparent",
+            color: activeTab === t ? "#000" : FUP_C.textMuted,
+            border: `1px solid ${activeTab === t ? FUP_C.yellow : FUP_C.border}`,
+          }}>{t === "medicos" ? "👨‍⚕️ Médicos" : "📊 Dashboard"}</button>
+        ))}
         <FupBtn onClick={() => setModal(true)} style={{ marginLeft: "auto", background: FUP_C.yellow, color: "#000", border: "none" }}>+ Novo Médico</FupBtn>
       </div>
-      {(
+      {activeTab === "medicos" ? (
         medicos.length === 0 ? (
           <div style={{ textAlign: "center", padding: 48, color: FUP_C.textDim }}>
             <div style={{ fontSize: 40, marginBottom: 12 }}>📡</div>
@@ -6139,33 +6172,46 @@ function ImersaoMarketingProject({ data, onChange }) {
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <FupBtn size="sm" variant="danger" onClick={() => updateM(medicos.filter((x) => x.id !== m.id))}>✕</FupBtn>
+                      <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</FupBtn>
                     </div>
                   </div>
-                  {/* Visitas sincronizadas da aba Visitas */}
-                  {(() => {
-                    const visitas = mAcoes.filter(a => a.syncedFromVisitas).sort((a,b) => new Date(b.data)-new Date(a.data));
-                    return (
-                      <div style={{ marginTop: 14, borderTop: `1px solid ${FUP_C.border}`, paddingTop: 12 }}>
-                        <div style={{ color: FUP_C.teal, fontSize: 10, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 8 }}>🗓 Visitas de Seguimento</div>
-                        {visitas.length > 0 ? visitas.map((v, vi) => (
-                          <div key={vi} style={{ background: FUP_C.bg, borderRadius: 8, padding: "8px 12px", marginBottom: 6, borderLeft: `3px solid ${FUP_C.teal}` }}>
-                            <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 4 }}>
-                              <span style={{ color: FUP_C.textMuted, fontSize: 11 }}>{v.data || "—"}</span>
-                              <span style={{ color: FUP_C.teal, fontSize: 11, fontWeight: 600 }}>{v.tipo || "Visita"}</span>
-                            </div>
-                            {v.obs && <div style={{ color: FUP_C.textMuted, fontSize: 12, lineHeight: 1.4 }}>{v.obs.replace("[Visitas] ", "")}</div>}
-                          </div>
-                        )) : (
-                          <div style={{ color: FUP_C.textDim, fontSize: 12, padding: "4px 0" }}>Nenhuma visita registrada ainda.</div>
-                        )}
-                      </div>
-                    );
-                  })()}
                 </div>
               );
             })}
           </div>
         )
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+          {geoData.length > 0 && (
+            <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+              <FupSectionTitle accent={FUP_C.yellow}>GEO Score, Leads e Procedimentos por Médico</FupSectionTitle>
+              <div style={{color:"#4A6580",textAlign:"center",padding:"20px",fontSize:12}}>📊 Gráfico disponível após inserir dados</div>
+            </div>
+          )}
+          <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20, gridColumn: "span 2" }}>
+            <FupSectionTitle accent={FUP_C.yellow}>📋 KPIs — Imersão Marketing (GEO + Visibilidade Digital)</FupSectionTitle>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12 }}>
+              {[
+                { kpi: "GEO Score do Médico", meta: "≥ 6/10 em M3", freq: "Mensal", alerta: "< 4 = risco de invisibilidade em IA" },
+                { kpi: "Presença em ChatGPT/Gemini", meta: "Mencionado em 3+ queries", freq: "Mensal", alerta: "Não mencionado = Schema/conteúdo incompleto" },
+                { kpi: "Posts/mês (Instagram)", meta: "≥ 12 (3/semana)", freq: "Mensal", alerta: "< 8 = algoritmo penaliza alcance" },
+                { kpi: "Leads orgânicos gerados", meta: "≥ 5/mês em M2", freq: "Mensal", alerta: "0 em M2 = estratégia sem efeito" },
+                { kpi: "Conversão leads digitais", meta: "20–30%", freq: "Mensal", alerta: "< 15% = qualidade do lead ruim" },
+                { kpi: "Procedimentos digitais", meta: "≥ 2/mês em M3", freq: "Mensal", alerta: "0 em M3 = ROI não justificado" },
+                { kpi: "Follow-up account", meta: "Quinzenal (M1), Mensal (M2+)", freq: "Quinzenal/Mensal", alerta: "Sem FUP = perde momentum" },
+                { kpi: "Schema Markup implementado", meta: "FAQ + Person + Medical em D+30", freq: "M1", alerta: "Sem schema = GEO score não sobe" },
+                { kpi: "NPS do médico sobre a imersão", meta: "≥ 8 em M3", freq: "Trimestral", alerta: "< 7 = reposicionar suporte" },
+              ].map((s, i) => (
+                <div key={i} style={{ background: FUP_C.bg, borderRadius: 8, padding: 14, border: `1px solid ${FUP_C.border}` }}>
+                  <div style={{ color: FUP_C.yellow, fontSize: 12, fontWeight: 700, marginBottom: 6 }}>{s.kpi}</div>
+                  <div style={{ color: FUP_C.text, fontSize: 13, fontWeight: 600 }}>Meta: {s.meta}</div>
+                  <div style={{ color: FUP_C.textMuted, fontSize: 11, marginTop: 4 }}>Freq: {s.freq}</div>
+                  <div style={{ color: FUP_C.red, fontSize: 11, marginTop: 4 }}>⚠ {s.alerta}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       )}
       <FupModal open={modal} onClose={() => setModal(false)} title="Adicionar Médico — Imersão Marketing">
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
@@ -6181,7 +6227,27 @@ function ImersaoMarketingProject({ data, onChange }) {
           <FupBtn onClick={saveMedico} style={{ background: FUP_C.yellow, color: "#000" }}>Adicionar</FupBtn>
         </div>
       </FupModal>
-
+      <FupModal open={!!fupModal} onClose={() => setFupModal(null)} title="Follow-up — Imersão Marketing">
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <FupInput label="Data" type="date" value={fupForm.data} onChange={(v) => setFupForm({ ...fupForm, data: v })} />
+          <FupSelect label="Tipo" value={fupForm.tipo} onChange={(v) => setFupForm({ ...fupForm, tipo: v })} options={["Visita", "Call", "WhatsApp", "E-mail"].map((s) => ({ value: s, label: s }))} />
+          <FupSelect label="Instagram Ativo?" value={fupForm.instagramAtivo} onChange={(v) => setFupForm({ ...fupForm, instagramAtivo: v })} options={[{ value: "Sim", label: "Sim" }, { value: "Não", label: "Não" }]} />
+          <FupInput label="Seguidores" type="number" value={fupForm.seguidores} onChange={(v) => setFupForm({ ...fupForm, seguidores: v })} />
+          <FupInput label="Posts/mês" type="number" value={fupForm.postsMes} onChange={(v) => setFupForm({ ...fupForm, postsMes: v })} />
+          <FupInput label="GEO Score (0–10)" type="number" value={fupForm.geoScore} onChange={(v) => setFupForm({ ...fupForm, geoScore: v })} />
+          <FupSelect label="Visível no ChatGPT?" value={fupForm.llmVisivelChatGPT} onChange={(v) => setFupForm({ ...fupForm, llmVisivelChatGPT: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
+          <FupSelect label="Visível no Google/Gemini?" value={fupForm.llmVisivelGoogle} onChange={(v) => setFupForm({ ...fupForm, llmVisivelGoogle: v })} options={[{ value: "Não", label: "Não" }, { value: "Sim", label: "Sim" }, { value: "Parcial", label: "Parcial" }]} />
+          <FupInput label="Leads Orgânicos" type="number" value={fupForm.leadsOrganicos} onChange={(v) => setFupForm({ ...fupForm, leadsOrganicos: v })} />
+          <FupInput label="Procedimentos Gerados" type="number" value={fupForm.procedimentosGerados} onChange={(v) => setFupForm({ ...fupForm, procedimentosGerados: v })} />
+          <div style={{ gridColumn: "span 2" }}>
+            <FupInput label="Observações / Ações concluídas" value={fupForm.obs} onChange={(v) => setFupForm({ ...fupForm, obs: v })} />
+          </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 12, marginTop: 24 }}>
+          <FupBtn variant="ghost" onClick={() => setFupModal(null)}>Cancelar</FupBtn>
+          <FupBtn onClick={saveFUP} style={{ background: FUP_C.yellow, color: "#000" }}>Registrar FUP</FupBtn>
+        </div>
+      </FupModal>
     </div>
   );
 }
