@@ -2207,7 +2207,6 @@ function BriefingIA() {
     // ESG Day — vincular por médico responsável
     const esgDayMed = (fupData.esgDay||[]).filter(e =>
       nomesBatem(e.medico, selectedMedico.nome) ||
-      nomesBatem(e.clinica, selectedMedico.clinica||"") ||
       nomesBatem(e.responsavel, selectedMedico.nome)
     );
     if (esgDayMed.length > 0) {
