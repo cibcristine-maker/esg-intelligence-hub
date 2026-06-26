@@ -830,10 +830,10 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       suporte_marketing: form.suporte_marketing === "Sim",
       acao_mkt: form.acao_mkt || null,
       valor_esperado: form.valor_esperado ? Number(form.valor_esperado) : null,
-      fios_esg_estoque: form.fios_esg_estoque !== "" ? Number(form.fios_esg_estoque) : null,
+      fios_esg_estoque: ["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? form.fios_esg_estoque : (form.fios_esg_estoque !== "" ? Number(form.fios_esg_estoque) : null),
       proc_marcados_esg: form.proc_marcados_esg !== "" ? Number(form.proc_marcados_esg) : null,
       proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
-      baloes_estoque: form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null,
+      baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
       leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : null,
       leao_plus_status: form.leao_plus_status || null,
@@ -891,10 +891,30 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           {inp("Suporte MKT?", "suporte_marketing", "text", ["Sim","Não"])}
           {inp("Ação MKT", "acao_mkt")}
           {inp("$ Esperado (USD)", "valor_esperado", "number")}
-          {inp("Fios ESG Estoque", "fios_esg_estoque", "number")}
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            <label style={{fontSize:11,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Fios ESG Estoque</label>
+            <div style={{display:"flex",gap:6}}>
+              <select value={["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? form.fios_esg_estoque : ""} onChange={e => { if(e.target.value) set("fios_esg_estoque", e.target.value); }} style={{flex:"0 0 auto",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontSize:13,padding:"8px 10px",fontFamily:"inherit",cursor:"pointer"}}>
+                <option value="">—</option>
+                <option value="Não informado">Não informado</option>
+                <option value="Aguardando informação">Aguardando</option>
+              </select>
+              <input className="form-input" type="number" placeholder="Nº" value={["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? "" : form.fios_esg_estoque} onChange={e => set("fios_esg_estoque", e.target.value)} style={{flex:1}} />
+            </div>
+          </div>
           {inp("ESGs Agendados (total até agora no mês)", "proc_marcados_esg", "number")}
           {inp("ESGs Realizados (total até agora no mês)", "proc_realizados_esg", "number")}
-          {inp("Balões Estoque", "baloes_estoque", "number")}
+          <div style={{display:"flex",flexDirection:"column",gap:4}}>
+            <label style={{fontSize:11,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Balões Estoque</label>
+            <div style={{display:"flex",gap:6}}>
+              <select value={["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : ""} onChange={e => { if(e.target.value) set("baloes_estoque", e.target.value); }} style={{flex:"0 0 auto",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontSize:13,padding:"8px 10px",fontFamily:"inherit",cursor:"pointer"}}>
+                <option value="">—</option>
+                <option value="Não informado">Não informado</option>
+                <option value="Aguardando informação">Aguardando</option>
+              </select>
+              <input className="form-input" type="number" placeholder="Nº" value={["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? "" : form.baloes_estoque} onChange={e => set("baloes_estoque", e.target.value)} style={{flex:1}} />
+            </div>
+          </div>
           {inp("Proc. Marcados (Balão)", "proc_marcados_balao", "number")}
           {inp("💛 Leão Plus abordado?", "leao_plus_abordado", "text", ["Sim","Não"])}
           {inp("Status Leão Plus", "leao_plus_status", "text", LEAO_STATUS)}
@@ -976,10 +996,10 @@ function Visitas() {
       acao_mkt: form.acao_mkt || null,
       obs: form.obs || null,
       mes: form.mes || "JUNHO 26",
-      fios_esg_estoque: form.fios_esg_estoque ? Number(form.fios_esg_estoque) : null,
+      fios_esg_estoque: ["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? form.fios_esg_estoque : (form.fios_esg_estoque ? Number(form.fios_esg_estoque) : null),
       proc_marcados_esg: form.proc_marcados_esg ? Number(form.proc_marcados_esg) : null,
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
-      baloes_estoque: form.baloes_estoque ? Number(form.baloes_estoque) : null,
+      baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
       leao_plus_abordado: form.leao_plus_abordado === "sim" ? true : form.leao_plus_abordado === "nao" ? false : null,
       leao_plus_status: form.leao_plus_status || null,
@@ -1178,7 +1198,14 @@ function VisitaModal({ medicos, onSave, onClose }) {
           </div>
           <div className="form-group">
             <label className="form-label">Fios ESG em Estoque</label>
-            <input className="form-input" type="number" value={form.fios_esg_estoque} onChange={e => set("fios_esg_estoque", e.target.value)} />
+            <div style={{display:"flex",gap:6}}>
+              <select value={["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? form.fios_esg_estoque : ""} onChange={e => { if(e.target.value) set("fios_esg_estoque", e.target.value); }} style={{flex:"0 0 auto",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontSize:13,padding:"8px 10px",fontFamily:"inherit",cursor:"pointer"}}>
+                <option value="">—</option>
+                <option value="Não informado">Não informado</option>
+                <option value="Aguardando informação">Aguardando informação</option>
+              </select>
+              <input className="form-input" type="number" placeholder="Nº unidades" value={["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? "" : form.fios_esg_estoque} onChange={e => set("fios_esg_estoque", e.target.value)} style={{flex:1}} />
+            </div>
           </div>
           <div className="form-group form-full">
             <div style={{background:"rgba(20,184,166,0.07)",border:"1px solid rgba(20,184,166,0.25)",borderRadius:10,padding:"12px 14px"}}>
@@ -1200,7 +1227,14 @@ function VisitaModal({ medicos, onSave, onClose }) {
           </div>
           <div className="form-group">
             <label className="form-label">Balões em Estoque</label>
-            <input className="form-input" type="number" value={form.baloes_estoque} onChange={e => set("baloes_estoque", e.target.value)} />
+            <div style={{display:"flex",gap:6}}>
+              <select value={["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : ""} onChange={e => { if(e.target.value) set("baloes_estoque", e.target.value); }} style={{flex:"0 0 auto",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,color:"var(--text)",fontSize:13,padding:"8px 10px",fontFamily:"inherit",cursor:"pointer"}}>
+                <option value="">—</option>
+                <option value="Não informado">Não informado</option>
+                <option value="Aguardando informação">Aguardando informação</option>
+              </select>
+              <input className="form-input" type="number" placeholder="Nº unidades" value={["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? "" : form.baloes_estoque} onChange={e => set("baloes_estoque", e.target.value)} style={{flex:1}} />
+            </div>
           </div>
           <div className="form-group form-full">
             <label className="form-label">Ação Prevista</label>
