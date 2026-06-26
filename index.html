@@ -521,6 +521,89 @@ function useSupabase(table, deps = []) {
   return { data, loading, refresh: fetch };
 }
 // ─── DASHBOARD ─────────────────────────────────────────────────────────────
+function EsgAgendadosMes() {
+  const MESES_2026 = ["JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
+  const STORAGE_KEY = "esg_agendados_mes_2026";
+  const [dados, setDados] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch { return {}; }
+  });
+  const [editing, setEditing] = React.useState(null);
+  const [inputVal, setInputVal] = React.useState("");
+  const total = Object.values(dados).reduce((s, v) => s + (Number(v) || 0), 0);
+
+  function handleSave(mes) {
+    const novo = { ...dados, [mes]: inputVal === "" ? null : Number(inputVal) };
+    setDados(novo);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(novo));
+    setEditing(null);
+    setInputVal("");
+  }
+
+  function handleEdit(mes) {
+    setEditing(mes);
+    setInputVal(dados[mes] != null ? String(dados[mes]) : "");
+  }
+
+  function handleClear(mes) {
+    const novo = { ...dados };
+    delete novo[mes];
+    setDados(novo);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(novo));
+  }
+
+  return (
+    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"14px 16px",marginBottom:16}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase"}}>📅 ESG Agendados — Jul–Dez 2026</div>
+        <div style={{fontSize:11,color:"var(--muted)"}}>Total: <span style={{color:"var(--gold)",fontWeight:700,fontFamily:"DM Mono"}}>{total}</span></div>
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8}}>
+        {MESES_2026.map(mes => {
+          const val = dados[mes];
+          const hasVal = val != null && val !== "";
+          const isEditing = editing === mes;
+          return (
+            <div key={mes} style={{background:"var(--surface2)",border:`1px solid ${hasVal ? "var(--teal)" : "var(--border)"}`,borderRadius:8,padding:"10px 10px 8px",position:"relative"}}>
+              <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:6}}>{mes}</div>
+              {isEditing ? (
+                <div style={{display:"flex",gap:4,alignItems:"center"}}>
+                  <input
+                    type="number"
+                    min="0"
+                    value={inputVal}
+                    onChange={e => setInputVal(e.target.value)}
+                    onKeyDown={e => { if(e.key==="Enter") handleSave(mes); if(e.key==="Escape"){setEditing(null);setInputVal("");} }}
+                    autoFocus
+                    style={{width:"100%",background:"var(--surface)",border:"1px solid var(--teal)",borderRadius:6,color:"var(--text)",fontSize:16,fontFamily:"DM Mono",fontWeight:700,padding:"4px 6px",outline:"none"}}
+                  />
+                  <button onClick={() => handleSave(mes)} style={{background:"var(--teal)",border:"none",borderRadius:6,color:"#0a0e1a",fontSize:12,fontWeight:700,padding:"5px 8px",cursor:"pointer",whiteSpace:"nowrap"}}>✓</button>
+                </div>
+              ) : (
+                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+                  <span
+                    onClick={() => handleEdit(mes)}
+                    style={{fontSize:22,fontWeight:700,fontFamily:"DM Mono",color:hasVal?"var(--teal)":"var(--border)",cursor:"pointer",lineHeight:1}}
+                  >
+                    {hasVal ? val : "—"}
+                  </span>
+                  <div style={{display:"flex",flexDirection:"column",gap:3}}>
+                    <button onClick={() => handleEdit(mes)} style={{background:"none",border:"1px solid var(--border)",borderRadius:4,color:"var(--muted)",fontSize:10,padding:"2px 5px",cursor:"pointer",lineHeight:1}}>✎</button>
+                    {hasVal && <button onClick={() => handleClear(mes)} style={{background:"none",border:"1px solid rgba(239,68,68,0.3)",borderRadius:4,color:"rgba(239,68,68,0.6)",fontSize:10,padding:"2px 5px",cursor:"pointer",lineHeight:1}}>✕</button>}
+                  </div>
+                </div>
+              )}
+              {hasVal && <div style={{fontSize:9,color:"var(--muted)",marginTop:4}}>proc. agendados</div>}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function Dashboard() {
   const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
@@ -605,6 +688,7 @@ function Dashboard() {
               <div className="kpi-sub">na carteira</div>
             </div>
           </div>
+          <EsgAgendadosMes />
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"14px 16px",marginBottom:16}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:10}}>📋 Parâmetros de Sucesso</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
