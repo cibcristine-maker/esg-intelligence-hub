@@ -4534,6 +4534,553 @@ function FeedbacksIA() {
     </div>
   );
 }
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PHYSICIAN HEALTH SCORE — ESG Intelligence Hub
+// Calcula score 0-100 por médico com dados reais de visitas + perfil_medico
+// ═══════════════════════════════════════════════════════════════════════════
+function PhysicianHealthScore() {
+  const { data: medicos, loading: loadMed } = useSupabase("perfil_medico");
+  const { data: todasVisitas, loading: loadVis } = useSupabase("visitas");
+  const [selected, setSelected] = React.useState(null);
+  const [filterZone, setFilterZone] = React.useState("all");
+  const [search, setSearch] = React.useState("");
+  const [activeView, setActiveView] = React.useState("portfolio"); // portfolio | framework
+
+  // ── Paleta interna (alinha com Hub) ──────────────────────────────────────
+  const PC = {
+    navy:    "#0D1B2A",
+    navyMid: "#1A2E42",
+    navyLt:  "#243B55",
+    green:   "#00C896",
+    amber:   "#F5A623",
+    red:     "#E8445A",
+    slate:   "#8FA3B8",
+    white:   "#FFFFFF",
+    offWhite:"#F0F4F8",
+  };
+
+  // ── Períodos de referência ─────────────────────────────────────────────
+  const now = new Date();
+  const cutoff90 = new Date(now); cutoff90.setDate(now.getDate() - 90);
+  const cutoff45 = new Date(now); cutoff45.setDate(now.getDate() - 45);
+  const cutoffPrev = new Date(now); cutoffPrev.setDate(now.getDate() - 180);
+
+  // ── Cálculo do score por médico ───────────────────────────────────────
+  function calcScore(medico, visitas) {
+    const visMed = visitas.filter(v => nomesBatem(v.medico_nome, medico.nome));
+    const vis90  = visMed.filter(v => new Date(v.data_contato) >= cutoff90);
+    const visPrev = visMed.filter(v => new Date(v.data_contato) >= cutoffPrev && new Date(v.data_contato) < cutoff90);
+
+    // — DIMENSÃO 1: Volume de procedimentos (peso 30%) ————————————————
+    const esgAtual  = vis90.reduce((s, v) => s + (Number(v.proc_realizados_esg) || 0), 0);
+    const esgAnterior = visPrev.reduce((s, v) => s + (Number(v.proc_realizados_esg) || 0), 0);
+    const bibAtual  = vis90.reduce((s, v) => {
+      const b = v.baloes_estoque;
+      return s + (typeof b === "number" ? b : 0);
+    }, 0);
+
+    // Score ESG: 0=0, 4=40, 8=80, 12+=100
+    const scoreEsg = Math.min(100, esgAtual * 10);
+    // Score BIB: 0=0, 3=50, 6+=100
+    const scoreBib = Math.min(100, bibAtual * 16);
+    // Tendência
+    let scoreTrend = 50;
+    if (esgAnterior > 0) {
+      const delta = (esgAtual - esgAnterior) / esgAnterior;
+      scoreTrend = delta >= 0.1 ? 90 : delta >= -0.1 ? 60 : 20;
+    } else if (esgAtual > 0) {
+      scoreTrend = 70;
+    }
+    const dimProc = Math.round((scoreEsg * 0.6 + scoreBib * 0.2 + scoreTrend * 0.2));
+
+    // — DIMENSÃO 2: Engajamento Comercial (peso 25%) ——————————————————
+    const visitas90Count = vis90.length;
+    const presenciais90 = vis90.filter(v => v.canal === "Presencial").length;
+    const diasUltimaVisita = visMed.length > 0
+      ? Math.floor((now - new Date(visMed.sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0].data_contato)) / 86400000)
+      : 999;
+
+    const scoreVisitas = Math.min(100, visitas90Count * 20); // 5 visitas = 100
+    const scorePresencial = Math.min(100, presenciais90 * 33);
+    const scoreRecencia = diasUltimaVisita <= 30 ? 100 : diasUltimaVisita <= 45 ? 70 : diasUltimaVisita <= 90 ? 40 : 10;
+    const dimEng = Math.round((scoreVisitas * 0.4 + scorePresencial * 0.3 + scoreRecencia * 0.3));
+
+    // — DIMENSÃO 3: Presença Digital / GEO (peso 20%) ———————————————
+    // Usa dados do geoData estático se disponível, senão usa perfil_medico
+    const geoMed = typeof geoData !== "undefined"
+      ? geoData.find(g => nomesBatem(g.nome, medico.nome))
+      : null;
+    let dimGeo = 40; // default médio-baixo se não há dados
+    if (geoMed) {
+      const scores = [geoMed.score_chatgpt, geoMed.score_gemini, geoMed.score_perplexity, geoMed.score_claude, geoMed.score_grok]
+        .filter(s => s != null);
+      if (scores.length > 0) {
+        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        dimGeo = Math.round((avg / 3) * 100); // escala 0-3 → 0-100
+      }
+    } else if (medico.geo_score != null) {
+      dimGeo = Math.round((medico.geo_score / 3) * 100);
+    }
+
+    // — DIMENSÃO 4: Desfechos Clínicos (peso 15%) ————————————————————
+    // Proxy: % visitas com proc_realizados > 0 e consistência trimestral
+    const visComEsg = vis90.filter(v => Number(v.proc_realizados_esg) > 0).length;
+    const consistencia = vis90.length > 0 ? (visComEsg / vis90.length) : 0;
+    // Sem dados diretos de EWL, usamos consistência de realização como proxy
+    const dimDesfechos = vis90.length === 0 ? 30 : Math.round(
+      consistencia >= 0.8 ? 85 :
+      consistencia >= 0.5 ? 65 :
+      consistencia >= 0.2 ? 45 : 25
+    );
+
+    // — DIMENSÃO 5: Lealdade (peso 10%) ———————————————————————————————
+    // Tier como proxy: ST/1 = alta lealdade, 4/5 = menor
+    const tierMap = { "ST": 95, "1": 85, "2": 70, "3": 55, "4": 40, "5": 30 };
+    const dimLealdade = tierMap[String(medico.tier)] || 50;
+
+    // — SCORE FINAL (ponderado) ————————————————————————————————————————
+    const total = Math.round(
+      dimProc      * 0.30 +
+      dimEng       * 0.25 +
+      dimGeo       * 0.20 +
+      dimDesfechos * 0.15 +
+      dimLealdade  * 0.10
+    );
+
+    // — ALERTAS ————————————————————————————————————————————————————————
+    const alertas = [];
+    if (esgAnterior > 0 && (esgAtual / esgAnterior) < 0.85) alertas.push("⚠ Queda >15% em procedimentos");
+    if (total < 40) alertas.push("🔴 Score crítico — intervenção urgente");
+    if (dimGeo < 35) alertas.push("🌐 Invisibilidade digital crítica");
+    if (diasUltimaVisita > 45 && total < 80) alertas.push(`📅 Sem visita há ${diasUltimaVisita}d`);
+
+    return {
+      total,
+      dims: {
+        procedimentos: dimProc,
+        engajamento:   dimEng,
+        digital:       dimGeo,
+        desfechos:     dimDesfechos,
+        lealdade:      dimLealdade,
+      },
+      raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, presenciais90, diasUltimaVisita, consistencia },
+      alertas,
+    };
+  }
+
+  // ── Zona e cor ────────────────────────────────────────────────────────
+  function zone(score) { return score >= 80 ? "green" : score >= 50 ? "yellow" : "red"; }
+  function zoneColor(z) { return { green: PC.green, yellow: PC.amber, red: PC.red }[z]; }
+  function zoneLabel(z) { return { green: "Saudável", yellow: "Atenção", red: "Em Risco" }[z]; }
+
+  // ── Dados computados ──────────────────────────────────────────────────
+  const scoredMedicos = React.useMemo(() => {
+    if (!medicos || !todasVisitas) return [];
+    return medicos.map(m => ({
+      ...m,
+      _score: calcScore(m, todasVisitas),
+    })).sort((a, b) => b._score.total - a._score.total);
+  }, [medicos, todasVisitas]);
+
+  const filtrados = scoredMedicos.filter(m => {
+    const z = zone(m._score.total);
+    if (filterZone !== "all" && z !== filterZone) return false;
+    if (search && !m.nome?.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  const counts = { green: 0, yellow: 0, red: 0 };
+  scoredMedicos.forEach(m => counts[zone(m._score.total)]++);
+  const avgScore = scoredMedicos.length
+    ? Math.round(scoredMedicos.reduce((s, m) => s + m._score.total, 0) / scoredMedicos.length)
+    : 0;
+
+  // ── Playbooks ─────────────────────────────────────────────────────────
+  const PLAYBOOKS = {
+    green: [
+      "Candidato a Advisory Board e evento científico",
+      "Co-criar case clínico ou artigo de resultados",
+      "Apresentar Orbera 365 / próximas inovações",
+      "Propor modelo de referência para endocrinologistas parceiros",
+      "Nomear para Key Opinion Leader regional",
+    ],
+    yellow: [
+      "Visita de diagnóstico: identificar gap de procedimento, digital ou clínico",
+      "Gerar Briefing IA personalizado via ESG Hub",
+      "Oferecer treinamento técnico ou refresh de protocolo",
+      "Apoio com ClinicFlow para estruturar FUP de pacientes",
+      "Verificar fricção operacional: supply, faturamento, estoque",
+    ],
+    red: [
+      "Reunião de revisão com AE + liderança Endura em até 7 dias",
+      "Diagnóstico GEO urgente + plano de recuperação digital",
+      "Investigar uso de concorrente e endereçar objeções diretamente",
+      "Oferecer mutirão / parceria SBCBM como reativação (Programa Ponte)",
+      "Avaliar viabilidade de manutenção na carteira ativa vs reativação futura",
+    ],
+  };
+
+  const DIM_LABELS = [
+    { id: "procedimentos", label: "Procedimentos", icon: "🔬", weight: "30%" },
+    { id: "engajamento",   label: "Engajamento",   icon: "🤝", weight: "25%" },
+    { id: "digital",       label: "GEO Digital",   icon: "🌐", weight: "20%" },
+    { id: "desfechos",     label: "Desfechos",     icon: "📊", weight: "15%" },
+    { id: "lealdade",      label: "Lealdade",      icon: "⭐", weight: "10%" },
+  ];
+
+  // ── ScoreRing ─────────────────────────────────────────────────────────
+  function ScoreRing({ score, size = 64 }) {
+    const z = zone(score);
+    const color = zoneColor(z);
+    const r = (size - 6) / 2;
+    const circ = 2 * Math.PI * r;
+    const dash = (score / 100) * circ;
+    return (
+      <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
+        <svg width={size} height={size} style={{ transform: "rotate(-90deg)" }}>
+          <circle cx={size/2} cy={size/2} r={r} fill="none" stroke={PC.navyLt} strokeWidth={5} />
+          <circle cx={size/2} cy={size/2} r={r} fill="none"
+            stroke={color} strokeWidth={5}
+            strokeDasharray={`${dash} ${circ-dash}`} strokeLinecap="round"
+            style={{ transition: "stroke-dasharray 0.5s ease" }}
+          />
+        </svg>
+        <div style={{ position:"absolute", inset:0, display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}>
+          <span style={{ fontSize: size*0.28, fontWeight:800, color, lineHeight:1 }}>{score}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadMed || loadVis) return (
+    <div style={{ padding: 40, textAlign: "center", color: PC.slate }}>
+      Carregando dados dos médicos...
+    </div>
+  );
+
+  const sel = selected ? scoredMedicos.find(m => m.id === selected) : null;
+
+  return (
+    <div style={{ padding: "20px 24px", fontFamily: "'DM Sans', sans-serif", color: PC.white }}>
+
+      {/* Header */}
+      <div style={{ display:"flex", alignItems:"flex-start", justifyContent:"space-between", marginBottom:20, flexWrap:"wrap", gap:12 }}>
+        <div>
+          <div style={{ fontSize:10, color: PC.green, fontWeight:700, letterSpacing:2, marginBottom:4 }}>
+            ESG INTELLIGENCE HUB · CUSTOMER SUCCESS
+          </div>
+          <h2 style={{ margin:0, fontSize:22, fontWeight:800,
+            background:`linear-gradient(90deg, ${PC.white}, ${PC.green})`,
+            WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
+            Physician Health Score
+          </h2>
+          <div style={{ fontSize:12, color: PC.slate, marginTop:3 }}>
+            Score 0–100 calculado com dados reais de visitas · {scoredMedicos.length} médicos na carteira
+          </div>
+        </div>
+        <div style={{ display:"flex", gap:6 }}>
+          {["portfolio","framework"].map(v => (
+            <button key={v} onClick={() => setActiveView(v)} style={{
+              background: activeView===v ? PC.green : PC.navyLt,
+              color: activeView===v ? PC.navy : PC.slate,
+              border:"none", borderRadius:8, padding:"8px 16px",
+              fontSize:12, fontWeight:700, cursor:"pointer", transition:"all 0.2s",
+            }}>
+              {v === "portfolio" ? "📋 Portfólio" : "🏗️ Framework"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {activeView === "framework" ? (
+        /* ─── FRAMEWORK VIEW ─────────────────────────────────────────────── */
+        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:16 }}>
+          {/* Dimensões */}
+          <div style={{ background: PC.navyMid, borderRadius:12, padding:"18px 20px", border:`1px solid ${PC.navyLt}` }}>
+            <div style={{ fontSize:11, color: PC.green, fontWeight:700, letterSpacing:1, marginBottom:14 }}>
+              5 DIMENSÕES PONDERADAS
+            </div>
+            {DIM_LABELS.map(d => (
+              <div key={d.id} style={{ display:"flex", alignItems:"center", gap:10, padding:"10px 0",
+                borderBottom:`1px solid ${PC.navyLt}` }}>
+                <span style={{ fontSize:20 }}>{d.icon}</span>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:13, fontWeight:600, color: PC.offWhite }}>{d.label}</div>
+                </div>
+                <span style={{ background:`${PC.green}22`, color: PC.green, fontSize:12, fontWeight:700,
+                  padding:"3px 10px", borderRadius:20, border:`1px solid ${PC.green}44` }}>
+                  {d.weight}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Zonas e alertas */}
+          <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+            {[
+              { z:"green", label:"VERDE 80–100", desc:"Expansão: Advisory Board, co-criação, novos produtos" },
+              { z:"yellow", label:"AMARELO 50–79", desc:"Reativação: diagnóstico, briefing IA, refresh protocolo" },
+              { z:"red", label:"VERMELHO < 50", desc:"Intervenção: reunião urgente, GEO, investigar concorrente" },
+            ].map(({ z, label, desc }) => (
+              <div key={z} style={{ background: zoneColor(z)+"14", border:`1.5px solid ${zoneColor(z)}44`,
+                borderRadius:10, padding:"14px 16px" }}>
+                <div style={{ fontSize:13, fontWeight:700, color: zoneColor(z), marginBottom:4 }}>{label}</div>
+                <div style={{ fontSize:12, color: PC.slate, lineHeight:1.5 }}>{desc}</div>
+              </div>
+            ))}
+            <div style={{ background: PC.navyMid, borderRadius:10, padding:"14px 16px", border:`1px solid ${PC.navyLt}` }}>
+              <div style={{ fontSize:11, color: PC.amber, fontWeight:700, letterSpacing:1, marginBottom:8 }}>
+                ALERTAS AUTOMÁTICOS
+              </div>
+              {[
+                "Queda >15% em procedimentos vs. período anterior",
+                "Score total abaixo de 40",
+                "Invisibilidade digital crítica (GEO < 35)",
+                "Sem visita há mais de 45 dias (contas Amarelas/Vermelhas)",
+              ].map((a,i) => (
+                <div key={i} style={{ fontSize:11, color: PC.offWhite, padding:"5px 0",
+                  borderBottom: i<3 ? `1px solid ${PC.navyLt}` : "none" }}>
+                  ⚠ {a}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Nota metodológica */}
+          <div style={{ gridColumn:"1/-1", background: PC.navyMid, borderRadius:10, padding:"14px 18px",
+            border:`1px solid ${PC.navyLt}`, fontSize:12, color: PC.slate, lineHeight:1.6 }}>
+            <span style={{ color: PC.white, fontWeight:600 }}>Dados utilizados automaticamente: </span>
+            <strong style={{ color: PC.offWhite }}>Procedimentos</strong> (proc_realizados_esg, baloes_estoque das Visitas) ·{" "}
+            <strong style={{ color: PC.offWhite }}>Engajamento</strong> (frequência + canal + recência das Visitas) ·{" "}
+            <strong style={{ color: PC.offWhite }}>GEO Digital</strong> (geo_score do perfil_medico ou GeoTrack) ·{" "}
+            <strong style={{ color: PC.offWhite }}>Desfechos</strong> (consistência de realização vs. agendamento) ·{" "}
+            <strong style={{ color: PC.offWhite }}>Lealdade</strong> (Tier do perfil_medico).
+            Score calculado ao vivo — atualiza a cada nova visita registrada.
+          </div>
+        </div>
+
+      ) : (
+        /* ─── PORTFOLIO VIEW ─────────────────────────────────────────────── */
+        <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, alignItems:"start" }}>
+
+          {/* Sidebar */}
+          <div>
+            {/* KPIs resumo */}
+            <div style={{ background: PC.navyMid, borderRadius:10, padding:"14px 16px",
+              border:`1px solid ${PC.navyLt}`, marginBottom:12 }}>
+              <div style={{ display:"flex", gap:8, marginBottom:10 }}>
+                {[
+                  { label:"Saudável", count: counts.green, color: PC.green },
+                  { label:"Atenção",  count: counts.yellow, color: PC.amber },
+                  { label:"Em Risco", count: counts.red,   color: PC.red },
+                ].map(z => (
+                  <div key={z.label} onClick={() => setFilterZone(filterZone === z.label.toLowerCase().split(" ")[0] ? "all" : zone(z.color === PC.green ? 100 : z.color === PC.amber ? 65 : 30))}
+                    style={{ flex:1, background:`${z.color}18`, border:`1px solid ${z.color}44`,
+                      borderRadius:8, padding:"8px 4px", textAlign:"center", cursor:"pointer" }}>
+                    <div style={{ fontSize:20, fontWeight:800, color: z.color }}>{z.count}</div>
+                    <div style={{ fontSize:9, color: PC.slate, marginTop:2 }}>{z.label}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display:"flex", justifyContent:"space-between", fontSize:11,
+                padding:"8px 0", borderTop:`1px solid ${PC.navyLt}` }}>
+                <span style={{ color: PC.slate }}>Score médio da carteira</span>
+                <span style={{ fontWeight:700, color: zoneColor(zone(avgScore)) }}>{avgScore}</span>
+              </div>
+            </div>
+
+            {/* Filtros */}
+            <div style={{ display:"flex", gap:6, marginBottom:10 }}>
+              {["all","green","yellow","red"].map(f => (
+                <button key={f} onClick={() => setFilterZone(f)} style={{
+                  flex:1, background: filterZone===f
+                    ? (f==="all" ? PC.navyLt : zoneColor(f)+"33")
+                    : "transparent",
+                  color: f==="all" ? PC.slate : zoneColor(f),
+                  border: `1px solid ${filterZone===f ? (f==="all" ? PC.navyLt : zoneColor(f)) : PC.navyLt}`,
+                  borderRadius:6, padding:"5px 0", fontSize:10, fontWeight:700, cursor:"pointer",
+                }}>
+                  {f==="all" ? "Todos" : f==="green" ? "🟢" : f==="yellow" ? "🟡" : "🔴"}
+                </button>
+              ))}
+            </div>
+            <input
+              placeholder="Buscar médico..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{ width:"100%", background: PC.navyLt, border:`1px solid #243B55`,
+                borderRadius:8, padding:"8px 12px", color: PC.white, fontSize:12,
+                fontFamily:"inherit", marginBottom:10, boxSizing:"border-box",
+                outline:"none" }}
+            />
+
+            {/* Lista */}
+            <div style={{ display:"flex", flexDirection:"column", gap:6, maxHeight:"60vh", overflowY:"auto" }}>
+              {filtrados.map(m => {
+                const sc = m._score.total;
+                const z = zone(sc);
+                const color = zoneColor(z);
+                const isSel = selected === m.id;
+                return (
+                  <div key={m.id} onClick={() => setSelected(isSel ? null : m.id)} style={{
+                    background: isSel ? PC.navyMid : PC.navyLt,
+                    border: `1.5px solid ${isSel ? color : "transparent"}`,
+                    borderRadius:10, padding:"12px 14px", cursor:"pointer",
+                    transition:"all 0.2s", display:"flex", alignItems:"center", gap:12,
+                  }}>
+                    <ScoreRing score={sc} size={50} />
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <div style={{ fontWeight:700, fontSize:12, color: PC.white,
+                        overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
+                        {m.nome}
+                      </div>
+                      <div style={{ fontSize:10, color: PC.slate, marginTop:2 }}>
+                        {m.estado || m.cidade || "—"} · T{m.tier || "?"}
+                      </div>
+                      {m._score.alertas.length > 0 && (
+                        <div style={{ fontSize:10, color: PC.amber, marginTop:3 }}>
+                          {m._score.alertas[0]}
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ background:`${color}22`, color, fontSize:10, fontWeight:700,
+                      padding:"2px 8px", borderRadius:20, border:`1px solid ${color}44`,
+                      whiteSpace:"nowrap", flexShrink:0 }}>
+                      {zoneLabel(z)}
+                    </div>
+                  </div>
+                );
+              })}
+              {filtrados.length === 0 && (
+                <div style={{ textAlign:"center", color: PC.slate, padding:"24px 0", fontSize:13 }}>
+                  Nenhum médico encontrado.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Detalhe do médico */}
+          {sel ? (() => {
+            const sc = sel._score;
+            const z = zone(sc.total);
+            const color = zoneColor(z);
+            return (
+              <div>
+                {/* Header */}
+                <div style={{ background:`linear-gradient(135deg, ${PC.navyMid}, ${PC.navyLt})`,
+                  borderRadius:12, padding:"20px 24px", marginBottom:16,
+                  border:`1.5px solid ${color}44`, display:"flex", alignItems:"center", gap:20 }}>
+                  <ScoreRing score={sc.total} size={88} />
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:20, fontWeight:800, color: PC.white }}>{sel.nome}</div>
+                    <div style={{ fontSize:12, color: PC.slate, marginTop:3 }}>
+                      {sel.estado || "—"} · Tier {sel.tier || "?"} · {sel.perfil_medico || sel.estagio_bsci || "—"}
+                    </div>
+                    <div style={{ marginTop:10, display:"flex", gap:8, flexWrap:"wrap" }}>
+                      <div style={{ background:`${color}22`, color, fontSize:12, fontWeight:700,
+                        padding:"4px 14px", borderRadius:20, border:`1px solid ${color}55` }}>
+                        {zoneLabel(z)}
+                      </div>
+                      {sc.alertas.map((a,i) => (
+                        <div key={i} style={{ background:"rgba(245,166,35,0.12)", color: PC.amber,
+                          fontSize:11, padding:"4px 10px", borderRadius:20,
+                          border:"1px solid rgba(245,166,35,0.3)" }}>
+                          {a}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dimensões + dados brutos */}
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:12, marginBottom:14 }}>
+                  {/* Score por dimensão */}
+                  <div style={{ background: PC.navyMid, borderRadius:12, padding:"16px 18px",
+                    border:`1px solid ${PC.navyLt}` }}>
+                    <div style={{ fontSize:11, color: PC.green, fontWeight:700, letterSpacing:1, marginBottom:12 }}>
+                      SCORE POR DIMENSÃO
+                    </div>
+                    {DIM_LABELS.map(d => {
+                      const s = sc.dims[d.id];
+                      const dz = zone(s);
+                      const dc = zoneColor(dz);
+                      return (
+                        <div key={d.id} style={{ display:"flex", alignItems:"center", gap:8,
+                          padding:"7px 0", borderBottom:`1px solid ${PC.navyLt}` }}>
+                          <span style={{ fontSize:16, width:22 }}>{d.icon}</span>
+                          <span style={{ flex:1, fontSize:11, color: PC.offWhite }}>{d.label}</span>
+                          <div style={{ width:70, background: PC.navyLt, borderRadius:4, height:5 }}>
+                            <div style={{ width:`${s}%`, height:"100%", background: dc, borderRadius:4,
+                              transition:"width 0.5s" }} />
+                          </div>
+                          <span style={{ width:28, textAlign:"right", fontSize:12, fontWeight:700, color: dc }}>{s}</span>
+                          <span style={{ fontSize:9, color: PC.slate, width:26 }}>{d.weight}</span>
+                        </div>
+                      );
+                    })}
+                    <div style={{ display:"flex", justifyContent:"space-between", marginTop:10,
+                      paddingTop:8, borderTop:`2px solid ${color}44` }}>
+                      <span style={{ fontSize:12, fontWeight:700, color: PC.white }}>Health Score Total</span>
+                      <span style={{ fontSize:18, fontWeight:800, color }}>{sc.total}</span>
+                    </div>
+                  </div>
+
+                  {/* Dados brutos */}
+                  <div style={{ background: PC.navyMid, borderRadius:12, padding:"16px 18px",
+                    border:`1px solid ${PC.navyLt}` }}>
+                    <div style={{ fontSize:11, color: PC.slate, fontWeight:700, letterSpacing:1, marginBottom:12 }}>
+                      DADOS DOS ÚLTIMOS 90 DIAS
+                    </div>
+                    {[
+                      ["ESG realizados", sc.raw.esgAtual],
+                      ["BIB (estoque)", sc.raw.bibAtual],
+                      ["Visitas totais", sc.raw.visitas90Count],
+                      ["Visitas presenciais", sc.raw.presenciais90],
+                      ["Última visita", sc.raw.diasUltimaVisita < 999 ? `${sc.raw.diasUltimaVisita}d atrás` : "—"],
+                      ["Consistência de realiz.", `${Math.round(sc.raw.consistencia*100)}%`],
+                    ].map(([label, val]) => (
+                      <div key={label} style={{ display:"flex", justifyContent:"space-between",
+                        padding:"6px 0", borderBottom:`1px solid ${PC.navyLt}`,
+                        fontSize:12 }}>
+                        <span style={{ color: PC.slate }}>{label}</span>
+                        <span style={{ fontWeight:700, color: PC.white }}>{val}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Playbook */}
+                <div style={{ background:`${color}12`, border:`1.5px solid ${color}44`,
+                  borderRadius:12, padding:"16px 20px" }}>
+                  <div style={{ fontSize:11, color, fontWeight:700, letterSpacing:1, marginBottom:12 }}>
+                    PLAYBOOK RECOMENDADO — {zoneLabel(z).toUpperCase()}
+                  </div>
+                  {PLAYBOOKS[z].map((action, i) => (
+                    <div key={i} style={{ display:"flex", gap:10, padding:"8px 0",
+                      borderBottom: i<PLAYBOOKS[z].length-1 ? `1px solid ${color}22` : "none",
+                      fontSize:12, color: PC.offWhite }}>
+                      <span style={{ color, fontWeight:700, minWidth:20 }}>{i+1}.</span>
+                      <span>{action}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })() : (
+            <div style={{ display:"flex", flexDirection:"column", alignItems:"center",
+              justifyContent:"center", height:300, color: PC.slate, textAlign:"center" }}>
+              <div style={{ fontSize:36, marginBottom:12 }}>👆</div>
+              <div style={{ fontSize:14, fontWeight:600, color: PC.offWhite }}>Selecione um médico</div>
+              <div style={{ fontSize:12, marginTop:6 }}>para ver o health score detalhado e playbook de ação</div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── APP ROOT ──────────────────────────────────────────────────────────────
 const TABS = [
   { id:"dashboard",  label:"Dashboard",       icon:"◈" },
@@ -4548,6 +5095,7 @@ const TABS = [
   { id:"biblioteca", label:"Biblioteca", icon:"📚" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
   { id:"feedbacks", label:"Feedbacks IA", icon:"💬" },
+  { id:"phs", label:"Health Score", icon:"💚" },
 ];
 // ════════════════════════════════════════════════════════════════
 // FUP PROJETOS — ESG Intelligence Hub
@@ -7118,6 +7666,7 @@ function App() {
         {tab === "feedbacks"   && <FeedbacksIA />}
         {tab === "biblioteca"  && <Biblioteca />}
         {tab === "briefingIA"  && <BriefingIA />}
+        {tab === "phs"        && <PhysicianHealthScore />}
       </main>
     </div>
   );
