@@ -4854,8 +4854,9 @@ function PhysicianHealthScore() {
       // Entre ideal e máximo: mantém 100
       dimEng = 100;
     } else {
-      // Over-visiting: mantém 100, alerta já gerado acima
-      dimEng = 100;
+      // Over-visiting: penaliza proporcionalmente além do máximo
+      const excesso = v - cad.max;
+      dimEng = Math.max(20, Math.round(100 - excesso * 20));
     }
 
     // Alerta de sub-cobertura ou over-visiting
@@ -5162,12 +5163,6 @@ function PhysicianHealthScore() {
           </div>
         </div>
 
-        <PainelCobertura
-          scoredMedicos={scoredMedicos}
-          onSelectMedico={(id) => { setSelected(id); setActiveView("portfolio"); }}
-          PC={PC}
-        />
-
       ) : (
         /* ─── PORTFOLIO VIEW ─────────────────────────────────────────────── */
         <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, alignItems:"start" }}>
@@ -5422,73 +5417,6 @@ function PhysicianHealthScore() {
         </div>
       )}
     </div>
-  );
-}
-
-// ─── PAINEL DE COBERTURA ───────────────────────────────────────────────────
-function PainelCobertura({ scoredMedicos, onSelectMedico, PC }) {
-  const over = [], sub = [], sem = [];
-  scoredMedicos.forEach(function(m) {
-    var r = m._score && m._score.raw;
-    if (!r) return;
-    if (r.visitas90Count === 0) {
-      sem.push(m);
-    } else if (r.cadMax !== "∞" && r.visitas90Count > Number(r.cadMax)) {
-      over.push(m);
-    } else if (r.visitas90Count < r.cadMin) {
-      sub.push(m);
-    }
-  });
-  if (!over.length && !sub.length && !sem.length) return null;
-  var cols = [
-    { label: "⚠ Over-visiting", list: over, color: PC.amber,
-      desc: function(m) { return m._score.raw.visitas90Count + "v (máx T" + m._score.raw.tier + ": " + m._score.raw.cadMax + ")"; } },
-    { label: "📉 Sub-cobertura", list: sub, color: PC.red,
-      desc: function(m) { return m._score.raw.visitas90Count + "v (mín T" + m._score.raw.tier + ": " + m._score.raw.cadMin + ")"; } },
-    { label: "🚫 Sem visita 90d", list: sem, color: PC.red,
-      desc: function(m) { return "T" + (m._score.raw.tier || "?"); } },
-  ];
-  return React.createElement("div", {
-    style: { background: PC.navyMid, borderRadius: 12, padding: "18px 20px",
-      marginTop: 14, border: "1px solid " + PC.navyLt }
-  },
-    React.createElement("div", {
-      style: { fontSize: 11, color: PC.amber, fontWeight: 700, letterSpacing: 1, marginBottom: 14 }
-    }, "📅 PAINEL DE COBERTURA — ÚLTIMOS 90 DIAS"),
-    React.createElement("div", {
-      style: { display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }
-    },
-      cols.map(function(col) {
-        return React.createElement("div", { key: col.label },
-          React.createElement("div", {
-            style: { fontSize: 11, color: col.color, fontWeight: 700, marginBottom: 8 }
-          }, col.label + " (" + col.list.length + ")"),
-          col.list.length === 0
-            ? React.createElement("div", { style: { fontSize: 11, color: PC.slate } }, "Nenhum")
-            : col.list.slice(0, 8).map(function(m) {
-                return React.createElement("div", {
-                  key: m.id,
-                  onClick: function() { onSelectMedico(m.id); },
-                  style: { fontSize: 11, color: PC.offWhite, padding: "4px 0",
-                    borderBottom: "1px solid " + PC.navyLt, cursor: "pointer",
-                    display: "flex", justifyContent: "space-between", gap: 6 }
-                },
-                  React.createElement("span", {
-                    style: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }
-                  }, m.nome.split(" ").slice(0, 2).join(" ")),
-                  React.createElement("span", {
-                    style: { color: col.color, fontSize: 10, flexShrink: 0 }
-                  }, col.desc(m))
-                );
-              }).concat(col.list.length > 8
-                ? [React.createElement("div", {
-                    key: "more", style: { fontSize: 10, color: PC.slate, marginTop: 4 }
-                  }, "+" + (col.list.length - 8) + " mais")]
-                : []
-              )
-        );
-      })
-    )
   );
 }
 
