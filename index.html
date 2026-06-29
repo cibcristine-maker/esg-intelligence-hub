@@ -796,7 +796,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     proc_realizados_esg: visita.proc_realizados_esg ?? "",
     baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
-    leao_plus_abordado: visita.leao_plus_abordado || "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "adocao_ativa" : visita.leao_plus_abordado || "",
     leao_plus_status: visita.leao_plus_status || "",
     acao_prevista: visita.acao_prevista || "",
     obs: visita.obs || "",
@@ -812,7 +812,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     fios_esg_estoque: visita.fios_esg_estoque ?? "", proc_marcados_esg: visita.proc_marcados_esg ?? "",
     proc_realizados_esg: visita.proc_realizados_esg ?? "", baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
-    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "adocao_ativa" : visita.leao_plus_abordado === false ? "nao_abordado" : visita.leao_plus_abordado || "",
     leao_plus_status: visita.leao_plus_status || "", acao_prevista: visita.acao_prevista || "", obs: visita.obs || "",
   }); };
   const salvar = async () => {
@@ -835,8 +835,8 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado || null,
-      leao_plus_status: form.leao_plus_status || null,
+      leao_plus_abordado: form.leao_plus_abordado === "adocao_ativa" ? true : form.leao_plus_abordado ? false : null,
+      leao_plus_status: form.leao_plus_abordado || null,
       acao_prevista: form.acao_prevista || null,
       obs: form.obs || null,
     };
@@ -1009,8 +1009,8 @@ function Visitas() {
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado || null,
-      leao_plus_status: form.leao_plus_status || null,
+      leao_plus_abordado: form.leao_plus_abordado === "adocao_ativa" ? true : form.leao_plus_abordado ? false : null,
+      leao_plus_status: form.leao_plus_abordado || null,
     };
     const { error } = await supabaseClient.from("visitas").insert([payload]);
     if (error) { alert("Erro ao salvar: " + error.message); return; }
@@ -4882,8 +4882,8 @@ function PhysicianHealthScore() {
     const isProctor = !!medico.is_proctor;
     // LeãoPlus: usa últimas 3 visitas — se maioria = adocao_ativa, pontua cheio
     const vis3 = visMed.slice(0, 3);
-    const leaoAtivo = vis3.filter(v => v.leao_plus_abordado === "adocao_ativa").length;
-    const leaoEvol  = vis3.filter(v => v.leao_plus_abordado === "em_avaliacao").length;
+    const leaoAtivo = vis3.filter(v => v.leao_plus_abordado === "adocao_ativa" || v.leao_plus_abordado === true || v.leao_plus_status === "adocao_ativa").length;
+    const leaoEvol  = vis3.filter(v => v.leao_plus_abordado === "em_avaliacao" || v.leao_plus_status === "em_avaliacao").length;
     const scoreLeao = vis3.length === 0 ? 0
       : leaoAtivo >= 2 ? 100
       : leaoAtivo === 1 ? 70
