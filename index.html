@@ -4790,9 +4790,7 @@ function PhysicianHealthScore() {
 
     // Score ESG: 0=0, 4=40, 8=80, 12+=100
     const scoreEsg = Math.min(100, esgAtual * 10);
-    // Score BIB: 0=0, 3=50, 6+=100
-    const scoreBib = Math.min(100, bibAtual * 16);
-    // Tendência
+    // Tendência ESG
     let scoreTrend = 50;
     if (esgAnterior > 0) {
       const delta = (esgAtual - esgAnterior) / esgAnterior;
@@ -4800,10 +4798,11 @@ function PhysicianHealthScore() {
     } else if (esgAtual > 0) {
       scoreTrend = 70;
     }
-    // Se zero procedimentos realizados → score 0 (independente de tendência)
-    const dimProc = (esgAtual === 0 && bibAtual === 0)
+    // BIB não entra no score de procedimentos (produto separado)
+    // Se zero ESG → score 0
+    const dimProc = esgAtual === 0
       ? 0
-      : Math.round((scoreEsg * 0.6 + scoreBib * 0.2 + scoreTrend * 0.2));
+      : Math.round((scoreEsg * 0.8 + scoreTrend * 0.2));
 
     // — DIMENSÃO 2: Coerência de Cobertura (peso 30%) ————————————————
     // Mede se a intensidade de visita é coerente com o potencial do médico (Tier)
@@ -4916,9 +4915,10 @@ function PhysicianHealthScore() {
     const _eng  = isNaN(dimEng)  ? 0 : dimEng;
     const _geo  = isNaN(dimGeo)  ? 0 : (dimGeo || 0);
     const _adoc = isNaN(dimAdocao) ? 0 : dimAdocao;
-    const total = geoSemDados
+    // Zero ESG em 90 dias → score total 0 (sem procedimentos = sem resultado comercial)
+    const total = esgAtual === 0 ? 0 : (geoSemDados
       ? Math.round(_proc * 0.50 + _eng * 0.35 + _adoc * 0.15)
-      : Math.round(_proc * 0.40 + _eng * 0.30 + _geo  * 0.20 + _adoc * 0.10);
+      : Math.round(_proc * 0.40 + _eng * 0.30 + _geo  * 0.20 + _adoc * 0.10));
 
     // — ALERTAS ————————————————————————————————————————————————————————
     const alertas = [];
@@ -5057,7 +5057,7 @@ function PhysicianHealthScore() {
           <h2 style={{ margin:0, fontSize:22, fontWeight:800,
             background:`linear-gradient(90deg, ${PC.white}, ${PC.green})`,
             WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>
-            Physician Health Score
+            Saúde da Conta
           </h2>
           <div style={{ fontSize:12, color: PC.slate, marginTop:3 }}>
             Score 0–100 calculado com dados reais de visitas · {scoredMedicos.length} médicos na carteira
@@ -5334,7 +5334,7 @@ function PhysicianHealthScore() {
                     })}
                     <div style={{ display:"flex", justifyContent:"space-between", marginTop:10,
                       paddingTop:8, borderTop:`2px solid ${color}44` }}>
-                      <span style={{ fontSize:12, fontWeight:700, color: PC.white }}>Health Score Total</span>
+                      <span style={{ fontSize:12, fontWeight:700, color: PC.white }}>Saúde da Conta Total</span>
                       <span style={{ fontSize:18, fontWeight:800, color }}>{sc.total}</span>
                     </div>
                   </div>
@@ -5424,7 +5424,7 @@ const TABS = [
   { id:"biblioteca", label:"Biblioteca", icon:"📚" },
   { id:"fup", label:"FUP Projetos", icon:"📌" },
   { id:"feedbacks", label:"Feedbacks IA", icon:"💬" },
-  { id:"phs", label:"Health Score", icon:"💚" },
+  { id:"phs", label:"Saúde da Conta", icon:"💚" },
 ];
 // ════════════════════════════════════════════════════════════════
 // FUP PROJETOS — ESG Intelligence Hub
