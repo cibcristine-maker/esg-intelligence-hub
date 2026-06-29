@@ -4924,6 +4924,10 @@ function PhysicianHealthScore() {
     if (overVisiting) alertas.push(`📋 Over-visiting — ${v} visitas para Tier ${tier} (máx ${cad.max})`);
     if (subVisita) alertas.push(`📋 Sub-cobertura — ${v} visita(s) para Tier ${tier} (mín ${cad.min})`);
 
+    const visComDado = vis90.filter(v2 => v2.proc_realizados_esg !== null && v2.proc_realizados_esg !== undefined && v2.proc_realizados_esg !== "").length;
+    const confiabilidade = vis90.length > 0 ? Math.round((visComDado / vis90.length) * 100) : null;
+    if (confiabilidade !== null && confiabilidade < 50 && vis90.length >= 2) alertas.push("⚠ Dado incompleto: preencher proc_realizados nas visitas");
+
     return {
       total,
       dims: {
@@ -4936,7 +4940,8 @@ function PhysicianHealthScore() {
              consistencia, isProctor, scoreLeao, temEvento,
              cadMin: cad.min, cadIdeal: cad.ideal, cadMax: cad.max === Infinity ? "∞" : cad.max,
              overVisiting, subVisita, tier,
-             geoResult, geoSemDados, dimGeo },
+             geoResult, geoSemDados, dimGeo,
+             visComDado, confiabilidade },
       alertas,
     };
   }
@@ -5336,6 +5341,7 @@ function PhysicianHealthScore() {
                     </div>
                     {[
                       ["ESG realizados (90d)", sc.raw.esgAtual],
+                      ["Dado completo", sc.raw.confiabilidade === null ? "—" : sc.raw.confiabilidade === 100 ? "✅ 100%" : `⚠ ${sc.raw.visComDado}/${sc.raw.visitas90Count} visitas preenchidas`],
                       ["BIB (estoque)", sc.raw.bibAtual],
                       ["Visitas realizadas (90d)", `${sc.raw.visitas90Count} de ${sc.raw.cadIdeal} ideal (mín ${sc.raw.cadMin} · máx ${sc.raw.cadMax})`],
                       ["Cobertura", sc.raw.overVisiting ? "⚠ Over-visiting" : sc.raw.subVisita ? "⚠ Sub-cobertura" : "✅ Dentro da cadência"],
