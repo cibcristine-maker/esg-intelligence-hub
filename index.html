@@ -1426,32 +1426,28 @@ function Medicos() {
                         </div>
                       )}
                     </td>
-                    <td style={{textAlign:"center"}} onClick={e => e.stopPropagation()}>
-                      <label style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,cursor:"pointer",padding:"6px 8px"}}>
-                        <input
-                          type="checkbox"
-                          checked={!!m.is_proctor}
-                          onChange={async (e) => {
-                            const novo = e.target.checked;
-                            setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: novo} : x));
-                            if (supabaseClient) {
-                              const { data, error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id).select();
-                              if (error) {
-                                alert("ERRO PROCTOR: " + error.message + " | code: " + error.code);
-                                setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: !novo} : x));
-                              } else {
-                                alert("OK: is_proctor=" + novo + " | rows=" + (data?.length||0));
-                              }
-                            } else {
-                              alert("supabaseClient não disponível");
-                            }
-                          }}
-                          style={{width:18,height:18,cursor:"pointer",accentColor:"var(--teal)"}}
-                        />
-                        <span style={{fontSize:11,color:m.is_proctor?"var(--teal)":"var(--muted)",fontWeight:m.is_proctor?700:400}}>
-                          {m.is_proctor ? "Sim" : "—"}
-                        </span>
-                      </label>
+                    <td onClick={e => e.stopPropagation()}>
+                      <select
+                        value={m.is_proctor ? "sim" : "nao"}
+                        onChange={async (e) => {
+                          const novo = e.target.value === "sim";
+                          setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: novo} : x));
+                          if (supabaseClient) {
+                            const { error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id);
+                            if (error) alert("Erro Proctor: " + error.message);
+                          }
+                        }}
+                        style={{
+                          background: m.is_proctor ? "rgba(0,200,150,0.15)" : "#1e2d3d",
+                          color: m.is_proctor ? "var(--teal)" : "var(--muted)",
+                          border: `1px solid ${m.is_proctor ? "rgba(0,200,150,0.5)" : "var(--border)"}`,
+                          borderRadius: 6, padding: "4px 6px",
+                          fontSize: 11, fontWeight: m.is_proctor ? 700 : 400,
+                          cursor: "pointer", fontFamily: "inherit",
+                        }}>
+                        <option value="nao">—</option>
+                        <option value="sim">✅ Proctor</option>
+                      </select>
                     </td>
                   </tr>
                 ))}
@@ -4641,15 +4637,6 @@ function PhysicianHealthScore() {
       }
       setGeoLastUpdate(new Date());
       setGeoLoading(false);
-      // DEBUG — remover após confirmar
-      if (typeof window !== "undefined") {
-        const medsArr = Array.isArray(meds);
-        const regsArr = Array.isArray(regsGeo);
-        window._geoDebug = {
-          meds: medsArr ? meds.length : ("erro: " + JSON.stringify(meds)?.slice(0,100)),
-          regs: regsArr ? regsGeo.length : ("erro: " + JSON.stringify(regsGeo)?.slice(0,100)),
-        };
-      }
     }
     loadGeo();
   }, []);
@@ -4697,8 +4684,6 @@ function PhysicianHealthScore() {
 
       // E1: match exato normalizado
       if (gmNorm === nNorm) return true;
-      // E2: nomesBatem original
-      if (nomesBatem(gm.nome, medicoNome)) return true;
       // E3: um contém o outro (substring normalizada) — cobre "Leonardo Teixeira" ⊂ "Leonardo Teixeira Rodrigues"
       if (gmNorm.includes(nNorm) || nNorm.includes(gmNorm)) return true;
       // E4: slug contém sobrenomes do Hub
@@ -5027,11 +5012,11 @@ function PhysicianHealthScore() {
         animation: geoLoading ? "pulse 1.5s infinite" : "none"
       }}/>
       {geoLoading ? "GeoTrack carregando..." 
-        : geoErro ? `GeoTrack erro: ${geoErro}`
+        : geoErro ? `GeoTrack ✗ erro: ${geoErro}`
         : geoMedicos.length && geoRegistros.length ? `GeoTrack ✓ ${geoMedicos.length} médicos · ${geoRegistros.length} scores`
-        : geoMedicos.length ? `GeoTrack: ${geoMedicos.length} médicos · scores: ${geoRegistros.length} (geo_monitor)`
+        : geoMedicos.length ? `GeoTrack: ${geoMedicos.length} médicos · geo_monitor vazio`
         : geoLoading ? "GeoTrack carregando..."
-        : "GeoTrack: 0 médicos — sem conexão"}
+        : "GeoTrack: sem dados"}
     </div>
   );
 
