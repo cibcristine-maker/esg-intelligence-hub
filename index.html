@@ -4558,13 +4558,85 @@ function FeedbacksIA() {
 // 4 dimensões: Procedimentos 40% | Engajamento 30% | GEO 20% | Adoção 10%
 // Adoção = Proctor 50% + LeãoPlus ativo 30% + Evento Endura 20%
 // ═══════════════════════════════════════════════════════════════════════════
+// ── Cliente GeoTrack (Supabase separado) ─────────────────────────────────
+const GEOTRACK_URL = "https://ojbbjgqfjzygdenwtwrz.supabase.co";
+const GEOTRACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYmJqZ3Fmanp5Z2Rlbnd0d3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzM0MTksImV4cCI6MjA5NDQ0OTQxOX0.aMFG3M9Ll5iGQZamREUK9LvN3YhK40RBg8R0gH5bVFg";
+
+async function fetchGeoTrack(endpoint) {
+  try {
+    const res = await fetch(`${GEOTRACK_URL}/rest/v1/${endpoint}`, {
+      headers: {
+        "apikey": GEOTRACK_KEY,
+        "Authorization": `Bearer ${GEOTRACK_KEY}`,
+        "Content-Type": "application/json"
+      }
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
 function PhysicianHealthScore() {
   const { data: medicos, loading: loadMed } = useSupabase("perfil_medico");
   const { data: todasVisitas, loading: loadVis } = useSupabase("visitas");
   const [selected, setSelected] = React.useState(null);
   const [filterZone, setFilterZone] = React.useState("all");
   const [search, setSearch] = React.useState("");
-  const [activeView, setActiveView] = React.useState("portfolio"); // portfolio | framework
+  const [activeView, setActiveView] = React.useState("portfolio");
+  // GeoTrack data
+  const [geoMedicos, setGeoMedicos] = React.useState([]);
+  const [geoRegistros, setGeoRegistros] = React.useState([]);
+  const [geoLoading, setGeoLoading] = React.useState(true);
+  const [geoLastUpdate, setGeoLastUpdate] = React.useState(null);
+
+  React.useEffect(() => {
+    async function loadGeo() {
+      setGeoLoading(true);
+      const [meds, regs] = await Promise.all([
+        fetchGeoTrack("medicos?select=*&order=nome"),
+        fetchGeoTrack("geo_monitor?select=*")
+      ]);
+      if (meds) setGeoMedicos(meds);
+      if (regs) setGeoRegistros(regs);
+      setGeoLastUpdate(new Date());
+      setGeoLoading(false);
+    }
+    loadGeo();
+  }, []);
+
+  // Calcula score GEO para um médico pelo nome (cruza via slug/nome)
+  function calcGeoScore(medicoNome) {
+    if (!geoMedicos.length || !geoRegistros.length) return null;
+    // Tenta casar pelo nome
+    const geoMed = geoMedicos.find(gm =>
+      nomesBatem(gm.nome, medicoNome) ||
+      gm.nome?.toLowerCase().includes(medicoNome?.toLowerCase()?.split(" ")[1] || "") 
+    );
+    if (!geoMed) return null;
+    // Pega todos os registros desse médico
+    const regs = geoRegistros.filter(r => r.medico_id === geoMed.id);
+    if (!regs.length) return null;
+    // Média de score por plataforma (escala 0-3 → 0-100)
+    const PLATAFORMAS = ["chatgpt","gemini","perplexity","claude","grok"];
+    const scoresPorPlat = PLATAFORMAS.map(pl => {
+      const regsPlat = regs.filter(r => r.plataforma === pl && r.score != null);
+      if (!regsPlat.length) return null;
+      const avg = regsPlat.reduce((s, r) => s + Number(r.score), 0) / regsPlat.length;
+      return avg;
+    }).filter(s => s !== null);
+    if (!scoresPorPlat.length) return null;
+    const mediaGeral = scoresPorPlat.reduce((a, b) => a + b, 0) / scoresPorPlat.length;
+    return {
+      pct: Math.round((mediaGeral / 3) * 100),
+      porPlat: PLATAFORMAS.map(pl => {
+        const regsPlat = regs.filter(r => r.plataforma === pl && r.score != null);
+        if (!regsPlat.length) return { pl, score: null };
+        const avg = regsPlat.reduce((s, r) => s + Number(r.score), 0) / regsPlat.length;
+        return { pl, score: Math.round((avg / 3) * 100) };
+      }),
+      geoMed,
+    };
+  }
 
   // ── Paleta interna (alinha com Hub) ──────────────────────────────────────
   const PC = {
@@ -4664,20 +4736,18 @@ function PhysicianHealthScore() {
     const subVisita = v < cad.min && v > 0;
 
     // — DIMENSÃO 3: Presença Digital / GEO (peso 20%) ———————————————
-    // Usa dados do geoData estático se disponível, senão usa perfil_medico
-    const geoMed = typeof geoData !== "undefined"
-      ? geoData.find(g => nomesBatem(g.nome, medico.nome))
-      : null;
-    let dimGeo = 40; // default médio-baixo se não há dados
-    if (geoMed) {
-      const scores = [geoMed.score_chatgpt, geoMed.score_gemini, geoMed.score_perplexity, geoMed.score_claude, geoMed.score_grok]
-        .filter(s => s != null);
-      if (scores.length > 0) {
-        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
-        dimGeo = Math.round((avg / 3) * 100); // escala 0-3 → 0-100
-      }
+    // Dados reais do GeoTrack (Supabase separado) — tabela geo_monitor
+    // Escala 0-3 por questão/plataforma → média → 0-100
+    const geoResult = calcGeoScore(medico.nome);
+    let dimGeo;
+    let geoSemDados = false;
+    if (geoResult) {
+      dimGeo = geoResult.pct;
     } else if (medico.geo_score != null) {
       dimGeo = Math.round((medico.geo_score / 3) * 100);
+    } else {
+      dimGeo = null; // sem dados — não penaliza nem premia
+      geoSemDados = true;
     }
 
     // — DIMENSÃO 4: Desfechos Clínicos (peso 15%) ————————————————————
@@ -4720,19 +4790,18 @@ function PhysicianHealthScore() {
     );
 
     // — SCORE FINAL (ponderado) ————————————————————————————————————————
-    // Procedimentos 40% | Engajamento 30% | GEO 20% | Adoção 10%
-    const total = Math.round(
-      dimProc    * 0.40 +
-      dimEng     * 0.30 +
-      dimGeo     * 0.20 +
-      dimAdocao  * 0.10
-    );
+    // Se GEO sem dados: redistribui 20% para Procedimentos (25%) e Engajamento (15%)
+    // Com dados: Procedimentos 40% | Engajamento 30% | GEO 20% | Adoção 10%
+    const total = geoSemDados
+      ? Math.round(dimProc * 0.50 + dimEng * 0.35 + dimAdocao * 0.15)
+      : Math.round(dimProc * 0.40 + dimEng * 0.30 + (dimGeo||0) * 0.20 + dimAdocao * 0.10);
 
     // — ALERTAS ————————————————————————————————————————————————————————
     const alertas = [];
     if (esgAnterior > 0 && (esgAtual / esgAnterior) < 0.85) alertas.push("⚠ Queda >15% em procedimentos");
     if (total < 40) alertas.push("🔴 Score crítico — intervenção urgente");
-    if (dimGeo < 35) alertas.push("🌐 Invisibilidade digital crítica");
+    if (!geoSemDados && dimGeo < 35) alertas.push("🌐 Invisibilidade digital crítica");
+    if (geoSemDados) alertas.push("🌐 Sem dados GEO — cadastrar no GeoTrack");
     if (diasUltimaVisita > 45 && total < 80) alertas.push(`📅 Sem visita há ${diasUltimaVisita}d`);
     if (overVisiting) alertas.push(`📋 Over-visiting — ${v} visitas para Tier ${tier} (máx ${cad.max})`);
     if (subVisita) alertas.push(`📋 Sub-cobertura — ${v} visita(s) para Tier ${tier} (mín ${cad.min})`);
@@ -4748,7 +4817,8 @@ function PhysicianHealthScore() {
       raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, diasUltimaVisita,
              consistencia, isProctor, scoreLeao, temEvento,
              cadMin: cad.min, cadIdeal: cad.ideal, cadMax: cad.max === Infinity ? "∞" : cad.max,
-             overVisiting, subVisita, tier },
+             overVisiting, subVisita, tier,
+             geoResult, geoSemDados, dimGeo },
       alertas,
     };
   }
@@ -4843,6 +4913,25 @@ function PhysicianHealthScore() {
     </div>
   );
 
+  // Badge de status GeoTrack
+  const GeoBadge = () => (
+    <div style={{
+      display:"inline-flex", alignItems:"center", gap:6,
+      background: geoLoading ? "rgba(245,166,35,0.12)" : geoMedicos.length ? "rgba(0,200,150,0.12)" : "rgba(232,68,90,0.12)",
+      border: `1px solid ${geoLoading ? "rgba(245,166,35,0.3)" : geoMedicos.length ? "rgba(0,200,150,0.3)" : "rgba(232,68,90,0.3)"}`,
+      borderRadius:20, padding:"3px 10px", fontSize:10, fontWeight:700,
+      color: geoLoading ? PC.amber : geoMedicos.length ? PC.green : PC.red,
+    }}>
+      <div style={{ width:6, height:6, borderRadius:"50%", 
+        background: geoLoading ? PC.amber : geoMedicos.length ? PC.green : PC.red,
+        animation: geoLoading ? "pulse 1.5s infinite" : "none"
+      }}/>
+      {geoLoading ? "GeoTrack carregando..." 
+        : geoMedicos.length ? `GeoTrack ✓ — ${geoMedicos.length} médicos · ${geoRegistros.length} registros` 
+        : "GeoTrack sem dados"}
+    </div>
+  );
+
   const sel = selected ? scoredMedicos.find(m => m.id === selected) : null;
 
   return (
@@ -4862,6 +4951,7 @@ function PhysicianHealthScore() {
           <div style={{ fontSize:12, color: PC.slate, marginTop:3 }}>
             Score 0–100 calculado com dados reais de visitas · {scoredMedicos.length} médicos na carteira
           </div>
+          <div style={{ marginTop:8 }}><GeoBadge /></div>
         </div>
         <div style={{ display:"flex", gap:6 }}>
           {["portfolio","framework"].map(v => (
@@ -4937,7 +5027,7 @@ function PhysicianHealthScore() {
             <span style={{ color: PC.white, fontWeight:600 }}>Dados utilizados automaticamente: </span>
             <strong style={{ color: PC.offWhite }}>Procedimentos</strong> (proc_realizados_esg, baloes_estoque das Visitas) ·{" "}
             <strong style={{ color: PC.offWhite }}>Engajamento</strong> (frequência + canal + recência das Visitas) ·{" "}
-            <strong style={{ color: PC.offWhite }}>GEO Digital</strong> (geo_score do perfil_medico ou GeoTrack) ·{" "}
+            <strong style={{ color: PC.offWhite }}>GEO Digital</strong> (GeoTrack — tabela geo_monitor, média por plataforma, tempo real) ·{" "}
             <strong style={{ color: PC.offWhite }}>Desfechos</strong> (consistência de realização vs. agendamento) ·{" "}
             <strong style={{ color: PC.offWhite }}>Lealdade</strong> (Tier do perfil_medico).
             Score calculado ao vivo — atualiza a cada nova visita registrada.
@@ -5142,6 +5232,7 @@ function PhysicianHealthScore() {
                       ["Visitas realizadas (90d)", `${sc.raw.visitas90Count} de ${sc.raw.cadIdeal} ideal (mín ${sc.raw.cadMin} · máx ${sc.raw.cadMax})`],
                       ["Cobertura", sc.raw.overVisiting ? "⚠ Over-visiting" : sc.raw.subVisita ? "⚠ Sub-cobertura" : "✅ Dentro da cadência"],
                       ["Última visita", sc.raw.diasUltimaVisita < 999 ? `${sc.raw.diasUltimaVisita}d atrás` : "—"],
+                      ["GEO Score", sc.raw.geoSemDados ? "⚠ Sem dados no GeoTrack" : `${sc.raw.dimGeo}% visibilidade`],
                       ["É Proctor", sc.raw.isProctor ? "✅ Sim" : "—"],
                       ["LeãoPlus", sc.raw.scoreLeao >= 70 ? "✅ Adoção ativa" : sc.raw.scoreLeao >= 35 ? "🟡 Em avaliação" : "—"],
                       ["Evento Endura", sc.raw.temEvento ? "✅ Participou" : "—"],
@@ -5155,6 +5246,32 @@ function PhysicianHealthScore() {
                     ))}
                   </div>
                 </div>
+
+                {/* GEO por plataforma */}
+                {sc.raw.geoResult && (
+                  <div style={{ background: PC.navyMid, borderRadius:12, padding:"14px 18px",
+                    marginBottom:14, border:`1px solid ${PC.navyLt}` }}>
+                    <div style={{ fontSize:11, color:"#00C896", fontWeight:700, letterSpacing:1, marginBottom:10 }}>
+                      🌐 GEO POR PLATAFORMA — GEOTRACK
+                    </div>
+                    <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
+                      {sc.raw.geoResult.porPlat.map(({pl, score}) => {
+                        const plLabel = {chatgpt:"ChatGPT",gemini:"Gemini",perplexity:"Perplexity",claude:"Claude",grok:"Grok"}[pl];
+                        const c = score === null ? PC.slate : score >= 67 ? "#00C896" : score >= 34 ? "#F5A623" : "#E8445A";
+                        return (
+                          <div key={pl} style={{ flex:1, minWidth:80, background: PC.navyLt,
+                            borderRadius:8, padding:"8px 10px", textAlign:"center",
+                            border:`1px solid ${c}44` }}>
+                            <div style={{ fontSize:10, color: PC.slate, marginBottom:4 }}>{plLabel}</div>
+                            <div style={{ fontSize:16, fontWeight:800, color: c }}>
+                              {score === null ? "—" : `${score}%`}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
 
                 {/* Playbook */}
                 <div style={{ background:`${color}12`, border:`1.5px solid ${color}44`,
