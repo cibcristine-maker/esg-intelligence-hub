@@ -4647,109 +4647,79 @@ function PhysicianHealthScore() {
     loadGeo();
   }, []);
 
-  // Normaliza string para matching tolerante
+  // Normaliza string para matching: remove acentos, Dr/Dra, lowercase
   function normStr(s) {
-    return (s || "").toLowerCase()
-      .normalize("NFD").replace(/[̀-ͯ]/g, "")
-      .replace(/dr\.?\s*/gi, "")
-      .replace(/dra\.?\s*/gi, "")
-      .trim();
+    if (!s) return "";
+    // Remove acentos via NFD decomposition
+    let r = s.toLowerCase().normalize("NFD");
+    // Remove combining diacritical marks (U+0300 to U+036F)
+    let clean = "";
+    for (let i = 0; i < r.length; i++) {
+      const code = r.charCodeAt(i);
+      if (code < 0x0300 || code > 0x036F) clean += r[i];
+    }
+    // Remove prefixos Dr/Dra no inicio ou apos espaco
+    clean = clean.replace(/^dr[a]? /i, "").replace(/ dr[a]? /gi, " ").trim();
+    return clean;
   }
 
-  // Extrai sobrenomes relevantes (ignora partículas)
+  // Extrai tokens relevantes do nome (ignora particulas e palavras curtas)
   function sobrenomes(s) {
-    const stop = new Set(["de","da","do","dos","das","e"]);
+    const stop = new Set(["de","da","do","dos","das","e","jr","junior"]);
     return normStr(s).split(/\s+/).filter(w => w.length > 2 && !stop.has(w));
   }
 
-  // Calcula score GEO para um médico pelo nome — matching multi-estratégia
+  // Calcula score GEO — matching direto por token
   function calcGeoScore(medicoNome) {
     if (!geoMedicos.length) return null;
-    // geoRegistros pode ser vazio mesmo com médicos — geo_monitor sem dados ainda
-    // Continua para encontrar o médico e retornar null com contexto
-
     const nNorm = normStr(medicoNome);
-    const nSobs = sobrenomes(medicoNome);
+    const nToks = sobrenomes(medicoNome);
 
-    // Estratégia 1: nomesBatem (função padrão do Hub)
-    // Estratégia 2: comparação normalizada direta
-    // Estratégia 3: slug do GeoTrack contém sobrenomes do Hub
-    // Estratégia 4: dois ou mais sobrenomes em comum
     const geoMed = geoMedicos.find(gm => {
       const gmNorm = normStr(gm.nome);
-      const gmSobs = sobrenomes(gm.nome);
-      const gmSlug = (gm.slug || "").replace(/-/g, " ");
+      const gmToks = sobrenomes(gm.nome);
 
-      // E1: match exato normalizado
+      // 1. Match exato apos normalizacao
       if (gmNorm === nNorm) return true;
-      // E2: nomesBatem original
-      if (nomesBatem(gm.nome, medicoNome)) return true;
-      // E3: um contém o outro (substring normalizada) — cobre "Leonardo Teixeira" ⊂ "Leonardo Teixeira Rodrigues"
-      if (gmNorm.includes(nNorm) || nNorm.includes(gmNorm)) return true;
-      // E4: slug contém sobrenomes do Hub
-      const sobsNoSlug = nSobs.filter(s => gmSlug.includes(s));
-      if (nSobs.length >= 2 && sobsNoSlug.length >= Math.min(2, nSobs.length)) return true;
-      // E5: todos os sobrenomes do GeoTrack estão no nome do Hub
-      // cobre: GeoTrack="Leonardo Teixeira" ⊂ Hub="Leonardo Teixeira Rodrigues"
-      if (gmSobs.length >= 1 && gmSobs.every(s => nNorm.includes(s))) return true;
-      // E6: pelo menos 2 sobrenomes em comum
-      const sobsComuns = nSobs.filter(s => gmSobs.includes(s));
-      if (sobsComuns.length >= 2) return true;
-      // E7: primeiro nome + qualquer sobrenome em comum (mínimo 1 sobrenome)
-      const primeiroGeo = gmNorm.split(" ")[0];
-      const primeiroHub = nNorm.split(" ")[0];
-      if (primeiroGeo === primeiroHub && sobsComuns.length >= 1) return true;
-      // E8: primeiros nomes similares (1 char de diferença) + sobrenome em comum
-      // cobre: "Jimmi" vs "Jimi", "Sérgio" vs "Sergio" já tratado por norm
-      const primSimilar = primeiroGeo.length >= 3 && primeiroHub.length >= 3 &&
-        Math.abs(primeiroGeo.length - primeiroHub.length) <= 1 &&
-        (primeiroGeo.includes(primeiroHub) || primeiroHub.includes(primeiroGeo) ||
-         [...primeiroGeo].filter((c,i) => primeiroHub[i] !== c).length <= 1);
-      if (primSimilar && sobsComuns.length >= 1) return true;
+      // 2. Um nome contem o outro (substring)
+      if (nNorm.length > 4 && (gmNorm.includes(nNorm) || nNorm.includes(gmNorm))) return true;
+      // 3. Todos tokens do GeoTrack estao no nome Hub
+      if (gmToks.length >= 1 && gmToks.every(t => nNorm.includes(t))) return true;
+      // 4. Todos tokens do Hub estao no nome GeoTrack
+      if (nToks.length >= 1 && nToks.every(t => gmNorm.includes(t))) return true;
+      // 5. Primeiro token igual + pelo menos 1 sobrenome em comum
+      const comuns = nToks.filter(t => gmToks.includes(t));
+      if (gmToks[0] === nToks[0] && comuns.length >= 1) return true;
+      // 6. Primeiro token similar (1 char diff) + sobrenome em comum
+      const pg = gmToks[0] || "", ph = nToks[0] || "";
+      if (pg.length >= 3 && ph.length >= 3 && comuns.length >= 1) {
+        if (pg.includes(ph) || ph.includes(pg)) return true;
+        // Levenshtein simplificado — apenas 1 substituicao
+        let diffs = 0;
+        const minLen = Math.min(pg.length, ph.length);
+        for (let i = 0; i < minLen; i++) { if (pg[i] !== ph[i]) diffs++; }
+        diffs += Math.abs(pg.length - ph.length);
+        if (diffs <= 1) return true;
+      }
       return false;
     });
 
     if (!geoMed) return null;
-    // Pega todos os registros desse médico na tabela geo_monitor
     const regs = geoRegistros.filter(r => r.medico_id === geoMed.id);
-    if (!regs.length) {
-      // Médico encontrado mas sem registros de score ainda
-      return { pct: 0, porPlat: [], semRegistros: true };
-    }
-    // Média de score por plataforma (escala 0-3 → 0-100)
-    const PLATAFORMAS = ["chatgpt","gemini","perplexity","claude","grok"];
-    const scoresPorPlat = PLATAFORMAS.map(pl => {
-      const regsPlat = regs.filter(r => r.plataforma === pl && r.score != null);
-      if (!regsPlat.length) return null;
-      const avg = regsPlat.reduce((s, r) => s + Number(r.score), 0) / regsPlat.length;
-      return avg;
-    }).filter(s => s !== null);
-    if (!scoresPorPlat.length) return null;
-    const mediaGeral = scoresPorPlat.reduce((a, b) => a + b, 0) / scoresPorPlat.length;
-    return {
-      pct: Math.round((mediaGeral / 3) * 100),
-      porPlat: PLATAFORMAS.map(pl => {
-        const regsPlat = regs.filter(r => r.plataforma === pl && r.score != null);
-        if (!regsPlat.length) return { pl, score: null };
-        const avg = regsPlat.reduce((s, r) => s + Number(r.score), 0) / regsPlat.length;
-        return { pl, score: Math.round((avg / 3) * 100) };
-      }),
-      geoMed,
-    };
-  }
+    if (!regs.length) return { pct: 0, porPlat: [], semRegistros: true, geoNome: geoMed.nome };
 
-  // ── Paleta interna (alinha com Hub) ──────────────────────────────────────
-  const PC = {
-    navy:    "#0D1B2A",
-    navyMid: "#1A2E42",
-    navyLt:  "#243B55",
-    green:   "#00C896",
-    amber:   "#F5A623",
-    red:     "#E8445A",
-    slate:   "#8FA3B8",
-    white:   "#FFFFFF",
-    offWhite:"#F0F4F8",
-  };
+    const PLATS = ["chatgpt","gemini","perplexity","claude","grok"];
+    const porPlat = PLATS.map(pl => {
+      const rp = regs.filter(r => r.plataforma === pl && r.score != null);
+      if (!rp.length) return { pl, score: null };
+      const avg = rp.reduce((s, r) => s + Number(r.score), 0) / rp.length;
+      return { pl, score: Math.round((avg / 3) * 100) };
+    });
+    const valid = porPlat.filter(p => p.score !== null);
+    if (!valid.length) return null;
+    const media = valid.reduce((s, p) => s + p.score, 0) / valid.length;
+    return { pct: Math.round(media), porPlat, geoNome: geoMed.nome };
+  }
 
   // ── Períodos de referência ─────────────────────────────────────────────
   const now = new Date();
