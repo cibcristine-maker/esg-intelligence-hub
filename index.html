@@ -4613,17 +4613,55 @@ function PhysicianHealthScore() {
     }
     const dimProc = Math.round((scoreEsg * 0.6 + scoreBib * 0.2 + scoreTrend * 0.2));
 
-    // — DIMENSÃO 2: Engajamento Comercial (peso 25%) ——————————————————
+    // — DIMENSÃO 2: Coerência de Cobertura (peso 30%) ————————————————
+    // Mede se a intensidade de visita é coerente com o potencial do médico (Tier)
+    // Pontuação em U invertido: ideal = 100, sub-visita e over-visiting penalizam
+    // Cadência esperada por trimestre (presencial + online):
+    //   ST  → mín 3, ideal 4+ (sem teto)
+    //   T1  → mín 2, ideal 3, máx 4
+    //   T2/T3 → mín 1, ideal 2, máx 3
+    //   T4/T5 → mín 1, ideal 1, máx 2
     const visitas90Count = vis90.length;
-    const presenciais90 = vis90.filter(v => v.canal === "Presencial").length;
     const diasUltimaVisita = visMed.length > 0
-      ? Math.floor((now - new Date(visMed.sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0].data_contato)) / 86400000)
+      ? Math.floor((now - new Date([...visMed].sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0].data_contato)) / 86400000)
       : 999;
 
-    const scoreVisitas = Math.min(100, visitas90Count * 20); // 5 visitas = 100
-    const scorePresencial = Math.min(100, presenciais90 * 33);
-    const scoreRecencia = diasUltimaVisita <= 30 ? 100 : diasUltimaVisita <= 45 ? 70 : diasUltimaVisita <= 90 ? 40 : 10;
-    const dimEng = Math.round((scoreVisitas * 0.4 + scorePresencial * 0.3 + scoreRecencia * 0.3));
+    const tier = String(medico.tier || "");
+    const CADENCIA = {
+      "ST": { min: 3, ideal: 4, max: Infinity },
+      "1":  { min: 2, ideal: 3, max: 4 },
+      "2":  { min: 1, ideal: 2, max: 3 },
+      "3":  { min: 1, ideal: 2, max: 3 },
+      "4":  { min: 1, ideal: 1, max: 2 },
+      "5":  { min: 1, ideal: 1, max: 2 },
+    };
+    const cad = CADENCIA[tier] || { min: 1, ideal: 2, max: 3 };
+    const v = visitas90Count;
+
+    let dimEng;
+    if (v === 0) {
+      dimEng = 0; // zero visitas = zero score sempre
+    } else if (tier === "ST") {
+      // ST: sem teto — escala linear até ideal, depois mantém 100
+      dimEng = v >= cad.ideal ? 100 : Math.round((v / cad.ideal) * 80);
+    } else if (v < cad.min) {
+      // Sub-visita: escala 0 → 60 até atingir mínimo
+      dimEng = Math.round((v / cad.min) * 60);
+    } else if (v <= cad.ideal) {
+      // Entre mínimo e ideal: escala 70 → 100
+      dimEng = Math.round(70 + ((v - cad.min) / (cad.ideal - cad.min)) * 30);
+    } else if (v <= cad.max) {
+      // Entre ideal e máximo: mantém 100
+      dimEng = 100;
+    } else {
+      // Over-visiting: penaliza proporcionalmente além do máximo
+      const excesso = v - cad.max;
+      dimEng = Math.max(20, Math.round(100 - excesso * 20));
+    }
+
+    // Alerta de sub-cobertura ou over-visiting
+    const overVisiting = cad.max !== Infinity && v > cad.max;
+    const subVisita = v < cad.min && v > 0;
 
     // — DIMENSÃO 3: Presença Digital / GEO (peso 20%) ———————————————
     // Usa dados do geoData estático se disponível, senão usa perfil_medico
@@ -4696,6 +4734,8 @@ function PhysicianHealthScore() {
     if (total < 40) alertas.push("🔴 Score crítico — intervenção urgente");
     if (dimGeo < 35) alertas.push("🌐 Invisibilidade digital crítica");
     if (diasUltimaVisita > 45 && total < 80) alertas.push(`📅 Sem visita há ${diasUltimaVisita}d`);
+    if (overVisiting) alertas.push(`📋 Over-visiting — ${v} visitas para Tier ${tier} (máx ${cad.max})`);
+    if (subVisita) alertas.push(`📋 Sub-cobertura — ${v} visita(s) para Tier ${tier} (mín ${cad.min})`);
 
     return {
       total,
@@ -4705,8 +4745,10 @@ function PhysicianHealthScore() {
         digital:       dimGeo,
         adocao:        dimAdocao,
       },
-      raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, presenciais90, diasUltimaVisita,
-             consistencia, isProctor, scoreLeao, temEvento },
+      raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, diasUltimaVisita,
+             consistencia, isProctor, scoreLeao, temEvento,
+             cadMin: cad.min, cadIdeal: cad.ideal, cadMax: cad.max === Infinity ? "∞" : cad.max,
+             overVisiting, subVisita, tier },
       alertas,
     };
   }
@@ -4728,7 +4770,8 @@ function PhysicianHealthScore() {
   const filtrados = scoredMedicos.filter(m => {
     const z = zone(m._score.total);
     if (filterZone !== "all" && z !== filterZone) return false;
-    if (search && !m.nome?.toLowerCase().includes(search.toLowerCase())) return false;
+    if (search && !m.nome?.toLowerCase().includes(search.toLowerCase()) &&
+        !m.estado?.toLowerCase().includes(search.toLowerCase())) return false;
     return true;
   });
 
@@ -4765,7 +4808,7 @@ function PhysicianHealthScore() {
 
   const DIM_LABELS = [
     { id: "procedimentos", label: "Procedimentos",    icon: "🔬", weight: "40%" },
-    { id: "engajamento",   label: "Engajamento",      icon: "🤝", weight: "30%" },
+    { id: "engajamento",   label: "Cobertura",        icon: "📅", weight: "30%" },
     { id: "digital",       label: "GEO Digital",      icon: "🌐", weight: "20%" },
     { id: "adocao",        label: "Adoção Ecossistema", icon: "🏅", weight: "10%" },
   ];
@@ -4946,15 +4989,35 @@ function PhysicianHealthScore() {
                 </button>
               ))}
             </div>
-            <input
-              placeholder="Buscar médico..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ width:"100%", background: PC.navyLt, border:`1px solid #243B55`,
-                borderRadius:8, padding:"8px 12px", color: PC.white, fontSize:12,
-                fontFamily:"inherit", marginBottom:10, boxSizing:"border-box",
-                outline:"none" }}
-            />
+            <div style={{ position:"relative", marginBottom:10 }}>
+              <span style={{ position:"absolute", left:10, top:"50%", transform:"translateY(-50%)",
+                fontSize:14, pointerEvents:"none" }}>🔍</span>
+              <input
+                placeholder="Digite o nome do médico..."
+                value={search}
+                onChange={e => {
+                  const val = e.target.value;
+                  setSearch(val);
+                  // auto-seleciona se encontrar exatamente 1 médico
+                  if (val.length >= 3) {
+                    const matches = scoredMedicos.filter(m =>
+                      m.nome?.toLowerCase().includes(val.toLowerCase())
+                    );
+                    if (matches.length === 1) setSelected(matches[0].id);
+                  }
+                }}
+                style={{ width:"100%", background: PC.navyLt, border:`1px solid ${search ? PC.green+"88" : "#243B55"}`,
+                  borderRadius:8, padding:"8px 12px 8px 32px", color: PC.white, fontSize:12,
+                  fontFamily:"inherit", boxSizing:"border-box", outline:"none",
+                  transition:"border-color 0.2s" }}
+              />
+              {search && (
+                <button onClick={() => { setSearch(""); }}
+                  style={{ position:"absolute", right:8, top:"50%", transform:"translateY(-50%)",
+                    background:"none", border:"none", color: PC.slate, cursor:"pointer",
+                    fontSize:14, lineHeight:1, padding:0 }}>✕</button>
+              )}
+            </div>
 
             {/* Lista */}
             <div style={{ display:"flex", flexDirection:"column", gap:6, maxHeight:"60vh", overflowY:"auto" }}>
@@ -5076,8 +5139,8 @@ function PhysicianHealthScore() {
                     {[
                       ["ESG realizados (90d)", sc.raw.esgAtual],
                       ["BIB (estoque)", sc.raw.bibAtual],
-                      ["Visitas totais (90d)", sc.raw.visitas90Count],
-                      ["Visitas presenciais", sc.raw.presenciais90],
+                      ["Visitas realizadas (90d)", `${sc.raw.visitas90Count} de ${sc.raw.cadIdeal} ideal (mín ${sc.raw.cadMin} · máx ${sc.raw.cadMax})`],
+                      ["Cobertura", sc.raw.overVisiting ? "⚠ Over-visiting" : sc.raw.subVisita ? "⚠ Sub-cobertura" : "✅ Dentro da cadência"],
                       ["Última visita", sc.raw.diasUltimaVisita < 999 ? `${sc.raw.diasUltimaVisita}d atrás` : "—"],
                       ["É Proctor", sc.raw.isProctor ? "✅ Sim" : "—"],
                       ["LeãoPlus", sc.raw.scoreLeao >= 70 ? "✅ Adoção ativa" : sc.raw.scoreLeao >= 35 ? "🟡 Em avaliação" : "—"],
