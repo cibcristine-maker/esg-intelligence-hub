@@ -4592,26 +4592,67 @@ function PhysicianHealthScore() {
   React.useEffect(() => {
     async function loadGeo() {
       setGeoLoading(true);
-      const [meds, regs] = await Promise.all([
+      const [meds, regsGeo] = await Promise.all([
         fetchGeoTrack("medicos?select=*&order=nome"),
-        fetchGeoTrack("geo_monitor?select=*")
+        fetchGeoTrack("geo_monitor?select=*"),
       ]);
       if (meds) setGeoMedicos(meds);
-      if (regs) setGeoRegistros(regs);
+      // geo_monitor é a tabela principal de scores por plataforma
+      if (regsGeo && regsGeo.length > 0) {
+        setGeoRegistros(regsGeo);
+      }
       setGeoLastUpdate(new Date());
       setGeoLoading(false);
     }
     loadGeo();
   }, []);
 
-  // Calcula score GEO para um médico pelo nome (cruza via slug/nome)
+  // Normaliza string para matching tolerante
+  function normStr(s) {
+    return (s || "").toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "")
+      .replace(/dr\.?\s*/gi, "")
+      .replace(/dra\.?\s*/gi, "")
+      .trim();
+  }
+
+  // Extrai sobrenomes relevantes (ignora partículas)
+  function sobrenomes(s) {
+    const stop = new Set(["de","da","do","dos","das","e"]);
+    return normStr(s).split(/\s+/).filter(w => w.length > 2 && !stop.has(w));
+  }
+
+  // Calcula score GEO para um médico pelo nome — matching multi-estratégia
   function calcGeoScore(medicoNome) {
     if (!geoMedicos.length || !geoRegistros.length) return null;
-    // Tenta casar pelo nome
-    const geoMed = geoMedicos.find(gm =>
-      nomesBatem(gm.nome, medicoNome) ||
-      gm.nome?.toLowerCase().includes(medicoNome?.toLowerCase()?.split(" ")[1] || "") 
-    );
+
+    const nNorm = normStr(medicoNome);
+    const nSobs = sobrenomes(medicoNome);
+
+    // Estratégia 1: nomesBatem (função padrão do Hub)
+    // Estratégia 2: comparação normalizada direta
+    // Estratégia 3: slug do GeoTrack contém sobrenomes do Hub
+    // Estratégia 4: dois ou mais sobrenomes em comum
+    const geoMed = geoMedicos.find(gm => {
+      const gmNorm = normStr(gm.nome);
+      const gmSobs = sobrenomes(gm.nome);
+      const gmSlug = (gm.slug || "").replace(/-/g, " ");
+
+      // E1: match exato normalizado
+      if (gmNorm === nNorm) return true;
+      // E2: nomesBatem original
+      if (nomesBatem(gm.nome, medicoNome)) return true;
+      // E3: slug contém todos os sobrenomes do Hub (pelo menos 2)
+      const sobsNoSlug = nSobs.filter(s => gmSlug.includes(s));
+      if (nSobs.length >= 2 && sobsNoSlug.length >= Math.min(2, nSobs.length)) return true;
+      // E4: pelo menos 2 sobrenomes em comum entre os dois nomes
+      const sobsComuns = nSobs.filter(s => gmSobs.includes(s));
+      if (sobsComuns.length >= 2) return true;
+      // E5: um contém o outro (substring normalizada)
+      if (gmNorm.includes(nNorm) || nNorm.includes(gmNorm)) return true;
+      return false;
+    });
+
     if (!geoMed) return null;
     // Pega todos os registros desse médico
     const regs = geoRegistros.filter(r => r.medico_id === geoMed.id);
