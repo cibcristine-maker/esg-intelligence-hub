@@ -1250,13 +1250,16 @@ function VisitaModal({ medicos, onSave, onClose }) {
           </div>
           {/* LEÃO PLUS */}
           <div className="form-group form-full" style={{borderTop:"1px solid var(--border)",paddingTop:12,marginTop:4}}>
-            <label className="form-label" style={{color:"var(--warn)"}}>
-              💛 Leap Plus — Status na Visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span>
-              <span style={{color:"var(--muted)",fontSize:10,marginLeft:6}}>(obrigatório em toda visita)</span>
+            <label className="form-label" style={{color: form.referidor === "Sim" ? "var(--muted)" : "var(--warn)"}}>
+              💛 Leap Plus — Status na Visita
+              {form.referidor !== "Sim" && <span style={{color:"var(--danger)",fontWeight:700,marginLeft:4}}>*</span>}
+              <span style={{color:"var(--muted)",fontSize:10,marginLeft:6}}>
+                {form.referidor === "Sim" ? "(opcional para referidores)" : "(obrigatório)"}
+              </span>
             </label>
             <select className="form-select" value={form.leao_plus_abordado}
               onChange={e => set("leao_plus_abordado", e.target.value)}
-              style={{borderColor: !form.leao_plus_abordado ? "rgba(245,158,11,0.6)" : ""}}>
+              style={{borderColor: form.referidor !== "Sim" && !form.leao_plus_abordado ? "rgba(245,158,11,0.6)" : ""}}>
               <option value="">Selecione...</option>
               <option value="nao_abordado">Não abordado nesta visita</option>
               <option value="desconhece">Apresentado — médico desconhecia</option>
@@ -1303,7 +1306,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
             if (form.referidor !== "Sim" && (form.proc_marcados_esg === "" || form.proc_marcados_esg === null || form.proc_marcados_esg === undefined)) return alert("⚠ ESGs agendados hoje é obrigatório para médicos não referidores.");
             if (form.referidor !== "Sim" && (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined)) return alert("⚠ ESGs Realizados desde última visita é obrigatório para médicos não referidores.");
-            if (!form.leao_plus_abordado) return alert("⚠ Leap Plus é obrigatório. Informe se foi abordado nessa visita.");
+            if (form.referidor !== "Sim" && !form.leao_plus_abordado) return alert("⚠ Leap Plus é obrigatório para médicos não referidores.");
             if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
             if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
             onSave(form);
