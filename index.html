@@ -4619,6 +4619,15 @@ function PhysicianHealthScore() {
   const [geoLoading, setGeoLoading] = React.useState(true);
   const [geoLastUpdate, setGeoLastUpdate] = React.useState(null);
   const [geoErro, setGeoErro] = React.useState(null);
+  const [fupDataPHS, setFupDataPHS] = React.useState(null);
+
+  React.useEffect(() => {
+    // Busca fupData para calcular temEvento (ESG Day, cursos, etc.)
+    if (supabaseClient) {
+      supabaseClient.from("fup_projetos").select("data").eq("id","shared").single()
+        .then(({ data }) => { if (data?.data) setFupDataPHS(data.data); });
+    }
+  }, []);
 
   React.useEffect(() => {
     async function loadGeo() {
@@ -4775,7 +4784,7 @@ function PhysicianHealthScore() {
   const cutoffPrev = new Date(now); cutoffPrev.setDate(now.getDate() - 180);
 
   // ── Cálculo do score por médico ───────────────────────────────────────
-  function calcScore(medico, visitas, calcGeoScoreFn) {
+  function calcScore(medico, visitas, calcGeoScoreFn, fupData) {
     const visMed = visitas.filter(v => nomesBatem(v.medico_nome, medico.nome));
     const vis90  = visMed.filter(v => new Date(v.data_contato) >= cutoff90);
     const visPrev = visMed.filter(v => new Date(v.data_contato) >= cutoffPrev && new Date(v.data_contato) < cutoff90);
@@ -4895,11 +4904,12 @@ function PhysicianHealthScore() {
       : leaoEvol  >= 1 ? 35
       : 0;
     // Evento Endura: via FUP Projetos — verifica se médico aparece em algum projeto
-    const temEvento = typeof fupData !== "undefined" && fupData ? (
+    const temEvento = fupData ? (
       (fupData.cursoBariatricos?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
       (fupData.cursoEndoscopistas?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
       (fupData.imersaoMarketing?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
-      (fupData.aulasReferidores?.eventos||[]).some(e => nomesBatem(e.medico, medico.nome))
+      (fupData.aulasReferidores?.eventos||[]).some(e => nomesBatem(e.medico, medico.nome)) ||
+      (fupData.esgDay||[]).some(e => nomesBatem(e.medico, medico.nome) || nomesBatem(e.clinica, medico.nome))
     ) : false;
     const scoreEvento = temEvento ? 100 : 0;
     const dimAdocao = Math.round(
@@ -4962,9 +4972,9 @@ function PhysicianHealthScore() {
     if (!medicos || !todasVisitas) return [];
     return medicos.map(m => ({
       ...m,
-      _score: calcScore(m, todasVisitas, calcGeoScore),
+      _score: calcScore(m, todasVisitas, calcGeoScore, fupDataPHS),
     })).sort((a, b) => b._score.total - a._score.total);
-  }, [medicos, todasVisitas, geoMedicos, geoRegistros]);
+  }, [medicos, todasVisitas, geoMedicos, geoRegistros, fupDataPHS]);
 
   const filtrados = scoredMedicos.filter(m => {
     const z = zone(m._score.total);
