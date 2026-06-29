@@ -4568,12 +4568,20 @@ async function fetchGeoTrack(endpoint) {
       headers: {
         "apikey": GEOTRACK_KEY,
         "Authorization": `Bearer ${GEOTRACK_KEY}`,
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
       }
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(`[GeoTrack] ${endpoint} → HTTP ${res.status}:`, body.slice(0,200));
+      return { _error: res.status, _body: body };
+    }
     return await res.json();
-  } catch { return null; }
+  } catch(e) {
+    console.warn("[GeoTrack] fetch error:", e.message);
+    return { _error: "network", _body: e.message };
+  }
 }
 
 function PhysicianHealthScore() {
@@ -4588,6 +4596,7 @@ function PhysicianHealthScore() {
   const [geoRegistros, setGeoRegistros] = React.useState([]);
   const [geoLoading, setGeoLoading] = React.useState(true);
   const [geoLastUpdate, setGeoLastUpdate] = React.useState(null);
+  const [geoErro, setGeoErro] = React.useState(null);
 
   React.useEffect(() => {
     async function loadGeo() {
@@ -4596,11 +4605,10 @@ function PhysicianHealthScore() {
         fetchGeoTrack("medicos?select=*&order=nome"),
         fetchGeoTrack("geo_monitor?select=*"),
       ]);
-      if (meds) setGeoMedicos(meds);
-      // geo_monitor é a tabela principal de scores por plataforma
-      if (regsGeo && regsGeo.length > 0) {
-        setGeoRegistros(regsGeo);
-      }
+      // Só aceita arrays válidos (não objetos de erro)
+      if (Array.isArray(meds)) setGeoMedicos(meds);
+      else if (meds?._error) setGeoErro(`HTTP ${meds._error}`);
+      if (Array.isArray(regsGeo) && regsGeo.length > 0) setGeoRegistros(regsGeo);
       setGeoLastUpdate(new Date());
       setGeoLoading(false);
     }
@@ -4833,9 +4841,13 @@ function PhysicianHealthScore() {
     // — SCORE FINAL (ponderado) ————————————————————————————————————————
     // Se GEO sem dados: redistribui 20% para Procedimentos (25%) e Engajamento (15%)
     // Com dados: Procedimentos 40% | Engajamento 30% | GEO 20% | Adoção 10%
+    const _proc = isNaN(dimProc) ? 0 : dimProc;
+    const _eng  = isNaN(dimEng)  ? 0 : dimEng;
+    const _geo  = isNaN(dimGeo)  ? 0 : (dimGeo || 0);
+    const _adoc = isNaN(dimAdocao) ? 0 : dimAdocao;
     const total = geoSemDados
-      ? Math.round(dimProc * 0.50 + dimEng * 0.35 + dimAdocao * 0.15)
-      : Math.round(dimProc * 0.40 + dimEng * 0.30 + (dimGeo||0) * 0.20 + dimAdocao * 0.10);
+      ? Math.round(_proc * 0.50 + _eng * 0.35 + _adoc * 0.15)
+      : Math.round(_proc * 0.40 + _eng * 0.30 + _geo  * 0.20 + _adoc * 0.10);
 
     // — ALERTAS ————————————————————————————————————————————————————————
     const alertas = [];
@@ -4888,8 +4900,9 @@ function PhysicianHealthScore() {
 
   const counts = { green: 0, yellow: 0, red: 0 };
   scoredMedicos.forEach(m => counts[zone(m._score.total)]++);
-  const avgScore = scoredMedicos.length
-    ? Math.round(scoredMedicos.reduce((s, m) => s + m._score.total, 0) / scoredMedicos.length)
+  const validScores = scoredMedicos.filter(m => !isNaN(m._score.total) && m._score.total != null);
+  const avgScore = validScores.length
+    ? Math.round(validScores.reduce((s, m) => s + m._score.total, 0) / validScores.length)
     : 0;
 
   // ── Playbooks ─────────────────────────────────────────────────────────
@@ -4936,8 +4949,8 @@ function PhysicianHealthScore() {
   const GeoBadge = () => (
     <div style={{
       display:"inline-flex", alignItems:"center", gap:6,
-      background: geoLoading ? "rgba(245,166,35,0.12)" : geoMedicos.length ? "rgba(0,200,150,0.12)" : "rgba(232,68,90,0.12)",
-      border: `1px solid ${geoLoading ? "rgba(245,166,35,0.3)" : geoMedicos.length ? "rgba(0,200,150,0.3)" : "rgba(232,68,90,0.3)"}`,
+      background: geoLoading ? "rgba(245,166,35,0.12)" : geoErro ? "rgba(232,68,90,0.12)" : geoMedicos.length ? "rgba(0,200,150,0.12)" : "rgba(245,166,35,0.12)",
+      border: `1px solid ${geoLoading ? "rgba(245,166,35,0.3)" : geoErro ? "rgba(232,68,90,0.3)" : geoMedicos.length ? "rgba(0,200,150,0.3)" : "rgba(245,166,35,0.3)"}`,
       borderRadius:20, padding:"3px 10px", fontSize:10, fontWeight:700,
       color: geoLoading ? PC.amber : geoMedicos.length ? PC.green : PC.red,
     }}>
@@ -4946,8 +4959,9 @@ function PhysicianHealthScore() {
         animation: geoLoading ? "pulse 1.5s infinite" : "none"
       }}/>
       {geoLoading ? "GeoTrack carregando..." 
+        : geoErro ? `GeoTrack erro ${geoErro} — verificar RLS no Supabase`
         : geoMedicos.length ? `GeoTrack ✓ — ${geoMedicos.length} médicos · ${geoRegistros.length} registros` 
-        : "GeoTrack sem dados"}
+        : "GeoTrack conectado — tabela geo_monitor vazia"}
     </div>
   );
 
