@@ -796,7 +796,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     proc_realizados_esg: visita.proc_realizados_esg ?? "",
     baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
-    leao_plus_abordado: visita.leao_plus_abordado || "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : (visita.leao_plus_abordado || ""),
     leao_plus_status: visita.leao_plus_status || "",
     acao_prevista: visita.acao_prevista || "",
     obs: visita.obs || "",
@@ -835,7 +835,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado || null,
+      leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : (form.leao_plus_abordado || null),
       leao_plus_status: form.leao_plus_status || null,
       acao_prevista: form.acao_prevista || null,
       obs: form.obs || null,
@@ -1009,7 +1009,7 @@ function Visitas() {
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado || null,
+      leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : (form.leao_plus_abordado || null),
       leao_plus_status: form.leao_plus_status || null,
     };
     const { error } = await supabaseClient.from("visitas").insert([payload]);
