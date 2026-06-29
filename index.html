@@ -1368,7 +1368,6 @@ function Medicos() {
                   <th>Estado</th>
                   <th>Clínica</th>
                   <th>Account</th>
-                  <th style={{textAlign:"center"}}>Proctor</th>
                 </tr>
               </thead>
               <tbody>
@@ -1426,29 +1425,7 @@ function Medicos() {
                         </div>
                       )}
                     </td>
-                    <td onClick={e => e.stopPropagation()}>
-                      <select
-                        value={m.is_proctor ? "sim" : "nao"}
-                        onChange={async (e) => {
-                          const novo = e.target.value === "sim";
-                          setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: novo} : x));
-                          if (supabaseClient) {
-                            const { error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id);
-                            if (error) alert("Erro Proctor: " + error.message);
-                          }
-                        }}
-                        style={{
-                          background: m.is_proctor ? "rgba(0,200,150,0.15)" : "#1e2d3d",
-                          color: m.is_proctor ? "var(--teal)" : "var(--muted)",
-                          border: `1px solid ${m.is_proctor ? "rgba(0,200,150,0.5)" : "var(--border)"}`,
-                          borderRadius: 6, padding: "4px 6px",
-                          fontSize: 11, fontWeight: m.is_proctor ? 700 : 400,
-                          cursor: "pointer", fontFamily: "inherit",
-                        }}>
-                        <option value="nao">—</option>
-                        <option value="sim">✅ Proctor</option>
-                      </select>
-                    </td>
+                    
                   </tr>
                 ))}
               </tbody>
@@ -1476,6 +1453,29 @@ function MedicoModal({ medico, onClose }) {
             </div>
           </div>
           <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div style={{marginBottom:12,display:"flex",alignItems:"center",gap:10}}>
+          <span style={{fontSize:12,color:"var(--muted)"}}>Proctor Boston Scientific:</span>
+          <button
+            onClick={async () => {
+              const novo = !medico.is_proctor;
+              if (supabaseClient) {
+                const { error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", medico.id);
+                if (error) { alert("Erro: " + error.message); return; }
+                medico.is_proctor = novo;
+                alert(novo ? "✅ Marcado como Proctor" : "Removido como Proctor");
+              }
+            }}
+            style={{
+              background: medico.is_proctor ? "rgba(0,200,150,0.15)" : "rgba(255,255,255,0.06)",
+              border: `1px solid ${medico.is_proctor ? "rgba(0,200,150,0.5)" : "var(--border)"}`,
+              color: medico.is_proctor ? "var(--teal)" : "var(--muted)",
+              borderRadius: 8, padding: "6px 16px", cursor: "pointer",
+              fontSize: 12, fontWeight: medico.is_proctor ? 700 : 400,
+              fontFamily: "inherit",
+            }}>
+            {medico.is_proctor ? "✅ É Proctor — clique para remover" : "Marcar como Proctor"}
+          </button>
         </div>
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:13}}>
           {[
@@ -4677,39 +4677,49 @@ function PhysicianHealthScore() {
     // Estratégia 2: comparação normalizada direta
     // Estratégia 3: slug do GeoTrack contém sobrenomes do Hub
     // Estratégia 4: dois ou mais sobrenomes em comum
-    const geoMed = geoMedicos.find(gm => {
-      const gmNorm = normStr(gm.nome);
-      const gmSobs = sobrenomes(gm.nome);
-      const gmSlug = (gm.slug || "").replace(/-/g, " ");
-
-      // E1: match exato normalizado
-      if (gmNorm === nNorm) return true;
-      // E3: um contém o outro (substring normalizada) — cobre "Leonardo Teixeira" ⊂ "Leonardo Teixeira Rodrigues"
-      if (gmNorm.includes(nNorm) || nNorm.includes(gmNorm)) return true;
-      // E4: slug contém sobrenomes do Hub
-      const sobsNoSlug = nSobs.filter(s => gmSlug.includes(s));
-      if (nSobs.length >= 2 && sobsNoSlug.length >= Math.min(2, nSobs.length)) return true;
-      // E5: todos os sobrenomes do GeoTrack estão no nome do Hub
-      // cobre: GeoTrack="Leonardo Teixeira" ⊂ Hub="Leonardo Teixeira Rodrigues"
-      if (gmSobs.length >= 1 && gmSobs.every(s => nNorm.includes(s))) return true;
-      // E6: pelo menos 2 sobrenomes em comum
-      const sobsComuns = nSobs.filter(s => gmSobs.includes(s));
-      if (sobsComuns.length >= 2) return true;
-      // E7: primeiro nome + qualquer sobrenome em comum (mínimo 1 sobrenome)
-      const primeiroGeo = gmNorm.split(" ")[0];
-      const primeiroHub = nNorm.split(" ")[0];
-      if (primeiroGeo === primeiroHub && sobsComuns.length >= 1) return true;
-      // E8: primeiros nomes com 1 char de diferença + sobrenome em comum
-      // cobre: Jimmi/Jimi
-      if (primeiroGeo.length >= 3 && primeiroHub.length >= 3 && sobsComuns.length >= 1) {
-        if (primeiroGeo.indexOf(primeiroHub) >= 0 || primeiroHub.indexOf(primeiroGeo) >= 0) return true;
-        var edDiffs = Math.abs(primeiroGeo.length - primeiroHub.length);
-        var edMin = Math.min(primeiroGeo.length, primeiroHub.length);
-        for (var ei = 0; ei < edMin; ei++) { if (primeiroGeo[ei] !== primeiroHub[ei]) edDiffs++; }
-        if (edDiffs <= 1) return true;
+    // Matching direto: normaliza os dois nomes e verifica se tokens do GeoTrack
+    // estão todos presentes no nome do Hub (ou vice-versa)
+    var geoMed = null;
+    for (var gi = 0; gi < geoMedicos.length; gi++) {
+      var gm = geoMedicos[gi];
+      var gmNorm = normStr(gm.nome);
+      var gmToks = sobrenomes(gm.nome);
+      // Teste 1: exato
+      if (gmNorm === nNorm) { geoMed = gm; break; }
+      // Teste 2: substring
+      if (nNorm.length > 4 && gmNorm.length > 4) {
+        if (nNorm.indexOf(gmNorm) >= 0 || gmNorm.indexOf(nNorm) >= 0) { geoMed = gm; break; }
       }
-      return false;
-    });
+      // Teste 3: todos tokens GeoTrack no Hub
+      if (gmToks.length >= 1) {
+        var allIn = true;
+        for (var ti = 0; ti < gmToks.length; ti++) {
+          if (nNorm.indexOf(gmToks[ti]) < 0) { allIn = false; break; }
+        }
+        if (allIn) { geoMed = gm; break; }
+      }
+      // Teste 4: todos tokens Hub no GeoTrack
+      if (nSobs.length >= 1 && nSobs.length <= 3) {
+        var allIn2 = true;
+        for (var ti2 = 0; ti2 < nSobs.length; ti2++) {
+          if (gmNorm.indexOf(nSobs[ti2]) < 0) { allIn2 = false; break; }
+        }
+        if (allIn2) { geoMed = gm; break; }
+      }
+      // Teste 5: primeiro token igual + sobrenome em comum
+      if (gmToks.length >= 1 && nSobs.length >= 1) {
+        if (gmToks[0] === nSobs[0]) {
+          for (var si = 1; si < gmToks.length; si++) {
+            if (nNorm.indexOf(gmToks[si]) >= 0) { geoMed = gm; break; }
+          }
+          if (geoMed) break;
+          for (var si2 = 1; si2 < nSobs.length; si2++) {
+            if (gmNorm.indexOf(nSobs[si2]) >= 0) { geoMed = gm; break; }
+          }
+          if (geoMed) break;
+        }
+      }
+    }
 
     if (!geoMed) return null;
     // Pega todos os registros desse médico na tabela geo_monitor
