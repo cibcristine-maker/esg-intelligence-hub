@@ -5121,45 +5121,6 @@ function PhysicianHealthScore() {
           </div>
         </div>
 
-        {/* DEBUG: Nomes GeoTrack vs Hub */}
-        {geoMedicos.length > 0 && (
-          <div style={{ background: PC.navyMid, borderRadius:10, padding:"14px 18px",
-            marginTop:12, border:`1px solid ${PC.navyLt}` }}>
-            <div style={{ fontSize:11, color: PC.amber, fontWeight:700, letterSpacing:1, marginBottom:10 }}>
-              DEBUG — MATCHING GEOTRACK × HUB ({geoMedicos.length} médicos no GeoTrack)
-            </div>
-            <div style={{ fontSize:10, color: PC.slate, marginBottom:8 }}>
-              Nomes no GeoTrack (campo nome):
-            </div>
-            <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginBottom:12 }}>
-              {geoMedicos.map(gm => {
-                const hubMatch = medicos?.find(m => {
-                  const gn = normStr(gm.nome), hn = normStr(m.nome);
-                  const gs = sobrenomes(gm.nome), hs = sobrenomes(m.nome);
-                  if (gn === hn) return true;
-                  if (nomesBatem(gm.nome, m.nome)) return true;
-                  if (gn.includes(hn) || hn.includes(gn)) return true;
-                  if (gs.length >= 1 && gs.every(s => hn.includes(s))) return true;
-                  const comuns = hs.filter(s => gs.includes(s));
-                  if (comuns.length >= 2) return true;
-                  if (gs[0] === hs[0] && comuns.length >= 1) return true;
-                  return false;
-                });
-                return (
-                  <div key={gm.id} style={{
-                    background: hubMatch ? "rgba(0,200,150,0.12)" : "rgba(232,68,90,0.12)",
-                    border: `1px solid ${hubMatch ? "rgba(0,200,150,0.4)" : "rgba(232,68,90,0.4)"}`,
-                    borderRadius:6, padding:"3px 8px", fontSize:10,
-                    color: hubMatch ? PC.green : PC.red,
-                  }}>
-                    {gm.nome} {hubMatch ? `→ ${hubMatch.nome.split(" ").slice(0,2).join(" ")}` : "✗ sem match"}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        )}
-
       ) : (
         /* ─── PORTFOLIO VIEW ─────────────────────────────────────────────── */
         <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, alignItems:"start" }}>
