@@ -4593,50 +4593,18 @@ function FeedbacksIA() {
 const GEOTRACK_URL = "https://ojbbjgqfjzygdenwtwrz.supabase.co";
 const GEOTRACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYmJqZ3Fmanp5Z2Rlbnd0d3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzM0MTksImV4cCI6MjA5NDQ0OTQxOX0.aMFG3M9Ll5iGQZamREUK9LvN3YhK40RBg8R0gH5bVFg";
 
-// Cliente GeoTrack usando supabase-js (mesma lib já carregada no Hub)
-let _geoTrackClient = null;
-function getGeoTrackClient() {
-  if (!_geoTrackClient && window.supabase?.createClient) {
-    _geoTrackClient = window.supabase.createClient(GEOTRACK_URL, GEOTRACK_KEY);
-  }
-  return _geoTrackClient;
-}
-
-async function fetchGeoTrack(table, query = {}) {
-  // Tenta primeiro com supabase-js (evita problemas de CORS/RLS anon)
-  const client = getGeoTrackClient();
-  if (client) {
-    try {
-      let q = client.from(table).select("*");
-      if (query.order) q = q.order(query.order);
-      const { data, error } = await q;
-      if (!error && data) return data;
-      console.warn(`[GeoTrack] supabase-js ${table}:`, error?.message);
-    } catch(e) {
-      console.warn("[GeoTrack] supabase-js error:", e.message);
-    }
-  }
-  // Fallback: fetch direto via REST
+// Cliente GeoTrack — criado igual ao Hub mas apontando para projeto GeoTrack
+// Inicializado dentro do useEffect para garantir que window.supabase está pronto
+async function fetchGeoTrack(table, order = null) {
   try {
-    const params = query.order ? `?select=*&order=${query.order}` : "?select=*";
-    const res = await fetch(`${GEOTRACK_URL}/rest/v1/${table}${params}`, {
-      headers: {
-        "apikey": GEOTRACK_KEY,
-        "Authorization": `Bearer ${GEOTRACK_KEY}`,
-        "Content-Type": "application/json",
-        "Prefer": "return=representation",
-        "Accept": "application/json",
-      }
-    });
-    if (!res.ok) {
-      const body = await res.text().catch(() => "");
-      console.warn(`[GeoTrack] REST ${table} → HTTP ${res.status}:`, body.slice(0,200));
-      return { _error: res.status, _body: body };
-    }
-    return await res.json();
+    const client = window.supabase.createClient(GEOTRACK_URL, GEOTRACK_KEY);
+    let q = client.from(table).select("*");
+    if (order) q = q.order(order);
+    const { data, error } = await q;
+    if (error) return { _error: error.code || "supabase", _body: error.message };
+    return data || [];
   } catch(e) {
-    console.warn("[GeoTrack] fetch error:", e.message);
-    return { _error: "network", _body: e.message };
+    return { _error: "exception", _body: e.message };
   }
 }
 
@@ -4658,13 +4626,21 @@ function PhysicianHealthScore() {
     async function loadGeo() {
       setGeoLoading(true);
       const [meds, regsGeo] = await Promise.all([
-        fetchGeoTrack("medicos", { order: "nome" }),
-        fetchGeoTrack("geo_monitor", {}),
+        fetchGeoTrack("medicos", "nome"),
+        fetchGeoTrack("geo_monitor"),
       ]);
-      // Só aceita arrays válidos (não objetos de erro)
-      if (Array.isArray(meds)) setGeoMedicos(meds);
-      else if (meds?._error) setGeoErro(`HTTP ${meds._error}`);
-      if (Array.isArray(regsGeo) && regsGeo.length > 0) setGeoRegistros(regsGeo);
+      // Só aceita arrays válidos
+      if (Array.isArray(meds)) {
+        setGeoMedicos(meds);
+      } else {
+        const errMsg = meds?._body ? `${meds._error}: ${String(meds._body).slice(0,60)}` : String(meds?._error || "desconhecido");
+        setGeoErro(errMsg);
+      }
+      if (Array.isArray(regsGeo) && regsGeo.length > 0) {
+        setGeoRegistros(regsGeo);
+      } else if (regsGeo?._error) {
+        setGeoErro(prev => prev || `geo_monitor: ${regsGeo._error}`);
+      }
       setGeoLastUpdate(new Date());
       setGeoLoading(false);
     }
@@ -5027,10 +5003,11 @@ function PhysicianHealthScore() {
         animation: geoLoading ? "pulse 1.5s infinite" : "none"
       }}/>
       {geoLoading ? "GeoTrack carregando..." 
-        : geoErro ? `GeoTrack erro ${geoErro} — abrir console para detalhes`
-        : geoMedicos.length && geoRegistros.length ? `GeoTrack ✓ — ${geoMedicos.length} médicos · ${geoRegistros.length} scores`
-        : geoMedicos.length ? `GeoTrack: ${geoMedicos.length} médicos cadastrados · geo_monitor vazio (registrar scores no GeoTrack)`
-        : "GeoTrack: sem dados — verificar conexão"}
+        : geoErro ? `GeoTrack ✗ erro: ${geoErro}`
+        : geoMedicos.length && geoRegistros.length ? `GeoTrack ✓ ${geoMedicos.length} médicos · ${geoRegistros.length} scores`
+        : geoMedicos.length ? `GeoTrack: ${geoMedicos.length} médicos · geo_monitor vazio`
+        : geoLoading ? "GeoTrack carregando..."
+        : "GeoTrack: sem dados"}
     </div>
   );
 
@@ -5053,7 +5030,15 @@ function PhysicianHealthScore() {
           <div style={{ fontSize:12, color: PC.slate, marginTop:3 }}>
             Score 0–100 calculado com dados reais de visitas · {scoredMedicos.length} médicos na carteira
           </div>
-          <div style={{ marginTop:8 }}><GeoBadge /></div>
+          <div style={{ marginTop:8, display:"flex", alignItems:"center", gap:8 }}>
+            <GeoBadge />
+            {(geoErro || (!geoLoading && !geoMedicos.length)) && (
+              <span style={{ fontSize:10, color:"#E8445A", background:"rgba(232,68,90,0.1)",
+                border:"1px solid rgba(232,68,90,0.3)", borderRadius:6, padding:"2px 8px" }}>
+                {geoErro ? `Erro: ${geoErro}` : "Não conectou"}
+              </span>
+            )}
+          </div>
         </div>
         <div style={{ display:"flex", gap:6 }}>
           {["portfolio","framework"].map(v => (
