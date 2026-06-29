@@ -917,7 +917,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           </div>
           {inp("Proc. Marcados (Balão)", "proc_marcados_balao", "number")}
           <div className="form-group">
-            <label className="form-label">💛 Leão Plus — Status na Visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
+            <label className="form-label">💛 Leap Plus — Status na Visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
             <select className="form-select" value={form.leao_plus_abordado} onChange={e => set("leao_plus_abordado", e.target.value)}>
               <option value="">Selecione...</option>
               <option value="nao_abordado">Não abordado nesta visita</option>
@@ -1251,7 +1251,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
           {/* LEÃO PLUS */}
           <div className="form-group form-full" style={{borderTop:"1px solid var(--border)",paddingTop:12,marginTop:4}}>
             <label className="form-label" style={{color:"var(--warn)"}}>
-              💛 Leão Plus — Status na Visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span>
+              💛 Leap Plus — Status na Visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span>
               <span style={{color:"var(--muted)",fontSize:10,marginLeft:6}}>(obrigatório em toda visita)</span>
             </label>
             <select className="form-select" value={form.leao_plus_abordado}
@@ -1303,7 +1303,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
             if (form.referidor !== "Sim" && (form.proc_marcados_esg === "" || form.proc_marcados_esg === null || form.proc_marcados_esg === undefined)) return alert("⚠ ESGs agendados hoje é obrigatório para médicos não referidores.");
             if (form.referidor !== "Sim" && (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined)) return alert("⚠ ESGs Realizados desde última visita é obrigatório para médicos não referidores.");
-            if (!form.leao_plus_abordado) return alert("⚠ Leão Plus é obrigatório. Informe se foi abordado nessa visita.");
+            if (!form.leao_plus_abordado) return alert("⚠ Leap Plus é obrigatório. Informe se foi abordado nessa visita.");
             if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
             if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
             onSave(form);
@@ -3833,7 +3833,7 @@ function Historico() {
                   <th>Prob.</th>
                   <th>$ Esperado</th>
                   <th>MKT</th>
-                  <th>Leão Plus</th>
+                  <th>Leap Plus</th>
                   <th>Observação</th>
                 </tr>
               </thead>
@@ -4852,29 +4852,7 @@ function PhysicianHealthScore() {
     : 0;
 
   // ── Playbooks ─────────────────────────────────────────────────────────
-  const PLAYBOOKS = {
-    green: [
-      "Candidato a Advisory Board e evento científico",
-      "Co-criar case clínico ou artigo de resultados",
-      "Apresentar Orbera 365 / próximas inovações",
-      "Propor modelo de referência para endocrinologistas parceiros",
-      "Nomear para Key Opinion Leader regional",
-    ],
-    yellow: [
-      "Visita de diagnóstico: identificar gap de procedimento, digital ou clínico",
-      "Gerar Briefing IA personalizado via ESG Hub",
-      "Oferecer treinamento técnico ou refresh de protocolo",
-      "Apoio com ClinicFlow para estruturar FUP de pacientes",
-      "Verificar fricção operacional: supply, faturamento, estoque",
-    ],
-    red: [
-      "Reunião de revisão com AE + liderança Endura em até 7 dias",
-      "Diagnóstico GEO urgente + plano de recuperação digital",
-      "Investigar uso de concorrente e endereçar objeções diretamente",
-      "Oferecer mutirão / parceria SBCBM como reativação (Programa Ponte)",
-      "Avaliar viabilidade de manutenção na carteira ativa vs reativação futura",
-    ],
-  };
+
 
   const DIM_LABELS = [
     { id: "procedimentos", label: "Procedimentos",    icon: "🔬", weight: "40%" },
@@ -5234,7 +5212,7 @@ function PhysicianHealthScore() {
                       ["Última visita", sc.raw.diasUltimaVisita < 999 ? `${sc.raw.diasUltimaVisita}d atrás` : "—"],
                       ["GEO Score", sc.raw.geoSemDados ? "⚠ Sem dados no GeoTrack" : `${sc.raw.dimGeo}% visibilidade`],
                       ["É Proctor", sc.raw.isProctor ? "✅ Sim" : "—"],
-                      ["LeãoPlus", sc.raw.scoreLeao >= 70 ? "✅ Adoção ativa" : sc.raw.scoreLeao >= 35 ? "🟡 Em avaliação" : "—"],
+                      ["Leap Plus", sc.raw.scoreLeao >= 70 ? "✅ Adoção ativa" : sc.raw.scoreLeao >= 35 ? "🟡 Em avaliação" : "—"],
                       ["Evento Endura", sc.raw.temEvento ? "✅ Participou" : "—"],
                     ].map(([label, val]) => (
                       <div key={label} style={{ display:"flex", justifyContent:"space-between",
@@ -5273,21 +5251,7 @@ function PhysicianHealthScore() {
                   </div>
                 )}
 
-                {/* Playbook */}
-                <div style={{ background:`${color}12`, border:`1.5px solid ${color}44`,
-                  borderRadius:12, padding:"16px 20px" }}>
-                  <div style={{ fontSize:11, color, fontWeight:700, letterSpacing:1, marginBottom:12 }}>
-                    PLAYBOOK RECOMENDADO — {zoneLabel(z).toUpperCase()}
-                  </div>
-                  {PLAYBOOKS[z].map((action, i) => (
-                    <div key={i} style={{ display:"flex", gap:10, padding:"8px 0",
-                      borderBottom: i<PLAYBOOKS[z].length-1 ? `1px solid ${color}22` : "none",
-                      fontSize:12, color: PC.offWhite }}>
-                      <span style={{ color, fontWeight:700, minWidth:20 }}>{i+1}.</span>
-                      <span>{action}</span>
-                    </div>
-                  ))}
-                </div>
+
               </div>
             );
           })() : (
@@ -5295,7 +5259,7 @@ function PhysicianHealthScore() {
               justifyContent:"center", height:300, color: PC.slate, textAlign:"center" }}>
               <div style={{ fontSize:36, marginBottom:12 }}>👆</div>
               <div style={{ fontSize:14, fontWeight:600, color: PC.offWhite }}>Selecione um médico</div>
-              <div style={{ fontSize:12, marginTop:6 }}>para ver o health score detalhado e playbook de ação</div>
+              <div style={{ fontSize:12, marginTop:6 }}>para ver o health score detalhado</div>
             </div>
           )}
         </div>
