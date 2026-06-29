@@ -4800,7 +4800,10 @@ function PhysicianHealthScore() {
     } else if (esgAtual > 0) {
       scoreTrend = 70;
     }
-    const dimProc = Math.round((scoreEsg * 0.6 + scoreBib * 0.2 + scoreTrend * 0.2));
+    // Se zero procedimentos realizados → score 0 (independente de tendência)
+    const dimProc = (esgAtual === 0 && bibAtual === 0)
+      ? 0
+      : Math.round((scoreEsg * 0.6 + scoreBib * 0.2 + scoreTrend * 0.2));
 
     // — DIMENSÃO 2: Coerência de Cobertura (peso 30%) ————————————————
     // Mede se a intensidade de visita é coerente com o potencial do médico (Tier)
