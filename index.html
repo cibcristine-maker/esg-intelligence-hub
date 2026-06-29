@@ -4854,8 +4854,9 @@ function PhysicianHealthScore() {
       // Entre ideal e máximo: mantém 100
       dimEng = 100;
     } else {
-      // Over-visiting: mantém 100 mas gera alerta (decisão do AE, não do médico)
-      dimEng = 100;
+      // Over-visiting: penaliza proporcionalmente além do máximo
+      const excesso = v - cad.max;
+      dimEng = Math.max(20, Math.round(100 - excesso * 20));
     }
 
     // Alerta de sub-cobertura ou over-visiting
@@ -5161,66 +5162,6 @@ function PhysicianHealthScore() {
             Score calculado ao vivo — atualiza a cada nova visita registrada.
           </div>
         </div>
-
-        {/* ── PAINEL DE COBERTURA ─────────────────────────────── */}
-        {(() => {
-          const overVisiting = scoredMedicos.filter(m => {
-            const r = m._score?.raw;
-            return r && r.cadMax !== "∞" && r.visitas90Count > Number(r.cadMax);
-          });
-          const subVisita = scoredMedicos.filter(m => {
-            const r = m._score?.raw;
-            return r && r.visitas90Count < r.cadMin && r.visitas90Count > 0;
-          });
-          const semVisita = scoredMedicos.filter(m => {
-            const r = m._score?.raw;
-            return r && r.visitas90Count === 0;
-          });
-          if (!overVisiting.length && !subVisita.length && !semVisita.length) return null;
-          return (
-            <div style={{ background: PC.navyMid, borderRadius:12, padding:"18px 20px",
-              marginTop:14, border:`1px solid ${PC.navyLt}` }}>
-              <div style={{ fontSize:11, color: PC.amber, fontWeight:700,
-                letterSpacing:1, marginBottom:14 }}>
-                📅 PAINEL DE COBERTURA — ÚLTIMOS 90 DIAS
-              </div>
-              <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:12 }}>
-                {[
-                  { label:"⚠ Over-visiting", list: overVisiting, color: PC.amber,
-                    desc: m => `${m._score.raw.visitas90Count}v (máx T${m._score.raw.tier}: ${m._score.raw.cadMax})` },
-                  { label:"📉 Sub-cobertura", list: subVisita, color: PC.red,
-                    desc: m => `${m._score.raw.visitas90Count}v (mín T${m._score.raw.tier}: ${m._score.raw.cadMin})` },
-                  { label:"🚫 Sem visita", list: semVisita, color: PC.red,
-                    desc: m => `T${m._score.raw.tier || "?"}` },
-                ].map(({ label, list, color, desc }) => (
-                  <div key={label}>
-                    <div style={{ fontSize:11, color, fontWeight:700, marginBottom:8 }}>
-                      {label} ({list.length})
-                    </div>
-                    {list.length === 0 ? (
-                      <div style={{ fontSize:11, color: PC.slate }}>Nenhum</div>
-                    ) : list.slice(0,8).map(m => (
-                      <div key={m.id} onClick={() => { setSelected(m.id); setActiveView("portfolio"); }}
-                        style={{ fontSize:11, color: PC.offWhite, padding:"4px 0",
-                          borderBottom:`1px solid ${PC.navyLt}`, cursor:"pointer",
-                          display:"flex", justifyContent:"space-between", gap:6 }}>
-                        <span style={{ overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>
-                          {m.nome.split(" ").slice(0,2).join(" ")}
-                        </span>
-                        <span style={{ color, fontSize:10, flexShrink:0 }}>{desc(m)}</span>
-                      </div>
-                    ))}
-                    {list.length > 8 && (
-                      <div style={{ fontSize:10, color: PC.slate, marginTop:4 }}>
-                        +{list.length - 8} mais
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
 
       ) : (
         /* ─── PORTFOLIO VIEW ─────────────────────────────────────────────── */
