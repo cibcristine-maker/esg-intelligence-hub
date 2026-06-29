@@ -796,7 +796,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     proc_realizados_esg: visita.proc_realizados_esg ?? "",
     baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
-    leao_plus_abordado: visita.leao_plus_abordado === true ? "adocao_ativa" : visita.leao_plus_abordado || "",
+    leao_plus_abordado: visita.leao_plus_abordado || "",
     leao_plus_status: visita.leao_plus_status || "",
     acao_prevista: visita.acao_prevista || "",
     obs: visita.obs || "",
@@ -812,7 +812,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     fios_esg_estoque: visita.fios_esg_estoque ?? "", proc_marcados_esg: visita.proc_marcados_esg ?? "",
     proc_realizados_esg: visita.proc_realizados_esg ?? "", baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
-    leao_plus_abordado: visita.leao_plus_abordado === true ? "adocao_ativa" : visita.leao_plus_abordado === false ? "nao_abordado" : visita.leao_plus_abordado || "",
+    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
     leao_plus_status: visita.leao_plus_status || "", acao_prevista: visita.acao_prevista || "", obs: visita.obs || "",
   }); };
   const salvar = async () => {
@@ -835,8 +835,8 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado === "adocao_ativa" ? true : form.leao_plus_abordado ? false : null,
-      leao_plus_status: form.leao_plus_abordado || null,
+      leao_plus_abordado: form.leao_plus_abordado || null,
+      leao_plus_status: form.leao_plus_status || null,
       acao_prevista: form.acao_prevista || null,
       obs: form.obs || null,
     };
@@ -1009,8 +1009,8 @@ function Visitas() {
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado === "adocao_ativa" ? true : form.leao_plus_abordado ? false : null,
-      leao_plus_status: form.leao_plus_abordado || null,
+      leao_plus_abordado: form.leao_plus_abordado || null,
+      leao_plus_status: form.leao_plus_status || null,
     };
     const { error } = await supabaseClient.from("visitas").insert([payload]);
     if (error) { alert("Erro ao salvar: " + error.message); return; }
@@ -1302,7 +1302,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
           <button className="btn btn-primary" onClick={() => {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
             if (form.referidor !== "Sim" && (form.proc_marcados_esg === "" || form.proc_marcados_esg === null || form.proc_marcados_esg === undefined)) return alert("⚠ ESGs agendados hoje é obrigatório para médicos não referidores.");
-            if (form.referidor !== "Sim" && (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined)) return alert("⚠ ESGs Realizados desde última visita é obrigatório para médicos não referidores.\n\nInforme 0 se não houve procedimentos no período.");
+            if (form.referidor !== "Sim" && (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined)) return alert("⚠ ESGs Realizados desde última visita é obrigatório para médicos não referidores.");
             if (!form.leao_plus_abordado) return alert("⚠ Leap Plus é obrigatório. Informe se foi abordado nessa visita.");
             if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
             if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
@@ -4882,8 +4882,8 @@ function PhysicianHealthScore() {
     const isProctor = !!medico.is_proctor;
     // LeãoPlus: usa últimas 3 visitas — se maioria = adocao_ativa, pontua cheio
     const vis3 = visMed.slice(0, 3);
-    const leaoAtivo = vis3.filter(v => v.leao_plus_abordado === "adocao_ativa" || v.leao_plus_abordado === true || v.leao_plus_status === "adocao_ativa").length;
-    const leaoEvol  = vis3.filter(v => v.leao_plus_abordado === "em_avaliacao" || v.leao_plus_status === "em_avaliacao").length;
+    const leaoAtivo = vis3.filter(v => v.leao_plus_abordado === "adocao_ativa").length;
+    const leaoEvol  = vis3.filter(v => v.leao_plus_abordado === "em_avaliacao").length;
     const scoreLeao = vis3.length === 0 ? 0
       : leaoAtivo >= 2 ? 100
       : leaoAtivo === 1 ? 70
@@ -4920,7 +4920,6 @@ function PhysicianHealthScore() {
     if (esgAnterior > 0 && (esgAtual / esgAnterior) < 0.85) alertas.push("⚠ Queda >15% em procedimentos");
     if (total < 40) alertas.push("🔴 Score crítico — intervenção urgente");
     if (!geoSemDados && dimGeo < 35) alertas.push("🌐 Invisibilidade digital crítica");
-    if (confiabilidade !== null && confiabilidade < 50 && vis90.length >= 2) alertas.push(`⚠ Dado incompleto: ${visComDado}/${vis90.length} visitas sem proc_realizados_esg`);
     if (geoSemDados) alertas.push("🌐 Sem dados GEO — cadastrar no GeoTrack");
     if (diasUltimaVisita > 45 && total < 80) alertas.push(`📅 Sem visita há ${diasUltimaVisita}d`);
     if (overVisiting) alertas.push(`📋 Over-visiting — ${v} visitas para Tier ${tier} (máx ${cad.max})`);
@@ -4934,14 +4933,11 @@ function PhysicianHealthScore() {
         digital:       dimGeo,
         adocao:        dimAdocao,
       },
-      const visComDado = vis90.filter(v => v.proc_realizados_esg !== null && v.proc_realizados_esg !== undefined && v.proc_realizados_esg !== "").length;
-      const confiabilidade = vis90.length > 0 ? Math.round((visComDado / vis90.length) * 100) : null;
       raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, diasUltimaVisita,
              consistencia, isProctor, scoreLeao, temEvento,
              cadMin: cad.min, cadIdeal: cad.ideal, cadMax: cad.max === Infinity ? "∞" : cad.max,
              overVisiting, subVisita, tier,
-             geoResult, geoSemDados, dimGeo,
-             visComDado, confiabilidade },
+             geoResult, geoSemDados, dimGeo },
       alertas,
     };
   }
@@ -5341,10 +5337,6 @@ function PhysicianHealthScore() {
                     </div>
                     {[
                       ["ESG realizados (90d)", sc.raw.esgAtual],
-                      ["Qualidade do dado", sc.raw.confiabilidade === null ? "—" :
-                        sc.raw.confiabilidade === 100 ? "✅ 100% visitas preenchidas" :
-                        sc.raw.confiabilidade >= 50 ? `⚠ ${sc.raw.visComDado}/${sc.raw.visitas90Count} visitas com dado` :
-                        `🔴 ${sc.raw.visComDado}/${sc.raw.visitas90Count} visitas com dado — score pode estar subestimado`],
                       ["BIB (estoque)", sc.raw.bibAtual],
                       ["Visitas realizadas (90d)", `${sc.raw.visitas90Count} de ${sc.raw.cadIdeal} ideal (mín ${sc.raw.cadMin} · máx ${sc.raw.cadMax})`],
                       ["Cobertura", sc.raw.overVisiting ? "⚠ Over-visiting" : sc.raw.subVisita ? "⚠ Sub-cobertura" : "✅ Dentro da cadência"],
