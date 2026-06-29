@@ -1368,6 +1368,7 @@ function Medicos() {
                   <th>Estado</th>
                   <th>Clínica</th>
                   <th>Account</th>
+                  <th style={{textAlign:"center"}}>Proctor</th>
                 </tr>
               </thead>
               <tbody>
@@ -1425,6 +1426,25 @@ function Medicos() {
                         </div>
                       )}
                     </td>
+                    <td onClick={e => e.stopPropagation()} style={{textAlign:"center"}}>
+                      <button
+                        onClick={async () => {
+                          const novo = !m.is_proctor;
+                          if (supabaseClient) await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id);
+                          setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: novo} : x));
+                        }}
+                        title={m.is_proctor ? "Proctor ativo — clique para remover" : "Marcar como Proctor"}
+                        style={{
+                          background: m.is_proctor ? "rgba(0,200,150,0.15)" : "transparent",
+                          border: `1px solid ${m.is_proctor ? "rgba(0,200,150,0.5)" : "var(--border)"}`,
+                          borderRadius: 6, padding: "3px 10px", cursor: "pointer",
+                          fontSize: 11, color: m.is_proctor ? "var(--teal)" : "var(--muted)",
+                          fontWeight: m.is_proctor ? 700 : 400, fontFamily: "inherit",
+                          whiteSpace: "nowrap",
+                        }}>
+                        {m.is_proctor ? "✅ Proctor" : "—"}
+                      </button>
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -1456,6 +1476,7 @@ function MedicoModal({ medico, onClose }) {
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,fontSize:13}}>
           {[
             ["Tier", medico.tier ? `T${medico.tier}` : "—"],
+            ["Proctor", medico.is_proctor ? "✅ Sim" : "—"],
             ["Estado", medico.estado || "—"],
             ["Região", medico.regiao || "—"],
             ["Account", medico.account || "—"],
@@ -4632,7 +4653,9 @@ function PhysicianHealthScore() {
 
   // Calcula score GEO para um médico pelo nome — matching multi-estratégia
   function calcGeoScore(medicoNome) {
-    if (!geoMedicos.length || !geoRegistros.length) return null;
+    if (!geoMedicos.length) return null;
+    // geoRegistros pode ser vazio mesmo com médicos — geo_monitor sem dados ainda
+    // Continua para encontrar o médico e retornar null com contexto
 
     const nNorm = normStr(medicoNome);
     const nSobs = sobrenomes(medicoNome);
@@ -4669,9 +4692,12 @@ function PhysicianHealthScore() {
     });
 
     if (!geoMed) return null;
-    // Pega todos os registros desse médico
+    // Pega todos os registros desse médico na tabela geo_monitor
     const regs = geoRegistros.filter(r => r.medico_id === geoMed.id);
-    if (!regs.length) return null;
+    if (!regs.length) {
+      // Médico encontrado mas sem registros de score ainda
+      return { pct: 0, porPlat: [], semRegistros: true };
+    }
     // Média de score por plataforma (escala 0-3 → 0-100)
     const PLATAFORMAS = ["chatgpt","gemini","perplexity","claude","grok"];
     const scoresPorPlat = PLATAFORMAS.map(pl => {
@@ -4797,12 +4823,12 @@ function PhysicianHealthScore() {
     const geoResult = calcGeoScore(medico.nome);
     let dimGeo;
     let geoSemDados = false;
-    if (geoResult) {
+    if (geoResult && !geoResult.semRegistros) {
       dimGeo = geoResult.pct;
     } else if (medico.geo_score != null) {
       dimGeo = Math.round((medico.geo_score / 3) * 100);
     } else {
-      dimGeo = null; // sem dados — não penaliza nem premia
+      dimGeo = null;
       geoSemDados = true;
     }
 
