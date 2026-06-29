@@ -4668,16 +4668,7 @@ function PhysicianHealthScore() {
   // Calcula score GEO para um médico pelo nome — matching multi-estratégia
   function calcGeoScore(medicoNome) {
     if (!geoMedicos.length) return null;
-    // DEBUG — mostrar estado para Leonardo
-    if (medicoNome && medicoNome.indexOf("Leonardo") >= 0 && medicoNome.indexOf("Teixeira") >= 0) {
-      var dbg = "calcGeoScore DEBUG\n";
-      dbg += "nome: " + medicoNome + "\n";
-      dbg += "nNorm: " + normStr(medicoNome) + "\n";
-      dbg += "geoMedicos: " + geoMedicos.length + "\n";
-      dbg += "geoRegistros: " + geoRegistros.length + "\n";
-      dbg += "Primeiros 3 geo: " + geoMedicos.slice(0,3).map(function(g){return g.nome}).join(", ") + "\n";
-      alert(dbg);
-    }
+
     // geoRegistros pode ser vazio mesmo com médicos — geo_monitor sem dados ainda
     // Continua para encontrar o médico e retornar null com contexto
 
@@ -4781,7 +4772,7 @@ function PhysicianHealthScore() {
   const cutoffPrev = new Date(now); cutoffPrev.setDate(now.getDate() - 180);
 
   // ── Cálculo do score por médico ───────────────────────────────────────
-  function calcScore(medico, visitas) {
+  function calcScore(medico, visitas, calcGeoScoreFn) {
     const visMed = visitas.filter(v => nomesBatem(v.medico_nome, medico.nome));
     const vis90  = visMed.filter(v => new Date(v.data_contato) >= cutoff90);
     const visPrev = visMed.filter(v => new Date(v.data_contato) >= cutoffPrev && new Date(v.data_contato) < cutoff90);
@@ -4861,7 +4852,7 @@ function PhysicianHealthScore() {
     // — DIMENSÃO 3: Presença Digital / GEO (peso 20%) ———————————————
     // Dados reais do GeoTrack (Supabase separado) — tabela geo_monitor
     // Escala 0-3 por questão/plataforma → média → 0-100
-    const geoResult = calcGeoScore(medico.nome);
+    const geoResult = calcGeoScoreFn ? calcGeoScoreFn(medico.nome) : null;
     let dimGeo;
     let geoSemDados = false;
     if (geoResult && !geoResult.semRegistros) {
@@ -4960,7 +4951,7 @@ function PhysicianHealthScore() {
     if (!medicos || !todasVisitas) return [];
     return medicos.map(m => ({
       ...m,
-      _score: calcScore(m, todasVisitas),
+      _score: calcScore(m, todasVisitas, calcGeoScore),
     })).sort((a, b) => b._score.total - a._score.total);
   }, [medicos, todasVisitas, geoMedicos, geoRegistros]);
 
