@@ -1302,7 +1302,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
           <button className="btn btn-primary" onClick={() => {
             if (!form.data_contato || !form.medico_nome) return alert("Preencha data e médico.");
             if (form.referidor !== "Sim" && (form.proc_marcados_esg === "" || form.proc_marcados_esg === null || form.proc_marcados_esg === undefined)) return alert("⚠ ESGs agendados hoje é obrigatório para médicos não referidores.");
-            if (form.referidor !== "Sim" && (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined)) return alert("⚠ ESGs Realizados desde última visita é obrigatório.\n\nInforme 0 se não houve procedimentos no período.");
+            if (form.referidor !== "Sim" && (form.proc_realizados_esg === "" || form.proc_realizados_esg === null || form.proc_realizados_esg === undefined)) return alert("⚠ ESGs Realizados desde última visita é obrigatório para médicos não referidores.");
             if (!form.leao_plus_abordado) return alert("⚠ Leap Plus é obrigatório. Informe se foi abordado nessa visita.");
             if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
             if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
@@ -4920,7 +4920,6 @@ function PhysicianHealthScore() {
     if (esgAnterior > 0 && (esgAtual / esgAnterior) < 0.85) alertas.push("⚠ Queda >15% em procedimentos");
     if (total < 40) alertas.push("🔴 Score crítico — intervenção urgente");
     if (!geoSemDados && dimGeo < 35) alertas.push("🌐 Invisibilidade digital crítica");
-    if (confiabilidade !== null && confiabilidade < 50 && vis90.length >= 2) alertas.push("⚠ Dado incompleto: preencher proc_realizados_esg nas visitas");
     if (geoSemDados) alertas.push("🌐 Sem dados GEO — cadastrar no GeoTrack");
     if (diasUltimaVisita > 45 && total < 80) alertas.push(`📅 Sem visita há ${diasUltimaVisita}d`);
     if (overVisiting) alertas.push(`📋 Over-visiting — ${v} visitas para Tier ${tier} (máx ${cad.max})`);
@@ -4934,14 +4933,11 @@ function PhysicianHealthScore() {
         digital:       dimGeo,
         adocao:        dimAdocao,
       },
-      const visComDado = vis90.filter(v => v.proc_realizados_esg !== null && v.proc_realizados_esg !== undefined && v.proc_realizados_esg !== "").length;
-      const confiabilidade = vis90.length > 0 ? Math.round((visComDado / vis90.length) * 100) : null;
       raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, diasUltimaVisita,
              consistencia, isProctor, scoreLeao, temEvento,
              cadMin: cad.min, cadIdeal: cad.ideal, cadMax: cad.max === Infinity ? "∞" : cad.max,
              overVisiting, subVisita, tier,
-             geoResult, geoSemDados, dimGeo,
-             visComDado, confiabilidade },
+             geoResult, geoSemDados, dimGeo },
       alertas,
     };
   }
@@ -5341,7 +5337,6 @@ function PhysicianHealthScore() {
                     </div>
                     {[
                       ["ESG realizados (90d)", sc.raw.esgAtual],
-                      ["Dado completo", sc.raw.confiabilidade === null ? "—" : sc.raw.confiabilidade === 100 ? "✅ 100%" : `⚠ ${sc.raw.visComDado}/${sc.raw.visitas90Count} visitas preenchidas`],
                       ["BIB (estoque)", sc.raw.bibAtual],
                       ["Visitas realizadas (90d)", `${sc.raw.visitas90Count} de ${sc.raw.cadIdeal} ideal (mín ${sc.raw.cadMin} · máx ${sc.raw.cadMax})`],
                       ["Cobertura", sc.raw.overVisiting ? "⚠ Over-visiting" : sc.raw.subVisita ? "⚠ Sub-cobertura" : "✅ Dentro da cadência"],
