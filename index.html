@@ -4894,7 +4894,8 @@ function PhysicianHealthScore() {
       (fupData.cursoBariatricos?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
       (fupData.cursoEndoscopistas?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
       (fupData.imersaoMarketing?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
-      (fupData.aulasReferidores?.eventos||[]).some(e => nomesBatem(e.medico, medico.nome))
+      (fupData.aulasReferidores?.eventos||[]).some(e => nomesBatem(e.medico, medico.nome)) ||
+      (fupData.esgDay||[]).some(e => nomesBatem(e.medico, medico.nome) || nomesBatem(e.clinica, medico.nome))
     ) : false;
     const scoreEvento = temEvento ? 100 : 0;
     const dimAdocao = Math.round(
