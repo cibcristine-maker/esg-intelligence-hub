@@ -4699,6 +4699,13 @@ function PhysicianHealthScore() {
       const primeiroGeo = gmNorm.split(" ")[0];
       const primeiroHub = nNorm.split(" ")[0];
       if (primeiroGeo === primeiroHub && sobsComuns.length >= 1) return true;
+      // E8: primeiros nomes similares (1 char de diferença) + sobrenome em comum
+      // cobre: "Jimmi" vs "Jimi", "Sérgio" vs "Sergio" já tratado por norm
+      const primSimilar = primeiroGeo.length >= 3 && primeiroHub.length >= 3 &&
+        Math.abs(primeiroGeo.length - primeiroHub.length) <= 1 &&
+        (primeiroGeo.includes(primeiroHub) || primeiroHub.includes(primeiroGeo) ||
+         [...primeiroGeo].filter((c,i) => primeiroHub[i] !== c).length <= 1);
+      if (primSimilar && sobsComuns.length >= 1) return true;
       return false;
     });
 
