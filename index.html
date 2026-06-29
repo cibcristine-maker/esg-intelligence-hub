@@ -1426,23 +1426,33 @@ function Medicos() {
                         </div>
                       )}
                     </td>
-                    <td onClick={e => e.stopPropagation()} style={{textAlign:"center"}}>
+                    <td style={{textAlign:"center"}} onClick={e => e.stopPropagation()}>
                       <button
-                        onClick={async () => {
+                        onPointerUp={async (e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
                           const novo = !m.is_proctor;
-                          if (supabaseClient) await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id);
                           setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: novo} : x));
+                          if (supabaseClient) {
+                            const { error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id);
+                            if (error) {
+                              alert("Erro ao salvar: " + error.message);
+                              setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: !novo} : x));
+                            }
+                          }
                         }}
-                        title={m.is_proctor ? "Proctor ativo — clique para remover" : "Marcar como Proctor"}
+                        title={m.is_proctor ? "Proctor ativo — toque para remover" : "Toque para marcar como Proctor"}
                         style={{
-                          background: m.is_proctor ? "rgba(0,200,150,0.15)" : "transparent",
-                          border: `1px solid ${m.is_proctor ? "rgba(0,200,150,0.5)" : "var(--border)"}`,
-                          borderRadius: 6, padding: "3px 10px", cursor: "pointer",
+                          background: m.is_proctor ? "rgba(0,200,150,0.15)" : "rgba(255,255,255,0.04)",
+                          border: `1px solid ${m.is_proctor ? "rgba(0,200,150,0.6)" : "var(--border)"}`,
+                          borderRadius: 6, padding: "5px 12px", cursor: "pointer",
                           fontSize: 11, color: m.is_proctor ? "var(--teal)" : "var(--muted)",
                           fontWeight: m.is_proctor ? 700 : 400, fontFamily: "inherit",
-                          whiteSpace: "nowrap",
+                          whiteSpace: "nowrap", touchAction: "manipulation",
+                          WebkitTapHighlightColor: "transparent",
+                          minWidth: 72, display: "inline-block",
                         }}>
-                        {m.is_proctor ? "✅ Proctor" : "—"}
+                        {m.is_proctor ? "✅ Proctor" : "— Proctor"}
                       </button>
                     </td>
                   </tr>
@@ -4583,19 +4593,44 @@ function FeedbacksIA() {
 const GEOTRACK_URL = "https://ojbbjgqfjzygdenwtwrz.supabase.co";
 const GEOTRACK_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9qYmJqZ3Fmanp5Z2Rlbnd0d3J6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg4NzM0MTksImV4cCI6MjA5NDQ0OTQxOX0.aMFG3M9Ll5iGQZamREUK9LvN3YhK40RBg8R0gH5bVFg";
 
-async function fetchGeoTrack(endpoint) {
+// Cliente GeoTrack usando supabase-js (mesma lib já carregada no Hub)
+let _geoTrackClient = null;
+function getGeoTrackClient() {
+  if (!_geoTrackClient && window.supabase?.createClient) {
+    _geoTrackClient = window.supabase.createClient(GEOTRACK_URL, GEOTRACK_KEY);
+  }
+  return _geoTrackClient;
+}
+
+async function fetchGeoTrack(table, query = {}) {
+  // Tenta primeiro com supabase-js (evita problemas de CORS/RLS anon)
+  const client = getGeoTrackClient();
+  if (client) {
+    try {
+      let q = client.from(table).select("*");
+      if (query.order) q = q.order(query.order);
+      const { data, error } = await q;
+      if (!error && data) return data;
+      console.warn(`[GeoTrack] supabase-js ${table}:`, error?.message);
+    } catch(e) {
+      console.warn("[GeoTrack] supabase-js error:", e.message);
+    }
+  }
+  // Fallback: fetch direto via REST
   try {
-    const res = await fetch(`${GEOTRACK_URL}/rest/v1/${endpoint}`, {
+    const params = query.order ? `?select=*&order=${query.order}` : "?select=*";
+    const res = await fetch(`${GEOTRACK_URL}/rest/v1/${table}${params}`, {
       headers: {
         "apikey": GEOTRACK_KEY,
         "Authorization": `Bearer ${GEOTRACK_KEY}`,
         "Content-Type": "application/json",
-        "Prefer": "return=representation"
+        "Prefer": "return=representation",
+        "Accept": "application/json",
       }
     });
     if (!res.ok) {
       const body = await res.text().catch(() => "");
-      console.warn(`[GeoTrack] ${endpoint} → HTTP ${res.status}:`, body.slice(0,200));
+      console.warn(`[GeoTrack] REST ${table} → HTTP ${res.status}:`, body.slice(0,200));
       return { _error: res.status, _body: body };
     }
     return await res.json();
@@ -4623,8 +4658,8 @@ function PhysicianHealthScore() {
     async function loadGeo() {
       setGeoLoading(true);
       const [meds, regsGeo] = await Promise.all([
-        fetchGeoTrack("medicos?select=*&order=nome"),
-        fetchGeoTrack("geo_monitor?select=*"),
+        fetchGeoTrack("medicos", { order: "nome" }),
+        fetchGeoTrack("geo_monitor", {}),
       ]);
       // Só aceita arrays válidos (não objetos de erro)
       if (Array.isArray(meds)) setGeoMedicos(meds);
@@ -4992,9 +5027,10 @@ function PhysicianHealthScore() {
         animation: geoLoading ? "pulse 1.5s infinite" : "none"
       }}/>
       {geoLoading ? "GeoTrack carregando..." 
-        : geoErro ? `GeoTrack erro ${geoErro} — verificar RLS no Supabase`
-        : geoMedicos.length ? `GeoTrack ✓ — ${geoMedicos.length} médicos · ${geoRegistros.length} registros` 
-        : "GeoTrack conectado — tabela geo_monitor vazia"}
+        : geoErro ? `GeoTrack erro ${geoErro} — abrir console para detalhes`
+        : geoMedicos.length && geoRegistros.length ? `GeoTrack ✓ — ${geoMedicos.length} médicos · ${geoRegistros.length} scores`
+        : geoMedicos.length ? `GeoTrack: ${geoMedicos.length} médicos cadastrados · geo_monitor vazio (registrar scores no GeoTrack)`
+        : "GeoTrack: sem dados — verificar conexão"}
     </div>
   );
 
