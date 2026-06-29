@@ -1435,11 +1435,15 @@ function Medicos() {
                             const novo = e.target.checked;
                             setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: novo} : x));
                             if (supabaseClient) {
-                              const { error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id);
+                              const { data, error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id).select();
                               if (error) {
-                                alert("Erro: " + error.message);
+                                alert("ERRO PROCTOR: " + error.message + " | code: " + error.code);
                                 setMedicos(prev => prev.map(x => x.id === m.id ? {...x, is_proctor: !novo} : x));
+                              } else {
+                                alert("OK: is_proctor=" + novo + " | rows=" + (data?.length||0));
                               }
+                            } else {
+                              alert("supabaseClient não disponível");
                             }
                           }}
                           style={{width:18,height:18,cursor:"pointer",accentColor:"var(--teal)"}}
@@ -4637,6 +4641,15 @@ function PhysicianHealthScore() {
       }
       setGeoLastUpdate(new Date());
       setGeoLoading(false);
+      // DEBUG — remover após confirmar
+      if (typeof window !== "undefined") {
+        const medsArr = Array.isArray(meds);
+        const regsArr = Array.isArray(regsGeo);
+        window._geoDebug = {
+          meds: medsArr ? meds.length : ("erro: " + JSON.stringify(meds)?.slice(0,100)),
+          regs: regsArr ? regsGeo.length : ("erro: " + JSON.stringify(regsGeo)?.slice(0,100)),
+        };
+      }
     }
     loadGeo();
   }, []);
@@ -5014,11 +5027,11 @@ function PhysicianHealthScore() {
         animation: geoLoading ? "pulse 1.5s infinite" : "none"
       }}/>
       {geoLoading ? "GeoTrack carregando..." 
-        : geoErro ? `GeoTrack ✗ erro: ${geoErro}`
+        : geoErro ? `GeoTrack erro: ${geoErro}`
         : geoMedicos.length && geoRegistros.length ? `GeoTrack ✓ ${geoMedicos.length} médicos · ${geoRegistros.length} scores`
-        : geoMedicos.length ? `GeoTrack: ${geoMedicos.length} médicos · geo_monitor vazio`
+        : geoMedicos.length ? `GeoTrack: ${geoMedicos.length} médicos · scores: ${geoRegistros.length} (geo_monitor)`
         : geoLoading ? "GeoTrack carregando..."
-        : "GeoTrack: sem dados"}
+        : "GeoTrack: 0 médicos — sem conexão"}
     </div>
   );
 
