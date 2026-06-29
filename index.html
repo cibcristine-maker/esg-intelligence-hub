@@ -796,7 +796,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     proc_realizados_esg: visita.proc_realizados_esg ?? "",
     baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
-    leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
+    leao_plus_abordado: visita.leao_plus_abordado || "",
     leao_plus_status: visita.leao_plus_status || "",
     acao_prevista: visita.acao_prevista || "",
     obs: visita.obs || "",
@@ -835,7 +835,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : null,
+      leao_plus_abordado: form.leao_plus_abordado || null,
       leao_plus_status: form.leao_plus_status || null,
       acao_prevista: form.acao_prevista || null,
       obs: form.obs || null,
@@ -916,8 +916,16 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
             </div>
           </div>
           {inp("Proc. Marcados (Balão)", "proc_marcados_balao", "number")}
-          {inp("💛 Leão Plus abordado?", "leao_plus_abordado", "text", ["Sim","Não"])}
-          {inp("Status Leão Plus", "leao_plus_status", "text", LEAO_STATUS)}
+          <div className="form-group">
+            <label className="form-label">💛 Leão Plus — Status na Visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span></label>
+            <select className="form-select" value={form.leao_plus_abordado} onChange={e => set("leao_plus_abordado", e.target.value)}>
+              <option value="">Selecione...</option>
+              <option value="nao_abordado">Não abordado nesta visita</option>
+              <option value="desconhece">Apresentado — médico desconhecia</option>
+              <option value="em_avaliacao">Em avaliação — médico está considerando</option>
+              <option value="adocao_ativa">✅ Adoção ativa — usa com pacientes</option>
+            </select>
+          </div>
         </div>
 
         <div style={{marginBottom:8}}>
@@ -1001,7 +1009,7 @@ function Visitas() {
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
-      leao_plus_abordado: form.leao_plus_abordado === "sim" ? true : form.leao_plus_abordado === "nao" ? false : null,
+      leao_plus_abordado: form.leao_plus_abordado || null,
       leao_plus_status: form.leao_plus_status || null,
     };
     const { error } = await supabaseClient.from("visitas").insert([payload]);
@@ -1242,30 +1250,20 @@ function VisitaModal({ medicos, onSave, onClose }) {
           </div>
           {/* LEÃO PLUS */}
           <div className="form-group form-full" style={{borderTop:"1px solid var(--border)",paddingTop:12,marginTop:4}}>
-            <label className="form-label" style={{color:form.referidor==="Não"?"var(--warn)":"var(--muted)"}}>
-              💛 Leão Plus foi abordado nessa visita?
-              {form.referidor === "Não" && <span style={{color:"var(--danger)",marginLeft:4,fontWeight:700}}>*</span>}
-              {form.referidor === "Não" && <span style={{color:"var(--muted)",fontSize:10,marginLeft:6}}>(obrigatório para não referidores)</span>}
+            <label className="form-label" style={{color:"var(--warn)"}}>
+              💛 Leão Plus — Status na Visita <span style={{color:"var(--danger)",fontWeight:700}}>*</span>
+              <span style={{color:"var(--muted)",fontSize:10,marginLeft:6}}>(obrigatório em toda visita)</span>
             </label>
-            <select className="form-select" value={form.leao_plus_abordado} onChange={e => set("leao_plus_abordado", e.target.value)}
-              style={{borderColor: form.referidor==="Não" && !form.leao_plus_abordado ? "rgba(245,158,11,0.6)" : ""}}>
+            <select className="form-select" value={form.leao_plus_abordado}
+              onChange={e => set("leao_plus_abordado", e.target.value)}
+              style={{borderColor: !form.leao_plus_abordado ? "rgba(245,158,11,0.6)" : ""}}>
               <option value="">Selecione...</option>
-              <option value="sim">Sim — foi abordado</option>
-              <option value="nao">Não — não foi abordado</option>
+              <option value="nao_abordado">Não abordado nesta visita</option>
+              <option value="desconhece">Apresentado — médico desconhecia</option>
+              <option value="em_avaliacao">Em avaliação — médico está considerando</option>
+              <option value="adocao_ativa">✅ Adoção ativa — usa com pacientes</option>
             </select>
           </div>
-          {form.leao_plus_abordado === "sim" && (
-            <div className="form-group form-full">
-              <label className="form-label">Status do médico em relação ao Leão Plus</label>
-              <select className="form-select" value={form.leao_plus_status} onChange={e => set("leao_plus_status", e.target.value)}>
-                <option value="">Selecione...</option>
-                <option value="desconhece">Desconhece</option>
-                <option value="conhece_nao_usa">Conhece mas não usa</option>
-                <option value="em_ativacao">Em processo de ativação</option>
-                <option value="ativado">✅ Ativado</option>
-              </select>
-            </div>
-          )}
           <div className="form-group form-full">
             <label className="form-label">Suporte Marketing?</label>
             <select className="form-select" value={form.suporte_marketing} onChange={e => set("suporte_marketing", e.target.value)}>
@@ -1628,6 +1626,7 @@ function Ativacao() {
                       <th>Tier</th>
                       <th>Estado</th>
                       <th>TPs Concluídos</th>
+                      <th>Proctor</th>
                       <th>Cota Anual ($)</th>
                       <th>Vendas ($)</th>
                       <th>% Meta</th>
@@ -1659,6 +1658,25 @@ function Ativacao() {
                                 background: prog.pct >= 70 ? "var(--success)" : prog.pct >= 40 ? "var(--warn)" : "var(--danger)"
                               }} />
                             </div>
+                          </td>
+                          <td onClick={e => e.stopPropagation()} style={{textAlign:"center"}}>
+                            <button
+                              onClick={async () => {
+                                const novo = !m.is_proctor;
+                                const { error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", m.id);
+                                if(error) alert("Erro: "+error.message);
+                                else refreshMedicos();
+                              }}
+                              title={m.is_proctor ? "Proctor ativo — clique para remover" : "Clique para marcar como Proctor"}
+                              style={{
+                                background: m.is_proctor ? "rgba(0,200,150,0.15)" : "transparent",
+                                border: `1px solid ${m.is_proctor ? "rgba(0,200,150,0.5)" : "var(--border)"}`,
+                                borderRadius: 6, padding: "3px 10px", cursor: "pointer",
+                                fontSize: 12, color: m.is_proctor ? "var(--teal)" : "var(--muted)",
+                                fontWeight: m.is_proctor ? 700 : 400, fontFamily: "inherit",
+                              }}>
+                              {m.is_proctor ? "✅ Proctor" : "—"}
+                            </button>
                           </td>
                           <td onClick={e => e.stopPropagation()}>
                             <EditableCell
@@ -4536,8 +4554,9 @@ function FeedbacksIA() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
-// PHYSICIAN HEALTH SCORE — ESG Intelligence Hub
-// Calcula score 0-100 por médico com dados reais de visitas + perfil_medico
+// PHYSICIAN HEALTH SCORE — ESG Intelligence Hub v2
+// 4 dimensões: Procedimentos 40% | Engajamento 30% | GEO 20% | Adoção 10%
+// Adoção = Proctor 50% + LeãoPlus ativo 30% + Evento Endura 20%
 // ═══════════════════════════════════════════════════════════════════════════
 function PhysicianHealthScore() {
   const { data: medicos, loading: loadMed } = useSupabase("perfil_medico");
@@ -4634,18 +4653,41 @@ function PhysicianHealthScore() {
       consistencia >= 0.2 ? 45 : 25
     );
 
-    // — DIMENSÃO 5: Lealdade (peso 10%) ———————————————————————————————
-    // Tier como proxy: ST/1 = alta lealdade, 4/5 = menor
-    const tierMap = { "ST": 95, "1": 85, "2": 70, "3": 55, "4": 40, "5": 30 };
-    const dimLealdade = tierMap[String(medico.tier)] || 50;
+    // — DIMENSÃO 5 REMOVIDA (lealdade sem dado confiável no contexto ESG)
+
+    // — DIMENSÃO 4 REDEFINIDA: Adoção do Ecossistema (peso 10%) ————————
+    // 50% Proctor | 30% LeãoPlus ativo | 20% Evento Endura (FUP Projetos)
+    const isProctor = !!medico.is_proctor;
+    // LeãoPlus: usa últimas 3 visitas — se maioria = adocao_ativa, pontua cheio
+    const vis3 = visMed.slice(0, 3);
+    const leaoAtivo = vis3.filter(v => v.leao_plus_abordado === "adocao_ativa").length;
+    const leaoEvol  = vis3.filter(v => v.leao_plus_abordado === "em_avaliacao").length;
+    const scoreLeao = vis3.length === 0 ? 0
+      : leaoAtivo >= 2 ? 100
+      : leaoAtivo === 1 ? 70
+      : leaoEvol  >= 1 ? 35
+      : 0;
+    // Evento Endura: via FUP Projetos — verifica se médico aparece em algum projeto
+    const temEvento = typeof fupData !== "undefined" && fupData ? (
+      (fupData.cursoBariatricos?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
+      (fupData.cursoEndoscopistas?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
+      (fupData.imersaoMarketing?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
+      (fupData.aulasReferidores?.eventos||[]).some(e => nomesBatem(e.medico, medico.nome))
+    ) : false;
+    const scoreEvento = temEvento ? 100 : 0;
+    const dimAdocao = Math.round(
+      (isProctor ? 100 : 0) * 0.50 +
+      scoreLeao              * 0.30 +
+      scoreEvento            * 0.20
+    );
 
     // — SCORE FINAL (ponderado) ————————————————————————————————————————
+    // Procedimentos 40% | Engajamento 30% | GEO 20% | Adoção 10%
     const total = Math.round(
-      dimProc      * 0.30 +
-      dimEng       * 0.25 +
-      dimGeo       * 0.20 +
-      dimDesfechos * 0.15 +
-      dimLealdade  * 0.10
+      dimProc    * 0.40 +
+      dimEng     * 0.30 +
+      dimGeo     * 0.20 +
+      dimAdocao  * 0.10
     );
 
     // — ALERTAS ————————————————————————————————————————————————————————
@@ -4661,10 +4703,10 @@ function PhysicianHealthScore() {
         procedimentos: dimProc,
         engajamento:   dimEng,
         digital:       dimGeo,
-        desfechos:     dimDesfechos,
-        lealdade:      dimLealdade,
+        adocao:        dimAdocao,
       },
-      raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, presenciais90, diasUltimaVisita, consistencia },
+      raw: { esgAtual, esgAnterior, bibAtual, visitas90Count, presenciais90, diasUltimaVisita,
+             consistencia, isProctor, scoreLeao, temEvento },
       alertas,
     };
   }
@@ -4722,11 +4764,10 @@ function PhysicianHealthScore() {
   };
 
   const DIM_LABELS = [
-    { id: "procedimentos", label: "Procedimentos", icon: "🔬", weight: "30%" },
-    { id: "engajamento",   label: "Engajamento",   icon: "🤝", weight: "25%" },
-    { id: "digital",       label: "GEO Digital",   icon: "🌐", weight: "20%" },
-    { id: "desfechos",     label: "Desfechos",     icon: "📊", weight: "15%" },
-    { id: "lealdade",      label: "Lealdade",      icon: "⭐", weight: "10%" },
+    { id: "procedimentos", label: "Procedimentos",    icon: "🔬", weight: "40%" },
+    { id: "engajamento",   label: "Engajamento",      icon: "🤝", weight: "30%" },
+    { id: "digital",       label: "GEO Digital",      icon: "🌐", weight: "20%" },
+    { id: "adocao",        label: "Adoção Ecossistema", icon: "🏅", weight: "10%" },
   ];
 
   // ── ScoreRing ─────────────────────────────────────────────────────────
@@ -5033,12 +5074,14 @@ function PhysicianHealthScore() {
                       DADOS DOS ÚLTIMOS 90 DIAS
                     </div>
                     {[
-                      ["ESG realizados", sc.raw.esgAtual],
+                      ["ESG realizados (90d)", sc.raw.esgAtual],
                       ["BIB (estoque)", sc.raw.bibAtual],
-                      ["Visitas totais", sc.raw.visitas90Count],
+                      ["Visitas totais (90d)", sc.raw.visitas90Count],
                       ["Visitas presenciais", sc.raw.presenciais90],
                       ["Última visita", sc.raw.diasUltimaVisita < 999 ? `${sc.raw.diasUltimaVisita}d atrás` : "—"],
-                      ["Consistência de realiz.", `${Math.round(sc.raw.consistencia*100)}%`],
+                      ["É Proctor", sc.raw.isProctor ? "✅ Sim" : "—"],
+                      ["LeãoPlus", sc.raw.scoreLeao >= 70 ? "✅ Adoção ativa" : sc.raw.scoreLeao >= 35 ? "🟡 Em avaliação" : "—"],
+                      ["Evento Endura", sc.raw.temEvento ? "✅ Participou" : "—"],
                     ].map(([label, val]) => (
                       <div key={label} style={{ display:"flex", justifyContent:"space-between",
                         padding:"6px 0", borderBottom:`1px solid ${PC.navyLt}`,
