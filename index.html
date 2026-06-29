@@ -4668,6 +4668,16 @@ function PhysicianHealthScore() {
   // Calcula score GEO para um médico pelo nome — matching multi-estratégia
   function calcGeoScore(medicoNome) {
     if (!geoMedicos.length) return null;
+    // DEBUG — mostrar estado para Leonardo
+    if (medicoNome && medicoNome.indexOf("Leonardo") >= 0 && medicoNome.indexOf("Teixeira") >= 0) {
+      var dbg = "calcGeoScore DEBUG\n";
+      dbg += "nome: " + medicoNome + "\n";
+      dbg += "nNorm: " + normStr(medicoNome) + "\n";
+      dbg += "geoMedicos: " + geoMedicos.length + "\n";
+      dbg += "geoRegistros: " + geoRegistros.length + "\n";
+      dbg += "Primeiros 3 geo: " + geoMedicos.slice(0,3).map(function(g){return g.nome}).join(", ") + "\n";
+      alert(dbg);
+    }
     // geoRegistros pode ser vazio mesmo com médicos — geo_monitor sem dados ainda
     // Continua para encontrar o médico e retornar null com contexto
 
