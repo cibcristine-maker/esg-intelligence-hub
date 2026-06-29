@@ -4854,9 +4854,7 @@ function PhysicianHealthScore() {
       // Entre ideal e máximo: mantém 100
       dimEng = 100;
     } else {
-      // Over-visiting: penaliza proporcionalmente além do máximo
-      const excesso = v - cad.max;
-      dimEng = Math.max(20, Math.round(100 - excesso * 20));
+      dimEng = 100;
     }
 
     // Alerta de sub-cobertura ou over-visiting
