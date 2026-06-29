@@ -1463,7 +1463,8 @@ function MedicoModal({ medico, onClose }) {
                 const { error } = await supabaseClient.from("perfil_medico").update({is_proctor: novo}).eq("id", medico.id);
                 if (error) { alert("Erro: " + error.message); return; }
                 medico.is_proctor = novo;
-                alert(novo ? "✅ Marcado como Proctor" : "Removido como Proctor");
+                onClose();
+                alert(novo ? "✅ Proctor salvo! Reabra o médico para confirmar." : "Removido como Proctor.");
               }
             }}
             style={{
@@ -4951,7 +4952,7 @@ function PhysicianHealthScore() {
       ...m,
       _score: calcScore(m, todasVisitas),
     })).sort((a, b) => b._score.total - a._score.total);
-  }, [medicos, todasVisitas]);
+  }, [medicos, todasVisitas, geoMedicos, geoRegistros]);
 
   const filtrados = scoredMedicos.filter(m => {
     const z = zone(m._score.total);
