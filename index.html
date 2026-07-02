@@ -7326,13 +7326,13 @@ function CongressoMetabolicaProject(props) {
 
   function update(next) { onChange(next); }
 
-  var [contatoModal, setContatoModal] = useState(false);
-  var [resumoModal, setResumoModal] = useState(false);
-  var [fupModal, setFupModal] = useState(null);
-  var [editModal, setEditModal] = useState(null);
-  var [contatoForm, setContatoForm] = useState({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
-  var [fupForm, setFupForm] = useState({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
-  var [resumoForm, setResumoForm] = useState({ data: "", local: "", speaker: "", auditorio: "", engajamento: "", casoAoVivo: "", obs: "" });
+  const [contatoModal, setContatoModal] = useState(false);
+  const [resumoModal, setResumoModal] = useState(false);
+  const [fupModal, setFupModal] = useState(null);
+  const [editModal, setEditModal] = useState(null);
+  const [contatoForm, setContatoForm] = useState({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
+  const [fupForm, setFupForm] = useState({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
+  const [resumoForm, setResumoForm] = useState({ data: "", local: "", speaker: "", auditorio: "", engajamento: "", casoAoVivo: "", obs: "" });
 
   function saveContato() {
     var next = Object.assign({}, data, { contatos: contatos.concat([Object.assign({}, contatoForm, { id: fupUid(), followups: [], criadoEm: today })]) });
