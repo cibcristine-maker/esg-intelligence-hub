@@ -5492,6 +5492,7 @@ const fupInitialState = {
     medicos: [],
     acoes: [],
   },
+  congressoMetabolica: { contatos: [], resumo: {} },
 };
 // ─── LOAD / SAVE ────────────────────────────────────────────────────────────
 function fupLoadData() {
@@ -5518,6 +5519,7 @@ function fupLoadData() {
         ...fupInitialState.imersaoMarketing,
         ...parsed.imersaoMarketing,
       },
+      congressoMetabolica: Object.assign({}, fupInitialState.congressoMetabolica, parsed.congressoMetabolica || {}),
     };
   } catch (e) {
     console.error("Load error:", e);
@@ -5747,6 +5749,7 @@ const FUP_PROJECTS = [
   { id: "cursoEndoscopistas", label: "Curso IAS — Endoscopistas", icon: "🔬", desc: "3 médicos endoscopistas. Capacitação para execução. KPIs de ativação e produção.", color: FUP_C.green },
   { id: "pacientesReferidores", label: "Pacientes Indicados — Referidores", icon: "👥", desc: "Funil de pacientes indicados por médicos referidores. SLA de contato e conversão.", color: "#F43F5E" },
   { id: "imersaoMarketing", label: "Imersão Marketing", icon: "📡", desc: "Visibilidade digital dos médicos parceiros. KPIs de GEO, presença online e conversão.", color: FUP_C.yellow },
+  { id: "congressoMetabolica", label: "Congresso Metabólica Pantanal", icon: "🏆", desc: "Simpósio + caso ao vivo ESG. KPIs de contatos qualificados, perfil de interesse e SLAs de follow-up.", color: "#F59E0B" },
 ];
 // ════════════════════════════════════════════════════════════════════════════
 // ESG DAY
@@ -7296,6 +7299,321 @@ function ImersaoMarketingProject({ data, onChange }) {
 // ════════════════════════════════════════════════════════════════════════════
 // MAIN APP
 // ════════════════════════════════════════════════════════════════════════════
+
+// ── CONGRESSO METABÓLICA PANTANAL ──────────────────────────────────────────
+function CongressoMetabolicaProject(props) {
+  var data = props.data || {};
+  var onChange = props.onChange;
+  var contatos = data.contatos || [];
+  var resumo = data.resumo || {};
+
+  var slaSteps = [
+    { key: "D+1",  dias: 1,  label: "Agradecimento" },
+    { key: "D+7",  dias: 7,  label: "Conteúdo" },
+    { key: "D+15", dias: 15, label: "Visita/Reunião" },
+    { key: "D+45", dias: 45, label: "Avanço concreto" },
+    { key: "D+90", dias: 90, label: "Fechamento" },
+  ];
+
+  var today = new Date().toISOString().slice(0, 10);
+
+  function addDays(dateStr, n) {
+    if (!dateStr) return null;
+    var d = new Date(dateStr + "T12:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function update(next) { onChange(next); }
+
+  var [contatoModal, setContatoModal] = useState(false);
+  var [resumoModal, setResumoModal] = useState(false);
+  var [fupModal, setFupModal] = useState(null);
+  var [editModal, setEditModal] = useState(null);
+  var [contatoForm, setContatoForm] = useState({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
+  var [fupForm, setFupForm] = useState({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
+  var [resumoForm, setResumoForm] = useState({ data: "", local: "", speaker: "", auditorio: "", engajamento: "", casoAoVivo: "", obs: "" });
+
+  function saveContato() {
+    var next = Object.assign({}, data, { contatos: contatos.concat([Object.assign({}, contatoForm, { id: fupUid(), followups: [], criadoEm: today })]) });
+    update(next);
+    setContatoModal(false);
+    setContatoForm({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
+  }
+
+  function saveFup() {
+    if (!fupModal) return;
+    var updated = contatos.map(function(c) {
+      if (c.id !== fupModal) return c;
+      return Object.assign({}, c, { followups: (c.followups || []).concat([Object.assign({}, fupForm, { id: fupUid() })]) });
+    });
+    update(Object.assign({}, data, { contatos: updated }));
+    setFupModal(null);
+    setFupForm({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
+  }
+
+  function saveResumo() {
+    update(Object.assign({}, data, { resumo: Object.assign({}, resumoForm) }));
+    setResumoModal(false);
+  }
+
+  function deleteContato(id) {
+    update(Object.assign({}, data, { contatos: contatos.filter(function(c) { return c.id !== id; }) }));
+  }
+
+  function deleteFup(cId, fId) {
+    update(Object.assign({}, data, { contatos: contatos.map(function(c) {
+      if (c.id !== cId) return c;
+      return Object.assign({}, c, { followups: (c.followups || []).filter(function(f) { return f.id !== fId; }) });
+    }) }));
+  }
+
+  function getSlaStatus(contato) {
+    var base = resumo.data || contato.criadoEm || today;
+    return slaSteps.map(function(step) {
+      var prazo = addDays(base, step.dias);
+      var cumprido = (contato.followups || []).some(function(f) { return f.sla === step.key; });
+      var atrasado = !cumprido && today > prazo;
+      return Object.assign({}, step, { prazo: prazo, cumprido: cumprido, atrasado: atrasado });
+    });
+  }
+
+  // KPIs
+  var total = contatos.length;
+  var novos = contatos.filter(function(c) { return c.conheceESG === "Não conhecia"; }).length;
+  var indicariam = contatos.filter(function(c) { return c.indicariaESG === "Sim"; }).length;
+  var aceitamVisita = contatos.filter(function(c) { return c.aceitaVisita === "Sim"; }).length;
+  var txVisita = total > 0 ? Math.round(aceitamVisita / total * 100) : 0;
+  var avancaram = contatos.filter(function(c) { return (c.followups || []).some(function(f) { return f.sla === "D+45"; }); }).length;
+
+  // SLA resumo
+  var slaSummary = slaSteps.map(function(step) {
+    var count = contatos.filter(function(c) { return (c.followups || []).some(function(f) { return f.sla === step.key; }); }).length;
+    var atrasados = contatos.filter(function(c) {
+      var base = resumo.data || c.criadoEm || today;
+      var prazo = addDays(base, step.dias);
+      var cumprido = (c.followups || []).some(function(f) { return f.sla === step.key; });
+      return !cumprido && prazo && today > prazo;
+    }).length;
+    return Object.assign({}, step, { count: count, atrasados: atrasados });
+  });
+
+  function badgeColor(v) {
+    if (v === "Sim" || v === "Conhece bem") return FUP_C.green;
+    if (v === "Não" || v === "Não conhecia") return FUP_C.red;
+    return FUP_C.yellow;
+  }
+
+  var inp = { width: "100%", background: "#0A0F14", border: "1px solid " + FUP_C.border, borderRadius: 6, padding: "7px 10px", color: FUP_C.text, fontSize: 13, boxSizing: "border-box", fontFamily: "inherit" };
+
+  return (
+    React.createElement("div", null,
+
+      // KPIs gerais
+      React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 } },
+        React.createElement(FupKPICard, { label: "Contatos", value: total, icon: "🤝", sub: "Meta: 25" }),
+        React.createElement(FupKPICard, { label: "Nunca viram ESG", value: novos, icon: "🆕", color: FUP_C.yellow, sub: total > 0 ? Math.round(novos/total*100) + "% do total" : "—" }),
+        React.createElement(FupKPICard, { label: "Indicariam ESG", value: indicariam, icon: "✅", color: FUP_C.green, sub: "Meta: 8+" }),
+        React.createElement(FupKPICard, { label: "Aceitam visita", value: aceitamVisita + " (" + txVisita + "%)", icon: "📅", color: txVisita >= 40 ? FUP_C.green : FUP_C.yellow, sub: "Meta: 40%" }),
+        React.createElement(FupKPICard, { label: "Avançaram D+45", value: avancaram, icon: "🚀", color: FUP_C.green, sub: "Treino/Indicação" })
+      ),
+
+      // SLA grid
+      React.createElement("div", { style: { background: FUP_C.card, border: "1px solid " + FUP_C.border, borderRadius: 12, padding: "14px 18px", marginBottom: 16 } },
+        React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 } }, "📊 SLAs de Follow-up"),
+        React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 8 } },
+          slaSummary.map(function(s) {
+            var pct = total > 0 ? Math.round(s.count / total * 100) : 0;
+            return React.createElement("div", { key: s.key, style: { background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "10px 12px", border: "1px solid " + (s.atrasados > 0 ? "#EF444433" : FUP_C.border) } },
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 } },
+                React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: FUP_C.textMuted } }, s.key),
+                s.atrasados > 0 && React.createElement("span", { style: { background: "#EF444422", color: "#EF4444", borderRadius: 10, padding: "1px 6px", fontSize: 9, fontWeight: 700 } }, s.atrasados + "!")
+              ),
+              React.createElement("div", { style: { fontSize: 10, color: FUP_C.textDim, marginBottom: 6 } }, s.label),
+              React.createElement("div", { style: { background: "rgba(255,255,255,0.06)", borderRadius: 4, height: 4, marginBottom: 4 } },
+                React.createElement("div", { style: { width: pct + "%", height: 4, borderRadius: 4, background: pct >= 80 ? FUP_C.green : pct >= 40 ? FUP_C.yellow : FUP_C.teal } })
+              ),
+              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: 11 } },
+                React.createElement("span", { style: { color: FUP_C.green, fontWeight: 700 } }, s.count + " ✓"),
+                React.createElement("span", { style: { color: FUP_C.textMuted } }, pct + "%")
+              )
+            );
+          })
+        ),
+        !resumo.data && React.createElement("div", { style: { marginTop: 8, fontSize: 11, color: FUP_C.yellow } }, "⚠ Defina a data do congresso no Resumo para calcular os prazos.")
+      ),
+
+      // Resumo do evento
+      React.createElement("div", { style: { background: FUP_C.card, border: "1px solid " + FUP_C.border, borderRadius: 12, padding: "12px 16px", marginBottom: 14 } },
+        React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 } },
+          React.createElement("span", { style: { fontWeight: 700, fontSize: 13 } }, "📋 Resumo do Congresso"),
+          React.createElement("button", { onClick: function() { setResumoForm(Object.assign({data:"",local:"",speaker:"",auditorio:"",engajamento:"",casoAoVivo:"",obs:""}, resumo)); setResumoModal(true); }, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 6, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontWeight: 600 } }, "Editar")
+        ),
+        React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 8, fontSize: 12 } },
+          [["Data", resumo.data], ["Local", resumo.local], ["Speaker", resumo.speaker], ["Auditório", resumo.auditorio], ["Engajamento", resumo.engajamento], ["Caso ao vivo", resumo.casoAoVivo]].map(function(pair) {
+            return React.createElement("div", { key: pair[0], style: { background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "7px 10px" } },
+              React.createElement("div", { style: { color: FUP_C.textMuted, fontSize: 10, marginBottom: 2 } }, pair[0]),
+              React.createElement("div", { style: { color: FUP_C.text, fontWeight: 600 } }, pair[1] || "—")
+            );
+          })
+        )
+      ),
+
+      // Add button
+      React.createElement("div", { style: { marginBottom: 14 } },
+        React.createElement(FupBtn, { onClick: function() { setContatoModal(true); } }, "+ Adicionar Contato")
+      ),
+
+      // Contatos list
+      contatos.length === 0
+        ? React.createElement("div", { style: { textAlign: "center", padding: "32px 20px", color: FUP_C.textDim, fontSize: 13, background: FUP_C.card, borderRadius: 12, border: "1px dashed " + FUP_C.border } }, "Nenhum contato registrado. Adicione os médicos abordados no congresso.")
+        : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
+            contatos.map(function(c) {
+              var slaStatus = getSlaStatus(c);
+              var temAtrasado = slaStatus.some(function(s) { return s.atrasado; });
+              var fupsManuais = (c.followups || []).filter(function(f) { return !f.syncedFromVisitas; });
+              var fupsSync = (c.followups || []).filter(function(f) { return f.syncedFromVisitas; });
+              return React.createElement("div", { key: c.id, style: { background: FUP_C.card, border: "1px solid " + (temAtrasado ? "#EF444433" : FUP_C.border), borderRadius: 12, overflow: "hidden" } },
+                // Header
+                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "13px 15px" } },
+                  React.createElement("div", { style: { flex: 1 } },
+                    React.createElement("div", { style: { fontWeight: 700, fontSize: 14, marginBottom: 2 } }, c.nome),
+                    React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted } }, "Cirurgião Bariátrico · " + (c.cidade || "") + (c.crm ? " · CRM " + c.crm : "")),
+                    React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" } },
+                      [["ESG: " + c.conheceESG, badgeColor(c.conheceESG)], ["Indicaria: " + c.indicariaESG, badgeColor(c.indicariaESG)], ["Visita: " + c.aceitaVisita, badgeColor(c.aceitaVisita)]].map(function(b) {
+                        return React.createElement("span", { key: b[0], style: { background: b[1] + "22", color: b[1], border: "1px solid " + b[1] + "44", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 } }, b[0]);
+                      }),
+                      fupsSync.length > 0 && React.createElement("span", { style: { background: FUP_C.teal + "22", color: FUP_C.teal, border: "1px solid " + FUP_C.teal + "44", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 } }, "🔄 " + fupsSync.length + " sync")
+                    )
+                  ),
+                  React.createElement("div", { style: { display: "flex", gap: 5, marginLeft: 10 } },
+                    React.createElement("button", { onClick: function() { setFupModal(c.id); setFupForm({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" }); }, style: { background: "#1E3A5F", color: FUP_C.teal, border: "none", borderRadius: 6, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 } }, "+ FUP"),
+                    React.createElement("button", { onClick: function() { deleteContato(c.id); }, style: { background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "none", borderRadius: 6, padding: "5px 8px", fontSize: 12, cursor: "pointer" } }, "🗑")
+                  )
+                ),
+                // SLA pills
+                React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px", background: "rgba(0,0,0,0.12)" } },
+                  React.createElement("div", { style: { display: "flex", gap: 5, flexWrap: "wrap" } },
+                    slaStatus.map(function(s) {
+                      return React.createElement("div", { key: s.key, title: "Prazo: " + (s.prazo || "—") + " · " + s.label, style: { display: "flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: s.cumprido ? FUP_C.green + "22" : s.atrasado ? "#EF444422" : "rgba(255,255,255,0.05)", border: "1px solid " + (s.cumprido ? FUP_C.green + "55" : s.atrasado ? "#EF444455" : FUP_C.border), color: s.cumprido ? FUP_C.green : s.atrasado ? "#EF4444" : FUP_C.textMuted } },
+                        React.createElement("span", null, s.cumprido ? "✓" : s.atrasado ? "!" : "○"),
+                        React.createElement("span", null, s.key),
+                        s.prazo && !s.cumprido && React.createElement("span", { style: { fontSize: 9, opacity: 0.7 } }, s.prazo.slice(5))
+                      );
+                    })
+                  )
+                ),
+                // FUPs manuais
+                fupsManuais.length > 0 && React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px" } },
+                  React.createElement("div", { style: { fontSize: 10, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 } }, "Follow-ups"),
+                  fupsManuais.map(function(f) {
+                    return React.createElement("div", { key: f.id, style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0A0F14", borderRadius: 8, padding: "7px 10px", marginBottom: 4 } },
+                      React.createElement("div", null,
+                        React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", marginBottom: 2 } },
+                          React.createElement("span", { style: { fontSize: 11, color: FUP_C.textMuted } }, f.data + " · " + f.tipo),
+                          f.sla && React.createElement("span", { style: { background: FUP_C.teal + "22", color: FUP_C.teal, borderRadius: 10, padding: "1px 6px", fontSize: 9, fontWeight: 700 } }, f.sla)
+                        ),
+                        React.createElement("div", { style: { fontSize: 12, color: FUP_C.text } }, f.obs)
+                      ),
+                      React.createElement("button", { onClick: function() { deleteFup(c.id, f.id); }, style: { background: "none", color: "#EF4444", border: "none", cursor: "pointer", fontSize: 14, marginLeft: 8 } }, "×")
+                    );
+                  })
+                ),
+                // FUPs sync
+                fupsSync.length > 0 && React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px", background: "rgba(0,190,204,0.04)" } },
+                  React.createElement("div", { style: { fontSize: 10, color: FUP_C.teal, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 } }, "🔄 Visitas sincronizadas"),
+                  fupsSync.map(function(f) {
+                    return React.createElement("div", { key: f.id, style: { background: "#0A0F14", borderRadius: 8, padding: "7px 10px", marginBottom: 4, borderLeft: "2px solid " + FUP_C.teal } },
+                      React.createElement("span", { style: { fontSize: 11, color: FUP_C.textMuted } }, f.data + " · " + f.tipo),
+                      React.createElement("div", { style: { fontSize: 12, color: FUP_C.text, marginTop: 2 } }, f.obs)
+                    );
+                  })
+                ),
+                c.obs && React.createElement("div", { style: { padding: "5px 15px 10px", fontSize: 11, color: FUP_C.textMuted, fontStyle: "italic" } }, "Obs: " + c.obs)
+              );
+            })
+          ),
+
+      // MODAL: Add contato
+      contatoModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
+        React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 460, border: "1px solid " + FUP_C.border, maxHeight: "90vh", overflowY: "auto" } },
+          React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Novo Contato — Metabólica Pantanal"),
+          [["Nome completo","nome","text"],["CRM","crm","text"],["Cidade","cidade","text"]].map(function(f) {
+            return React.createElement("div", { key: f[1], style: { marginBottom: 10 } },
+              React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, f[0]),
+              React.createElement("input", { value: contatoForm[f[1]], onChange: function(e) { var v = e.target.value; setContatoForm(function(p) { var n = Object.assign({}, p); n[f[1]] = v; return n; }); }, style: inp })
+            );
+          }),
+          [["Conhece ESG?","conheceESG",["Conhece bem","Ouviu falar","Não conhecia"]],["Indicaria ESG?","indicariaESG",["Sim","Talvez","Não"]],["Aceita visita?","aceitaVisita",["Sim","Talvez","Não"]]].map(function(f) {
+            return React.createElement("div", { key: f[1], style: { marginBottom: 10 } },
+              React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, f[0]),
+              React.createElement("select", { value: contatoForm[f[1]], onChange: function(e) { var v = e.target.value; setContatoForm(function(p) { var n = Object.assign({}, p); n[f[1]] = v; return n; }); }, style: inp },
+                f[2].map(function(o) { return React.createElement("option", { key: o }, o); })
+              )
+            );
+          }),
+          React.createElement("div", { style: { marginBottom: 16 } },
+            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Observações"),
+            React.createElement("textarea", { value: contatoForm.obs, onChange: function(e) { var v = e.target.value; setContatoForm(function(p) { return Object.assign({}, p, { obs: v }); }); }, rows: 2, style: Object.assign({}, inp, { resize: "vertical" }) })
+          ),
+          React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
+            React.createElement("button", { onClick: function() { setContatoModal(false); }, style: { background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" } }, "Cancelar"),
+            React.createElement("button", { onClick: saveContato, disabled: !contatoForm.nome, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer", opacity: contatoForm.nome ? 1 : 0.5 } }, "Salvar")
+          )
+        )
+      ),
+
+      // MODAL: Add FUP
+      fupModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
+        React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 420, border: "1px solid " + FUP_C.border } },
+          React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Registrar Follow-up"),
+          React.createElement("div", { style: { marginBottom: 10 } },
+            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Etapa SLA"),
+            React.createElement("select", { value: fupForm.sla, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { sla: v }); }); }, style: inp },
+              slaSteps.map(function(s) { return React.createElement("option", { key: s.key, value: s.key }, s.key + " — " + s.label); })
+            )
+          ),
+          React.createElement("div", { style: { marginBottom: 10 } },
+            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Data"),
+            React.createElement("input", { type: "date", value: fupForm.data, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { data: v }); }); }, style: inp })
+          ),
+          React.createElement("div", { style: { marginBottom: 10 } },
+            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Tipo"),
+            React.createElement("select", { value: fupForm.tipo, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { tipo: v }); }); }, style: inp },
+              ["WhatsApp","Contato telefônico","E-mail","Visita presencial","Reunião online"].map(function(o) { return React.createElement("option", { key: o }, o); })
+            )
+          ),
+          React.createElement("div", { style: { marginBottom: 16 } },
+            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Observações"),
+            React.createElement("textarea", { value: fupForm.obs, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { obs: v }); }); }, rows: 3, style: Object.assign({}, inp, { resize: "vertical" }) })
+          ),
+          React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
+            React.createElement("button", { onClick: function() { setFupModal(null); }, style: { background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" } }, "Cancelar"),
+            React.createElement("button", { onClick: saveFup, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer" } }, "Salvar")
+          )
+        )
+      ),
+
+      // MODAL: Resumo
+      resumoModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
+        React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 460, border: "1px solid " + FUP_C.border, maxHeight: "90vh", overflowY: "auto" } },
+          React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Resumo do Congresso"),
+          [["Data (YYYY-MM-DD)","data"],["Local / cidade","local"],["Speaker","speaker"],["Auditório","auditorio"],["Engajamento (Alto/Médio/Baixo)","engajamento"],["Caso ao vivo","casoAoVivo"],["Obs","obs"]].map(function(f) {
+            return React.createElement("div", { key: f[1], style: { marginBottom: 10 } },
+              React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, f[0]),
+              React.createElement("input", { value: resumoForm[f[1]] || "", onChange: function(e) { var v = e.target.value; setResumoForm(function(p) { var n = Object.assign({}, p); n[f[1]] = v; return n; }); }, style: inp })
+            );
+          }),
+          React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 6 } },
+            React.createElement("button", { onClick: function() { setResumoModal(false); }, style: { background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" } }, "Cancelar"),
+            React.createElement("button", { onClick: saveResumo, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer" } }, "Salvar")
+          )
+        )
+      )
+    )
+  );
+}
+
 function FupProjetos() {
   const [activeProject, setActiveProject] = useState(null);
   const [state, setState] = useState(() => fupLoadData());
@@ -7306,8 +7624,10 @@ function FupProjetos() {
   useEffect(() => {
     fupLoadRemote().then((remote) => {
       if (remote && Object.keys(remote).length > 0) {
-        setState(remote);
-        fupSaveData(remote);
+        var merged = Object.assign({}, fupInitialState, remote);
+        merged.congressoMetabolica = Object.assign({}, fupInitialState.congressoMetabolica, remote.congressoMetabolica || {});
+        setState(merged);
+        fupSaveData(merged);
       }
       setSyncing(false);
     });
@@ -7393,6 +7713,20 @@ function FupProjetos() {
             ...(next.cursoEndoscopistas.followups||[]),
             { ...entry, medicoId: med.id, medicoNome: med.nome }
           ];
+        }
+      }
+
+      // Congresso Metabólica Pantanal
+      if (next.congressoMetabolica && next.congressoMetabolica.contatos) {
+        var contatoMatch = next.congressoMetabolica.contatos.find(function(c) { return fupMatch(c.nome, v.medico_nome); });
+        if (contatoMatch) {
+          var jaExisteSync = (contatoMatch.followups || []).some(function(f) { return f.visitaId === entry.visitaId; });
+          if (!jaExisteSync) {
+            next.congressoMetabolica.contatos = next.congressoMetabolica.contatos.map(function(c) {
+              if (c.id !== contatoMatch.id) return c;
+              return Object.assign({}, c, { followups: (c.followups || []).concat([entry]) });
+            });
+          }
         }
       }
 
@@ -7551,6 +7885,7 @@ function FupProjetos() {
     cursoEndoscopistas: <CursoEndoscopistasProject data={state.cursoEndoscopistas} onChange={(v) => updateProject("cursoEndoscopistas", v)} />,
     pacientesReferidores: <PacientesReferidoresProject data={state.pacientesReferidores} onChange={(v) => updateProject("pacientesReferidores", v)} />,
     imersaoMarketing: <ImersaoMarketingProject data={state.imersaoMarketing} onChange={(v) => updateProject("imersaoMarketing", v)} />,
+    congressoMetabolica: <CongressoMetabolicaProject data={state.congressoMetabolica} onChange={(v) => updateProject("congressoMetabolica", v)} />,
   };
   const activeProjectMeta = FUP_PROJECTS.find((p) => p.id === activeProject);
   return (
@@ -7755,6 +8090,7 @@ function FupProjetos() {
                   else if (p.id === "cursoEndoscopistas") count = state.cursoEndoscopistas?.medicos?.filter((m) => m.nome).length || 0;
                   else if (p.id === "pacientesReferidores") count = state.pacientesReferidores?.length || 0;
                   else if (p.id === "imersaoMarketing") count = state.imersaoMarketing?.medicos?.length || 0;
+                  else if (p.id === "congressoMetabolica") count = (state.congressoMetabolica?.contatos || []).length;
                   return (
                     <div key={p.id}
                       onClick={() => setActiveProject(p.id)}
