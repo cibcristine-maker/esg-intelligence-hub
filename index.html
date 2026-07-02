@@ -7759,8 +7759,23 @@ function FupProjetos() {
   useEffect(() => {
     fupLoadRemote().then((remote) => {
       if (remote && Object.keys(remote).length > 0) {
-        setState(remote);
-        fupSaveData(remote);
+        // Merge com fupInitialState para garantir que novos projetos apareçam
+        const merged = {
+          ...fupInitialState,
+          ...remote,
+          cursoBariatricos: {
+            ...fupInitialState.cursoBariatricos,
+            ...remote.cursoBariatricos,
+            medicos: remote.cursoBariatricos?.medicos?.length
+              ? remote.cursoBariatricos.medicos
+              : fupInitialState.cursoBariatricos.medicos,
+          },
+          cursoEndoscopistas: { ...fupInitialState.cursoEndoscopistas, ...remote.cursoEndoscopistas },
+          imersaoMarketing: { ...fupInitialState.imersaoMarketing, ...remote.imersaoMarketing },
+          congressoMetabolica: { ...fupInitialState.congressoMetabolica, ...remote.congressoMetabolica },
+        };
+        setState(merged);
+        fupSaveData(merged);
       }
       setSyncing(false);
     });
