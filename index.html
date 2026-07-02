@@ -7302,7 +7302,8 @@ function ImersaoMarketingProject({ data, onChange }) {
 
 // ── CONGRESSO METABÓLICA PANTANAL ──────────────────────────────────────────
 function CongressoMetabolicaProject(props) {
-  var data = props.data || {};
+  var data = (props.data && typeof props.data === "object") ? props.data : {};
+  if (!data.contatos) data = { contatos: [], resumo: {} };
   var onChange = props.onChange;
   var contatos = data.contatos || [];
   var resumo = data.resumo || {};
@@ -7865,7 +7866,7 @@ function FupProjetos() {
     cursoEndoscopistas: <CursoEndoscopistasProject data={state.cursoEndoscopistas} onChange={(v) => updateProject("cursoEndoscopistas", v)} />,
     pacientesReferidores: <PacientesReferidoresProject data={state.pacientesReferidores} onChange={(v) => updateProject("pacientesReferidores", v)} />,
     imersaoMarketing: <ImersaoMarketingProject data={state.imersaoMarketing} onChange={(v) => updateProject("imersaoMarketing", v)} />,
-    congressoMetabolica: <CongressoMetabolicaProject data={state.congressoMetabolica} onChange={(v) => updateProject("congressoMetabolica", v)} />,
+    congressoMetabolica: activeProject === "congressoMetabolica" ? <CongressoMetabolicaProject data={state.congressoMetabolica || { contatos: [], resumo: {} }} onChange={(v) => updateProject("congressoMetabolica", v)} /> : null,
   };
   const activeProjectMeta = FUP_PROJECTS.find((p) => p.id === activeProject);
   return (
