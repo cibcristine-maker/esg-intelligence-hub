@@ -7300,298 +7300,109 @@ function ImersaoMarketingProject({ data, onChange }) {
 // MAIN APP
 // ════════════════════════════════════════════════════════════════════════════
 
-// ── CONGRESSO METABÓLICA PANTANAL ──────────────────────────────────────────
-function CongressoMetabolicaProject(props) {
-  var data = (props.data && typeof props.data === "object") ? props.data : {};
-  if (!data.contatos) data = { contatos: [], resumo: {} };
-  var onChange = props.onChange;
-  var contatos = data.contatos || [];
-  var resumo = data.resumo || {};
+function CongressoMetabolicaProject({ data, onChange }) {
+  const contatos = data?.contatos || [];
+  const resumo = data?.resumo || {};
+  const [modal, setModal] = React.useState(false);
+  const [form, setForm] = React.useState({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
 
-  var slaSteps = [
-    { key: "D+1",  dias: 1,  label: "Agradecimento" },
-    { key: "D+7",  dias: 7,  label: "Conteúdo" },
-    { key: "D+15", dias: 15, label: "Visita/Reunião" },
-    { key: "D+45", dias: 45, label: "Avanço concreto" },
-    { key: "D+90", dias: 90, label: "Fechamento" },
-  ];
+  const total = contatos.length;
+  const indicariam = contatos.filter(c => c.indicariaESG === "Sim").length;
+  const aceitam = contatos.filter(c => c.aceitaVisita === "Sim").length;
 
-  var today = new Date().toISOString().slice(0, 10);
-
-  function addDays(dateStr, n) {
-    if (!dateStr) return null;
-    var d = new Date(dateStr + "T12:00:00");
-    d.setDate(d.getDate() + n);
-    return d.toISOString().slice(0, 10);
+  function salvar() {
+    const novo = { ...form, id: fupUid(), followups: [], criadoEm: new Date().toISOString().slice(0,10) };
+    onChange({ ...data, contatos: [...contatos, novo] });
+    setModal(false);
+    setForm({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
   }
 
-  function update(next) { onChange(next); }
-
-  const [contatoModal, setContatoModal] = useState(false);
-  const [resumoModal, setResumoModal] = useState(false);
-  const [fupModal, setFupModal] = useState(null);
-  const [editModal, setEditModal] = useState(null);
-  const [contatoForm, setContatoForm] = useState({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
-  const [fupForm, setFupForm] = useState({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
-  const [resumoForm, setResumoForm] = useState({ data: "", local: "", speaker: "", auditorio: "", engajamento: "", casoAoVivo: "", obs: "" });
-
-  function saveContato() {
-    var next = Object.assign({}, data, { contatos: contatos.concat([Object.assign({}, contatoForm, { id: fupUid(), followups: [], criadoEm: today })]) });
-    update(next);
-    setContatoModal(false);
-    setContatoForm({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
+  function remover(id) {
+    onChange({ ...data, contatos: contatos.filter(c => c.id !== id) });
   }
 
-  function saveFup() {
-    if (!fupModal) return;
-    var updated = contatos.map(function(c) {
-      if (c.id !== fupModal) return c;
-      return Object.assign({}, c, { followups: (c.followups || []).concat([Object.assign({}, fupForm, { id: fupUid() })]) });
-    });
-    update(Object.assign({}, data, { contatos: updated }));
-    setFupModal(null);
-    setFupForm({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
-  }
-
-  function saveResumo() {
-    update(Object.assign({}, data, { resumo: Object.assign({}, resumoForm) }));
-    setResumoModal(false);
-  }
-
-  function deleteContato(id) {
-    update(Object.assign({}, data, { contatos: contatos.filter(function(c) { return c.id !== id; }) }));
-  }
-
-  function deleteFup(cId, fId) {
-    update(Object.assign({}, data, { contatos: contatos.map(function(c) {
-      if (c.id !== cId) return c;
-      return Object.assign({}, c, { followups: (c.followups || []).filter(function(f) { return f.id !== fId; }) });
-    }) }));
-  }
-
-  function getSlaStatus(contato) {
-    var base = resumo.data || contato.criadoEm || today;
-    return slaSteps.map(function(step) {
-      var prazo = addDays(base, step.dias);
-      var cumprido = (contato.followups || []).some(function(f) { return f.sla === step.key; });
-      var atrasado = !cumprido && today > prazo;
-      return Object.assign({}, step, { prazo: prazo, cumprido: cumprido, atrasado: atrasado });
-    });
-  }
-
-  // KPIs
-  var total = contatos.length;
-  var novos = contatos.filter(function(c) { return c.conheceESG === "Não conhecia"; }).length;
-  var indicariam = contatos.filter(function(c) { return c.indicariaESG === "Sim"; }).length;
-  var aceitamVisita = contatos.filter(function(c) { return c.aceitaVisita === "Sim"; }).length;
-  var txVisita = total > 0 ? Math.round(aceitamVisita / total * 100) : 0;
-  var avancaram = contatos.filter(function(c) { return (c.followups || []).some(function(f) { return f.sla === "D+45"; }); }).length;
-
-  // SLA resumo
-  var slaSummary = slaSteps.map(function(step) {
-    var count = contatos.filter(function(c) { return (c.followups || []).some(function(f) { return f.sla === step.key; }); }).length;
-    var atrasados = contatos.filter(function(c) {
-      var base = resumo.data || c.criadoEm || today;
-      var prazo = addDays(base, step.dias);
-      var cumprido = (c.followups || []).some(function(f) { return f.sla === step.key; });
-      return !cumprido && prazo && today > prazo;
-    }).length;
-    return Object.assign({}, step, { count: count, atrasados: atrasados });
-  });
-
-  function badgeColor(v) {
-    if (v === "Sim" || v === "Conhece bem") return FUP_C.green;
-    if (v === "Não" || v === "Não conhecia") return FUP_C.red;
-    return FUP_C.yellow;
-  }
-
-  var inp = { width: "100%", background: "#0A0F14", border: "1px solid " + FUP_C.border, borderRadius: 6, padding: "7px 10px", color: FUP_C.text, fontSize: 13, boxSizing: "border-box", fontFamily: "inherit" };
+  const inp = { width: "100%", background: "#0A0F14", border: `1px solid ${FUP_C.border}`, borderRadius: 6, padding: "7px 10px", color: FUP_C.text, fontSize: 13, boxSizing: "border-box", fontFamily: "inherit" };
 
   return (
-    React.createElement("div", null,
-      React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 } },
-        React.createElement(FupKPICard, { label: "Contatos", value: total, icon: "🤝", sub: "Meta: 25" }),
-        React.createElement(FupKPICard, { label: "Nunca viram ESG", value: novos, icon: "🆕", color: FUP_C.yellow, sub: total > 0 ? Math.round(novos/total*100) + "% do total" : "—" }),
-        React.createElement(FupKPICard, { label: "Indicariam ESG", value: indicariam, icon: "✅", color: FUP_C.green, sub: "Meta: 8+" }),
-        React.createElement(FupKPICard, { label: "Aceitam visita", value: aceitamVisita + " (" + txVisita + "%)", icon: "📅", color: txVisita >= 40 ? FUP_C.green : FUP_C.yellow, sub: "Meta: 40%" }),
-        React.createElement(FupKPICard, { label: "Avançaram D+45", value: avancaram, icon: "🚀", color: FUP_C.green, sub: "Treino/Indicação" })
-      ),
-      React.createElement("div", { style: { background: FUP_C.card, border: "1px solid " + FUP_C.border, borderRadius: 12, padding: "14px 18px", marginBottom: 16 } },
-        React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 } }, "📊 SLAs de Follow-up"),
-        React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 8 } },
-          slaSummary.map(function(s) {
-            var pct = total > 0 ? Math.round(s.count / total * 100) : 0;
-            return React.createElement("div", { key: s.key, style: { background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "10px 12px", border: "1px solid " + (s.atrasados > 0 ? "#EF444433" : FUP_C.border) } },
-              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 } },
-                React.createElement("span", { style: { fontSize: 11, fontWeight: 700, color: FUP_C.textMuted } }, s.key),
-                s.atrasados > 0 && React.createElement("span", { style: { background: "#EF444422", color: "#EF4444", borderRadius: 10, padding: "1px 6px", fontSize: 9, fontWeight: 700 } }, s.atrasados + "!")
-              ),
-              React.createElement("div", { style: { fontSize: 10, color: FUP_C.textDim, marginBottom: 6 } }, s.label),
-              React.createElement("div", { style: { background: "rgba(255,255,255,0.06)", borderRadius: 4, height: 4, marginBottom: 4 } },
-                React.createElement("div", { style: { width: pct + "%", height: 4, borderRadius: 4, background: pct >= 80 ? FUP_C.green : pct >= 40 ? FUP_C.yellow : FUP_C.teal } })
-              ),
-              React.createElement("div", { style: { display: "flex", justifyContent: "space-between", fontSize: 11 } },
-                React.createElement("span", { style: { color: FUP_C.green, fontWeight: 700 } }, s.count + " ✓"),
-                React.createElement("span", { style: { color: FUP_C.textMuted } }, pct + "%")
-              )
-            );
-          })
-        ),
-        !resumo.data && React.createElement("div", { style: { marginTop: 8, fontSize: 11, color: FUP_C.yellow } }, "⚠ Defina a data do congresso no Resumo para calcular os prazos.")
-      ),
-      React.createElement("div", { style: { background: FUP_C.card, border: "1px solid " + FUP_C.border, borderRadius: 12, padding: "12px 16px", marginBottom: 14 } },
-        React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 } },
-          React.createElement("span", { style: { fontWeight: 700, fontSize: 13 } }, "📋 Resumo do Congresso"),
-          React.createElement("button", { onClick: function() { setResumoForm(Object.assign({data:"",local:"",speaker:"",auditorio:"",engajamento:"",casoAoVivo:"",obs:""}, resumo)); setResumoModal(true); }, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 6, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontWeight: 600 } }, "Editar")
-        ),
-        React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 8, fontSize: 12 } },
-          [["Data", resumo.data], ["Local", resumo.local], ["Speaker", resumo.speaker], ["Auditório", resumo.auditorio], ["Engajamento", resumo.engajamento], ["Caso ao vivo", resumo.casoAoVivo]].map(function(pair) {
-            return React.createElement("div", { key: pair[0], style: { background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "7px 10px" } },
-              React.createElement("div", { style: { color: FUP_C.textMuted, fontSize: 10, marginBottom: 2 } }, pair[0]),
-              React.createElement("div", { style: { color: FUP_C.text, fontWeight: 600 } }, pair[1] || "—")
-            );
-          })
-        )
-      ),
-      React.createElement("div", { style: { marginBottom: 14 } },
-        React.createElement(FupBtn, { onClick: function() { setContatoModal(true); } }, "+ Adicionar Contato")
-      ),
-      contatos.length === 0
-        ? React.createElement("div", { style: { textAlign: "center", padding: "32px 20px", color: FUP_C.textDim, fontSize: 13, background: FUP_C.card, borderRadius: 12, border: "1px dashed " + FUP_C.border } }, "Nenhum contato registrado. Adicione os médicos abordados no congresso.")
-        : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
-            contatos.map(function(c) {
-              var slaStatus = getSlaStatus(c);
-              var temAtrasado = slaStatus.some(function(s) { return s.atrasado; });
-              var fupsManuais = (c.followups || []).filter(function(f) { return !f.syncedFromVisitas; });
-              var fupsSync = (c.followups || []).filter(function(f) { return f.syncedFromVisitas; });
-              return React.createElement("div", { key: c.id, style: { background: FUP_C.card, border: "1px solid " + (temAtrasado ? "#EF444433" : FUP_C.border), borderRadius: 12, overflow: "hidden" } },
-                React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "13px 15px" } },
-                  React.createElement("div", { style: { flex: 1 } },
-                    React.createElement("div", { style: { fontWeight: 700, fontSize: 14, marginBottom: 2 } }, c.nome),
-                    React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted } }, "Cirurgião Bariátrico · " + (c.cidade || "") + (c.crm ? " · CRM " + c.crm : "")),
-                    React.createElement("div", { style: { display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" } },
-                      [["ESG: " + c.conheceESG, badgeColor(c.conheceESG)], ["Indicaria: " + c.indicariaESG, badgeColor(c.indicariaESG)], ["Visita: " + c.aceitaVisita, badgeColor(c.aceitaVisita)]].map(function(b) {
-                        return React.createElement("span", { key: b[0], style: { background: b[1] + "22", color: b[1], border: "1px solid " + b[1] + "44", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 } }, b[0]);
-                      }),
-                      fupsSync.length > 0 && React.createElement("span", { style: { background: FUP_C.teal + "22", color: FUP_C.teal, border: "1px solid " + FUP_C.teal + "44", borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 } }, "🔄 " + fupsSync.length + " sync")
-                    )
-                  ),
-                  React.createElement("div", { style: { display: "flex", gap: 5, marginLeft: 10 } },
-                    React.createElement("button", { onClick: function() { setFupModal(c.id); setFupForm({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" }); }, style: { background: "#1E3A5F", color: FUP_C.teal, border: "none", borderRadius: 6, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 } }, "+ FUP"),
-                    React.createElement("button", { onClick: function() { deleteContato(c.id); }, style: { background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "none", borderRadius: 6, padding: "5px 8px", fontSize: 12, cursor: "pointer" } }, "🗑")
-                  )
-                ),
-                React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px", background: "rgba(0,0,0,0.12)" } },
-                  React.createElement("div", { style: { display: "flex", gap: 5, flexWrap: "wrap" } },
-                    slaStatus.map(function(s) {
-                      return React.createElement("div", { key: s.key, title: "Prazo: " + (s.prazo || "—") + " · " + s.label, style: { display: "flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: s.cumprido ? FUP_C.green + "22" : s.atrasado ? "#EF444422" : "rgba(255,255,255,0.05)", border: "1px solid " + (s.cumprido ? FUP_C.green + "55" : s.atrasado ? "#EF444455" : FUP_C.border), color: s.cumprido ? FUP_C.green : s.atrasado ? "#EF4444" : FUP_C.textMuted } },
-                        React.createElement("span", null, s.cumprido ? "✓" : s.atrasado ? "!" : "○"),
-                        React.createElement("span", null, s.key),
-                        s.prazo && !s.cumprido && React.createElement("span", { style: { fontSize: 9, opacity: 0.7 } }, s.prazo.slice(5))
-                      );
-                    })
-                  )
-                ),
-                fupsManuais.length > 0 && React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px" } },
-                  React.createElement("div", { style: { fontSize: 10, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 } }, "Follow-ups"),
-                  fupsManuais.map(function(f) {
-                    return React.createElement("div", { key: f.id, style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0A0F14", borderRadius: 8, padding: "7px 10px", marginBottom: 4 } },
-                      React.createElement("div", null,
-                        React.createElement("div", { style: { display: "flex", gap: 6, alignItems: "center", marginBottom: 2 } },
-                          React.createElement("span", { style: { fontSize: 11, color: FUP_C.textMuted } }, f.data + " · " + f.tipo),
-                          f.sla && React.createElement("span", { style: { background: FUP_C.teal + "22", color: FUP_C.teal, borderRadius: 10, padding: "1px 6px", fontSize: 9, fontWeight: 700 } }, f.sla)
-                        ),
-                        React.createElement("div", { style: { fontSize: 12, color: FUP_C.text } }, f.obs)
-                      ),
-                      React.createElement("button", { onClick: function() { deleteFup(c.id, f.id); }, style: { background: "none", color: "#EF4444", border: "none", cursor: "pointer", fontSize: 14, marginLeft: 8 } }, "×")
-                    );
-                  })
-                ),
-                fupsSync.length > 0 && React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px", background: "rgba(0,190,204,0.04)" } },
-                  React.createElement("div", { style: { fontSize: 10, color: FUP_C.teal, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 } }, "🔄 Visitas sincronizadas"),
-                  fupsSync.map(function(f) {
-                    return React.createElement("div", { key: f.id, style: { background: "#0A0F14", borderRadius: 8, padding: "7px 10px", marginBottom: 4, borderLeft: "2px solid " + FUP_C.teal } },
-                      React.createElement("span", { style: { fontSize: 11, color: FUP_C.textMuted } }, f.data + " · " + f.tipo),
-                      React.createElement("div", { style: { fontSize: 12, color: FUP_C.text, marginTop: 2 } }, f.obs)
-                    );
-                  })
-                ),
-                c.obs && React.createElement("div", { style: { padding: "5px 15px 10px", fontSize: 11, color: FUP_C.textMuted, fontStyle: "italic" } }, "Obs: " + c.obs)
-              );
-            })
-          ),
-      contatoModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
-        React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 460, border: "1px solid " + FUP_C.border, maxHeight: "90vh", overflowY: "auto" } },
-          React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Novo Contato — Metabólica Pantanal"),
-          [["Nome completo","nome","text"],["CRM","crm","text"],["Cidade","cidade","text"]].map(function(f) {
-            return React.createElement("div", { key: f[1], style: { marginBottom: 10 } },
-              React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, f[0]),
-              React.createElement("input", { value: contatoForm[f[1]], onChange: function(e) { var v = e.target.value; setContatoForm(function(p) { var n = Object.assign({}, p); n[f[1]] = v; return n; }); }, style: inp })
-            );
-          }),
-          [["Conhece ESG?","conheceESG",["Conhece bem","Ouviu falar","Não conhecia"]],["Indicaria ESG?","indicariaESG",["Sim","Talvez","Não"]],["Aceita visita?","aceitaVisita",["Sim","Talvez","Não"]]].map(function(f) {
-            return React.createElement("div", { key: f[1], style: { marginBottom: 10 } },
-              React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, f[0]),
-              React.createElement("select", { value: contatoForm[f[1]], onChange: function(e) { var v = e.target.value; setContatoForm(function(p) { var n = Object.assign({}, p); n[f[1]] = v; return n; }); }, style: inp },
-                f[2].map(function(o) { return React.createElement("option", { key: o }, o); })
-              )
-            );
-          }),
-          React.createElement("div", { style: { marginBottom: 16 } },
-            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Observações"),
-            React.createElement("textarea", { value: contatoForm.obs, onChange: function(e) { var v = e.target.value; setContatoForm(function(p) { return Object.assign({}, p, { obs: v }); }); }, rows: 2, style: Object.assign({}, inp, { resize: "vertical" }) })
-          ),
-          React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
-            React.createElement("button", { onClick: function() { setContatoModal(false); }, style: { background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" } }, "Cancelar"),
-            React.createElement("button", { onClick: saveContato, disabled: !contatoForm.nome, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer", opacity: contatoForm.nome ? 1 : 0.5 } }, "Salvar")
-          )
-        )
-      ),
-      fupModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
-        React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 420, border: "1px solid " + FUP_C.border } },
-          React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Registrar Follow-up"),
-          React.createElement("div", { style: { marginBottom: 10 } },
-            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Etapa SLA"),
-            React.createElement("select", { value: fupForm.sla, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { sla: v }); }); }, style: inp },
-              slaSteps.map(function(s) { return React.createElement("option", { key: s.key, value: s.key }, s.key + " — " + s.label); })
-            )
-          ),
-          React.createElement("div", { style: { marginBottom: 10 } },
-            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Data"),
-            React.createElement("input", { type: "date", value: fupForm.data, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { data: v }); }); }, style: inp })
-          ),
-          React.createElement("div", { style: { marginBottom: 10 } },
-            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Tipo"),
-            React.createElement("select", { value: fupForm.tipo, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { tipo: v }); }); }, style: inp },
-              ["WhatsApp","Contato telefônico","E-mail","Visita presencial","Reunião online"].map(function(o) { return React.createElement("option", { key: o }, o); })
-            )
-          ),
-          React.createElement("div", { style: { marginBottom: 16 } },
-            React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, "Observações"),
-            React.createElement("textarea", { value: fupForm.obs, onChange: function(e) { var v = e.target.value; setFupForm(function(p) { return Object.assign({}, p, { obs: v }); }); }, rows: 3, style: Object.assign({}, inp, { resize: "vertical" }) })
-          ),
-          React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end" } },
-            React.createElement("button", { onClick: function() { setFupModal(null); }, style: { background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" } }, "Cancelar"),
-            React.createElement("button", { onClick: saveFup, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer" } }, "Salvar")
-          )
-        )
-      ),
-      resumoModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
-        React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 460, border: "1px solid " + FUP_C.border, maxHeight: "90vh", overflowY: "auto" } },
-          React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Resumo do Congresso"),
-          [["Data (YYYY-MM-DD)","data"],["Local / cidade","local"],["Speaker","speaker"],["Auditório","auditorio"],["Engajamento (Alto/Médio/Baixo)","engajamento"],["Caso ao vivo","casoAoVivo"],["Obs","obs"]].map(function(f) {
-            return React.createElement("div", { key: f[1], style: { marginBottom: 10 } },
-              React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 } }, f[0]),
-              React.createElement("input", { value: resumoForm[f[1]] || "", onChange: function(e) { var v = e.target.value; setResumoForm(function(p) { var n = Object.assign({}, p); n[f[1]] = v; return n; }); }, style: inp })
-            );
-          }),
-          React.createElement("div", { style: { display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 6 } },
-            React.createElement("button", { onClick: function() { setResumoModal(false); }, style: { background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" } }, "Cancelar"),
-            React.createElement("button", { onClick: saveResumo, style: { background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer" } }, "Salvar")
-          )
-        )
-      )
-    )
+    <div>
+      <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
+        <FupKPICard label="Contatos" value={total} icon="🤝" sub="Meta: 25" />
+        <FupKPICard label="Indicariam ESG" value={indicariam} icon="✅" color={FUP_C.green} sub="Meta: 8+" />
+        <FupKPICard label="Aceitam visita" value={`${aceitam} (${total > 0 ? Math.round(aceitam/total*100) : 0}%)`} icon="📅" color={FUP_C.yellow} sub="Meta: 40%" />
+      </div>
+
+      {resumo.data && (
+        <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 10, padding: "12px 16px", marginBottom: 14, fontSize: 13 }}>
+          <span style={{ color: FUP_C.textMuted }}>📋 {resumo.data} · {resumo.local || "—"} · Speaker: {resumo.speaker || "—"}</span>
+        </div>
+      )}
+
+      <div style={{ marginBottom: 14 }}>
+        <FupBtn onClick={() => setModal(true)}>+ Adicionar Contato</FupBtn>
+      </div>
+
+      {contatos.length === 0 ? (
+        <div style={{ textAlign: "center", padding: "32px 20px", color: FUP_C.textDim, fontSize: 13, background: FUP_C.card, borderRadius: 12, border: `1px dashed ${FUP_C.border}` }}>
+          Nenhum contato registrado. Adicione os médicos abordados no congresso.
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {contatos.map(c => (
+            <div key={c.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 10, padding: "12px 15px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: 14 }}>{c.nome}</div>
+                <div style={{ fontSize: 11, color: FUP_C.textMuted, marginTop: 2 }}>{c.cidade}{c.crm ? ` · CRM ${c.crm}` : ""}</div>
+                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
+                  {[
+                    { label: `ESG: ${c.conheceESG}`, color: c.conheceESG === "Conhece bem" ? FUP_C.green : c.conheceESG === "Não conhecia" ? FUP_C.red : FUP_C.yellow },
+                    { label: `Indicaria: ${c.indicariaESG}`, color: c.indicariaESG === "Sim" ? FUP_C.green : c.indicariaESG === "Não" ? FUP_C.red : FUP_C.yellow },
+                    { label: `Visita: ${c.aceitaVisita}`, color: c.aceitaVisita === "Sim" ? FUP_C.green : c.aceitaVisita === "Não" ? FUP_C.red : FUP_C.yellow },
+                  ].map(b => (
+                    <span key={b.label} style={{ background: b.color + "22", color: b.color, border: `1px solid ${b.color}44`, borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{b.label}</span>
+                  ))}
+                </div>
+                {c.obs && <div style={{ fontSize: 11, color: FUP_C.textMuted, marginTop: 4, fontStyle: "italic" }}>{c.obs}</div>}
+              </div>
+              <button onClick={() => remover(c.id)} style={{ background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "none", borderRadius: 6, padding: "4px 8px", fontSize: 12, cursor: "pointer", marginLeft: 10 }}>🗑</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {modal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
+          <div style={{ background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, border: `1px solid ${FUP_C.border}`, maxHeight: "90vh", overflowY: "auto" }}>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Novo Contato — Metabólica Pantanal</div>
+            {[["Nome completo","nome"],["CRM","crm"],["Cidade","cidade"]].map(([label, key]) => (
+              <div key={key} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>{label}</div>
+                <input value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} style={inp} />
+              </div>
+            ))}
+            {[
+              ["Conhece ESG?","conheceESG",["Conhece bem","Ouviu falar","Não conhecia"]],
+              ["Indicaria ESG?","indicariaESG",["Sim","Talvez","Não"]],
+              ["Aceita visita?","aceitaVisita",["Sim","Talvez","Não"]],
+            ].map(([label, key, opts]) => (
+              <div key={key} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>{label}</div>
+                <select value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} style={inp}>
+                  {opts.map(o => <option key={o}>{o}</option>)}
+                </select>
+              </div>
+            ))}
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>Observações</div>
+              <textarea value={form.obs} onChange={e => setForm(p => ({ ...p, obs: e.target.value }))} rows={2} style={{ ...inp, resize: "vertical" }} />
+            </div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => setModal(false)} style={{ background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={salvar} disabled={!form.nome} style={{ background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer", opacity: form.nome ? 1 : 0.5 }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
