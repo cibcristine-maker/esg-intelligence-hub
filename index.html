@@ -7408,8 +7408,6 @@ function CongressoMetabolicaProject(props) {
 
   return (
     React.createElement("div", null,
-
-      // KPIs gerais
       React.createElement("div", { style: { display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 } },
         React.createElement(FupKPICard, { label: "Contatos", value: total, icon: "🤝", sub: "Meta: 25" }),
         React.createElement(FupKPICard, { label: "Nunca viram ESG", value: novos, icon: "🆕", color: FUP_C.yellow, sub: total > 0 ? Math.round(novos/total*100) + "% do total" : "—" }),
@@ -7417,8 +7415,6 @@ function CongressoMetabolicaProject(props) {
         React.createElement(FupKPICard, { label: "Aceitam visita", value: aceitamVisita + " (" + txVisita + "%)", icon: "📅", color: txVisita >= 40 ? FUP_C.green : FUP_C.yellow, sub: "Meta: 40%" }),
         React.createElement(FupKPICard, { label: "Avançaram D+45", value: avancaram, icon: "🚀", color: FUP_C.green, sub: "Treino/Indicação" })
       ),
-
-      // SLA grid
       React.createElement("div", { style: { background: FUP_C.card, border: "1px solid " + FUP_C.border, borderRadius: 12, padding: "14px 18px", marginBottom: 16 } },
         React.createElement("div", { style: { fontSize: 11, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 } }, "📊 SLAs de Follow-up"),
         React.createElement("div", { style: { display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 8 } },
@@ -7442,8 +7438,6 @@ function CongressoMetabolicaProject(props) {
         ),
         !resumo.data && React.createElement("div", { style: { marginTop: 8, fontSize: 11, color: FUP_C.yellow } }, "⚠ Defina a data do congresso no Resumo para calcular os prazos.")
       ),
-
-      // Resumo do evento
       React.createElement("div", { style: { background: FUP_C.card, border: "1px solid " + FUP_C.border, borderRadius: 12, padding: "12px 16px", marginBottom: 14 } },
         React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 } },
           React.createElement("span", { style: { fontWeight: 700, fontSize: 13 } }, "📋 Resumo do Congresso"),
@@ -7458,13 +7452,9 @@ function CongressoMetabolicaProject(props) {
           })
         )
       ),
-
-      // Add button
       React.createElement("div", { style: { marginBottom: 14 } },
         React.createElement(FupBtn, { onClick: function() { setContatoModal(true); } }, "+ Adicionar Contato")
       ),
-
-      // Contatos list
       contatos.length === 0
         ? React.createElement("div", { style: { textAlign: "center", padding: "32px 20px", color: FUP_C.textDim, fontSize: 13, background: FUP_C.card, borderRadius: 12, border: "1px dashed " + FUP_C.border } }, "Nenhum contato registrado. Adicione os médicos abordados no congresso.")
         : React.createElement("div", { style: { display: "flex", flexDirection: "column", gap: 10 } },
@@ -7474,7 +7464,6 @@ function CongressoMetabolicaProject(props) {
               var fupsManuais = (c.followups || []).filter(function(f) { return !f.syncedFromVisitas; });
               var fupsSync = (c.followups || []).filter(function(f) { return f.syncedFromVisitas; });
               return React.createElement("div", { key: c.id, style: { background: FUP_C.card, border: "1px solid " + (temAtrasado ? "#EF444433" : FUP_C.border), borderRadius: 12, overflow: "hidden" } },
-                // Header
                 React.createElement("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "13px 15px" } },
                   React.createElement("div", { style: { flex: 1 } },
                     React.createElement("div", { style: { fontWeight: 700, fontSize: 14, marginBottom: 2 } }, c.nome),
@@ -7491,7 +7480,6 @@ function CongressoMetabolicaProject(props) {
                     React.createElement("button", { onClick: function() { deleteContato(c.id); }, style: { background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "none", borderRadius: 6, padding: "5px 8px", fontSize: 12, cursor: "pointer" } }, "🗑")
                   )
                 ),
-                // SLA pills
                 React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px", background: "rgba(0,0,0,0.12)" } },
                   React.createElement("div", { style: { display: "flex", gap: 5, flexWrap: "wrap" } },
                     slaStatus.map(function(s) {
@@ -7503,7 +7491,6 @@ function CongressoMetabolicaProject(props) {
                     })
                   )
                 ),
-                // FUPs manuais
                 fupsManuais.length > 0 && React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px" } },
                   React.createElement("div", { style: { fontSize: 10, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 } }, "Follow-ups"),
                   fupsManuais.map(function(f) {
@@ -7519,7 +7506,6 @@ function CongressoMetabolicaProject(props) {
                     );
                   })
                 ),
-                // FUPs sync
                 fupsSync.length > 0 && React.createElement("div", { style: { borderTop: "1px solid " + FUP_C.border, padding: "9px 15px", background: "rgba(0,190,204,0.04)" } },
                   React.createElement("div", { style: { fontSize: 10, color: FUP_C.teal, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 } }, "🔄 Visitas sincronizadas"),
                   fupsSync.map(function(f) {
@@ -7533,8 +7519,6 @@ function CongressoMetabolicaProject(props) {
               );
             })
           ),
-
-      // MODAL: Add contato
       contatoModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
         React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 460, border: "1px solid " + FUP_C.border, maxHeight: "90vh", overflowY: "auto" } },
           React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Novo Contato — Metabólica Pantanal"),
@@ -7562,8 +7546,6 @@ function CongressoMetabolicaProject(props) {
           )
         )
       ),
-
-      // MODAL: Add FUP
       fupModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
         React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 420, border: "1px solid " + FUP_C.border } },
           React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Registrar Follow-up"),
@@ -7593,8 +7575,6 @@ function CongressoMetabolicaProject(props) {
           )
         )
       ),
-
-      // MODAL: Resumo
       resumoModal && React.createElement("div", { style: { position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 } },
         React.createElement("div", { style: { background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 460, border: "1px solid " + FUP_C.border, maxHeight: "90vh", overflowY: "auto" } },
           React.createElement("div", { style: { fontWeight: 700, fontSize: 15, marginBottom: 16 } }, "Resumo do Congresso"),
