@@ -7303,101 +7303,307 @@ function ImersaoMarketingProject({ data, onChange }) {
 function CongressoMetabolicaProject({ data, onChange }) {
   const contatos = data?.contatos || [];
   const resumo = data?.resumo || {};
-  const [modal, setModal] = React.useState(false);
-  const [form, setForm] = React.useState({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
+  const today = new Date().toISOString().slice(0, 10);
+
+  const SLA_STEPS = [
+    { key: "D+1",  dias: 1,  label: "Agradecimento" },
+    { key: "D+7",  dias: 7,  label: "Conteúdo" },
+    { key: "D+15", dias: 15, label: "Visita/Reunião" },
+    { key: "D+45", dias: 45, label: "Avanço concreto" },
+    { key: "D+90", dias: 90, label: "Fechamento" },
+  ];
+
+  function addDays(dateStr, n) {
+    if (!dateStr) return null;
+    const d = new Date(dateStr + "T12:00:00");
+    d.setDate(d.getDate() + n);
+    return d.toISOString().slice(0, 10);
+  }
+
+  function getSlaStatus(c) {
+    const base = resumo.data || c.criadoEm || today;
+    return SLA_STEPS.map(step => {
+      const prazo = addDays(base, step.dias);
+      const cumprido = (c.followups || []).some(f => f.sla === step.key && !f.syncedFromVisitas);
+      const atrasado = !cumprido && prazo && today > prazo;
+      return { ...step, prazo, cumprido, atrasado };
+    });
+  }
+
+  const [contatoModal, setContatoModal] = React.useState(false);
+  const [resumoModal, setResumoModal] = React.useState(false);
+  const [fupModal, setFupModal] = React.useState(null);
+  const [contatoForm, setContatoForm] = React.useState({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
+  const [fupForm, setFupForm] = React.useState({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
+  const [resumoForm, setResumoForm] = React.useState({ data: "", local: "", speaker: "", auditorio: "", engajamento: "", casoAoVivo: "", obs: "" });
+
+  function salvarContato() {
+    onChange({ ...data, contatos: [...contatos, { ...contatoForm, id: fupUid(), followups: [], criadoEm: today }] });
+    setContatoModal(false);
+    setContatoForm({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
+  }
+
+  function salvarFup() {
+    if (!fupModal) return;
+    onChange({ ...data, contatos: contatos.map(c => c.id === fupModal ? { ...c, followups: [...(c.followups || []), { ...fupForm, id: fupUid() }] } : c) });
+    setFupModal(null);
+    setFupForm({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" });
+  }
+
+  function salvarResumo() {
+    onChange({ ...data, resumo: { ...resumoForm } });
+    setResumoModal(false);
+  }
+
+  function removerContato(id) {
+    onChange({ ...data, contatos: contatos.filter(c => c.id !== id) });
+  }
+
+  function removerFup(cId, fId) {
+    onChange({ ...data, contatos: contatos.map(c => c.id === cId ? { ...c, followups: (c.followups || []).filter(f => f.id !== fId) } : c) });
+  }
+
+  function badgeColor(v) {
+    if (v === "Sim" || v === "Conhece bem") return FUP_C.green;
+    if (v === "Não" || v === "Não conhecia") return FUP_C.red;
+    return FUP_C.yellow;
+  }
 
   const total = contatos.length;
   const indicariam = contatos.filter(c => c.indicariaESG === "Sim").length;
   const aceitam = contatos.filter(c => c.aceitaVisita === "Sim").length;
+  const txVisita = total > 0 ? Math.round(aceitam / total * 100) : 0;
+  const avancaram = contatos.filter(c => (c.followups || []).some(f => f.sla === "D+45" && !f.syncedFromVisitas)).length;
+  const syncCount = contatos.reduce((a, c) => a + (c.followups || []).filter(f => f.syncedFromVisitas).length, 0);
 
-  function salvar() {
-    const novo = { ...form, id: fupUid(), followups: [], criadoEm: new Date().toISOString().slice(0,10) };
-    onChange({ ...data, contatos: [...contatos, novo] });
-    setModal(false);
-    setForm({ nome: "", crm: "", cidade: "", conheceESG: "Ouviu falar", indicariaESG: "Talvez", aceitaVisita: "Sim", obs: "" });
-  }
-
-  function remover(id) {
-    onChange({ ...data, contatos: contatos.filter(c => c.id !== id) });
-  }
+  const slaSummary = SLA_STEPS.map(step => {
+    const count = contatos.filter(c => (c.followups || []).some(f => f.sla === step.key && !f.syncedFromVisitas)).length;
+    const atrasados = contatos.filter(c => {
+      const base = resumo.data || c.criadoEm || today;
+      const prazo = addDays(base, step.dias);
+      const cumprido = (c.followups || []).some(f => f.sla === step.key && !f.syncedFromVisitas);
+      return !cumprido && prazo && today > prazo;
+    }).length;
+    return { ...step, count, atrasados };
+  });
 
   const inp = { width: "100%", background: "#0A0F14", border: `1px solid ${FUP_C.border}`, borderRadius: 6, padding: "7px 10px", color: FUP_C.text, fontSize: 13, boxSizing: "border-box", fontFamily: "inherit" };
 
   return (
     <div>
+      {/* KPIs */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 20 }}>
         <FupKPICard label="Contatos" value={total} icon="🤝" sub="Meta: 25" />
+        <FupKPICard label="Nunca viram ESG" value={contatos.filter(c => c.conheceESG === "Não conhecia").length} icon="🆕" color={FUP_C.yellow} sub={total > 0 ? Math.round(contatos.filter(c => c.conheceESG === "Não conhecia").length / total * 100) + "% do total" : "—"} />
         <FupKPICard label="Indicariam ESG" value={indicariam} icon="✅" color={FUP_C.green} sub="Meta: 8+" />
-        <FupKPICard label="Aceitam visita" value={`${aceitam} (${total > 0 ? Math.round(aceitam/total*100) : 0}%)`} icon="📅" color={FUP_C.yellow} sub="Meta: 40%" />
+        <FupKPICard label="Aceitam visita" value={`${aceitam} (${txVisita}%)`} icon="📅" color={txVisita >= 40 ? FUP_C.green : FUP_C.yellow} sub="Meta: 40%" />
+        <FupKPICard label="Avançaram D+45" value={avancaram} icon="🚀" color={FUP_C.green} sub="Treino/Indicação" />
+        <FupKPICard label="Visitas sync" value={syncCount} icon="🔄" color={FUP_C.teal} sub="da aba Visitas" />
       </div>
 
-      {resumo.data && (
-        <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 10, padding: "12px 16px", marginBottom: 14, fontSize: 13 }}>
-          <span style={{ color: FUP_C.textMuted }}>📋 {resumo.data} · {resumo.local || "—"} · Speaker: {resumo.speaker || "—"}</span>
+      {/* SLA grid */}
+      <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: "14px 18px", marginBottom: 14 }}>
+        <div style={{ fontSize: 11, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>📊 SLAs de Follow-up</div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(110px,1fr))", gap: 8 }}>
+          {slaSummary.map(s => {
+            const pct = total > 0 ? Math.round(s.count / total * 100) : 0;
+            return (
+              <div key={s.key} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "10px 12px", border: `1px solid ${s.atrasados > 0 ? "#EF444433" : FUP_C.border}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: FUP_C.textMuted }}>{s.key}</span>
+                  {s.atrasados > 0 && <span style={{ background: "#EF444422", color: "#EF4444", borderRadius: 10, padding: "1px 6px", fontSize: 9, fontWeight: 700 }}>{s.atrasados}!</span>}
+                </div>
+                <div style={{ fontSize: 10, color: FUP_C.textDim, marginBottom: 6 }}>{s.label}</div>
+                <div style={{ background: "rgba(255,255,255,0.06)", borderRadius: 4, height: 4, marginBottom: 4 }}>
+                  <div style={{ width: `${pct}%`, height: 4, borderRadius: 4, background: pct >= 80 ? FUP_C.green : pct >= 40 ? FUP_C.yellow : FUP_C.teal }} />
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11 }}>
+                  <span style={{ color: FUP_C.green, fontWeight: 700 }}>{s.count} ✓</span>
+                  <span style={{ color: FUP_C.textMuted }}>{pct}%</span>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      )}
-
-      <div style={{ marginBottom: 14 }}>
-        <FupBtn onClick={() => setModal(true)}>+ Adicionar Contato</FupBtn>
+        {!resumo.data && <div style={{ marginTop: 8, fontSize: 11, color: FUP_C.yellow }}>⚠ Defina a data do congresso no Resumo para calcular os prazos.</div>}
       </div>
 
+      {/* Resumo */}
+      <div style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: "12px 16px", marginBottom: 14 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span style={{ fontWeight: 700, fontSize: 13 }}>📋 Resumo do Congresso</span>
+          <button onClick={() => { setResumoForm({ data: "", local: "", speaker: "", auditorio: "", engajamento: "", casoAoVivo: "", obs: "", ...resumo }); setResumoModal(true); }} style={{ background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 6, padding: "4px 12px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>Editar</button>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 8, fontSize: 12 }}>
+          {[["Data", resumo.data], ["Local", resumo.local], ["Speaker", resumo.speaker], ["Auditório", resumo.auditorio], ["Engajamento", resumo.engajamento], ["Caso ao vivo", resumo.casoAoVivo]].map(([label, val]) => (
+            <div key={label} style={{ background: "rgba(255,255,255,0.03)", borderRadius: 6, padding: "7px 10px" }}>
+              <div style={{ color: FUP_C.textMuted, fontSize: 10, marginBottom: 2 }}>{label}</div>
+              <div style={{ color: FUP_C.text, fontWeight: 600 }}>{val || "—"}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Ações */}
+      <div style={{ marginBottom: 12 }}>
+        <FupBtn onClick={() => setContatoModal(true)}>+ Adicionar Contato</FupBtn>
+      </div>
+      <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 14 }}>🔄 Visitas registradas na aba Visitas são sincronizadas automaticamente.</div>
+
+      {/* Lista de contatos */}
       {contatos.length === 0 ? (
         <div style={{ textAlign: "center", padding: "32px 20px", color: FUP_C.textDim, fontSize: 13, background: FUP_C.card, borderRadius: 12, border: `1px dashed ${FUP_C.border}` }}>
           Nenhum contato registrado. Adicione os médicos abordados no congresso.
         </div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {contatos.map(c => (
-            <div key={c.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 10, padding: "12px 15px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <div>
-                <div style={{ fontWeight: 700, fontSize: 14 }}>{c.nome}</div>
-                <div style={{ fontSize: 11, color: FUP_C.textMuted, marginTop: 2 }}>{c.cidade}{c.crm ? ` · CRM ${c.crm}` : ""}</div>
-                <div style={{ display: "flex", gap: 6, marginTop: 6, flexWrap: "wrap" }}>
-                  {[
-                    { label: `ESG: ${c.conheceESG}`, color: c.conheceESG === "Conhece bem" ? FUP_C.green : c.conheceESG === "Não conhecia" ? FUP_C.red : FUP_C.yellow },
-                    { label: `Indicaria: ${c.indicariaESG}`, color: c.indicariaESG === "Sim" ? FUP_C.green : c.indicariaESG === "Não" ? FUP_C.red : FUP_C.yellow },
-                    { label: `Visita: ${c.aceitaVisita}`, color: c.aceitaVisita === "Sim" ? FUP_C.green : c.aceitaVisita === "Não" ? FUP_C.red : FUP_C.yellow },
-                  ].map(b => (
-                    <span key={b.label} style={{ background: b.color + "22", color: b.color, border: `1px solid ${b.color}44`, borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{b.label}</span>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {contatos.map(c => {
+            const slaStatus = getSlaStatus(c);
+            const temAtrasado = slaStatus.some(s => s.atrasado);
+            const fupsManuais = (c.followups || []).filter(f => !f.syncedFromVisitas);
+            const fupsSync = (c.followups || []).filter(f => f.syncedFromVisitas);
+            return (
+              <div key={c.id} style={{ background: FUP_C.card, border: `1px solid ${temAtrasado ? "#EF444433" : FUP_C.border}`, borderRadius: 12, overflow: "hidden" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "13px 15px" }}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 2 }}>{c.nome}</div>
+                    <div style={{ fontSize: 11, color: FUP_C.textMuted }}>{c.cidade}{c.crm ? ` · CRM ${c.crm}` : ""}</div>
+                    <div style={{ display: "flex", gap: 6, marginTop: 7, flexWrap: "wrap" }}>
+                      {[["ESG: " + c.conheceESG, badgeColor(c.conheceESG)], ["Indicaria: " + c.indicariaESG, badgeColor(c.indicariaESG)], ["Visita: " + c.aceitaVisita, badgeColor(c.aceitaVisita)]].map(([label, color]) => (
+                        <span key={label} style={{ background: color + "22", color, border: `1px solid ${color}44`, borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>{label}</span>
+                      ))}
+                      {fupsSync.length > 0 && <span style={{ background: FUP_C.teal + "22", color: FUP_C.teal, border: `1px solid ${FUP_C.teal}44`, borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 600 }}>🔄 {fupsSync.length} sync</span>}
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 5, marginLeft: 10 }}>
+                    <button onClick={() => { setFupModal(c.id); setFupForm({ data: today, tipo: "WhatsApp", sla: "D+1", obs: "" }); }} style={{ background: "#1E3A5F", color: FUP_C.teal, border: "none", borderRadius: 6, padding: "5px 10px", fontSize: 11, cursor: "pointer", fontWeight: 600 }}>+ FUP</button>
+                    <button onClick={() => removerContato(c.id)} style={{ background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "none", borderRadius: 6, padding: "5px 8px", fontSize: 12, cursor: "pointer" }}>🗑</button>
+                  </div>
+                </div>
+                {/* SLA pills */}
+                <div style={{ borderTop: `1px solid ${FUP_C.border}`, padding: "9px 15px", background: "rgba(0,0,0,0.12)", display: "flex", gap: 5, flexWrap: "wrap" }}>
+                  {slaStatus.map(s => (
+                    <span key={s.key} title={`Prazo: ${s.prazo || "—"} · ${s.label}`} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, fontSize: 11, fontWeight: 600, background: s.cumprido ? FUP_C.green + "22" : s.atrasado ? "#EF444422" : "rgba(255,255,255,0.05)", border: `1px solid ${s.cumprido ? FUP_C.green + "55" : s.atrasado ? "#EF444455" : FUP_C.border}`, color: s.cumprido ? FUP_C.green : s.atrasado ? "#EF4444" : FUP_C.textMuted }}>
+                      {s.cumprido ? "✓" : s.atrasado ? "!" : "○"} {s.key}
+                      {s.prazo && !s.cumprido && <span style={{ fontSize: 9, opacity: 0.7 }}>{s.prazo.slice(5)}</span>}
+                    </span>
                   ))}
                 </div>
-                {c.obs && <div style={{ fontSize: 11, color: FUP_C.textMuted, marginTop: 4, fontStyle: "italic" }}>{c.obs}</div>}
+                {/* FUPs manuais */}
+                {fupsManuais.length > 0 && (
+                  <div style={{ borderTop: `1px solid ${FUP_C.border}`, padding: "9px 15px" }}>
+                    <div style={{ fontSize: 10, color: FUP_C.textMuted, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>Follow-ups</div>
+                    {fupsManuais.map(f => (
+                      <div key={f.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#0A0F14", borderRadius: 8, padding: "7px 10px", marginBottom: 4 }}>
+                        <div>
+                          <div style={{ display: "flex", gap: 6, alignItems: "center", marginBottom: 2 }}>
+                            <span style={{ fontSize: 11, color: FUP_C.textMuted }}>{f.data} · {f.tipo}</span>
+                            {f.sla && <span style={{ background: FUP_C.teal + "22", color: FUP_C.teal, borderRadius: 10, padding: "1px 6px", fontSize: 9, fontWeight: 700 }}>{f.sla}</span>}
+                          </div>
+                          <div style={{ fontSize: 12, color: FUP_C.text }}>{f.obs}</div>
+                        </div>
+                        <button onClick={() => removerFup(c.id, f.id)} style={{ background: "none", color: "#EF4444", border: "none", cursor: "pointer", fontSize: 14, marginLeft: 8 }}>×</button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {/* Visitas sync */}
+                {fupsSync.length > 0 && (
+                  <div style={{ borderTop: `1px solid ${FUP_C.border}`, padding: "9px 15px", background: "rgba(0,190,204,0.04)" }}>
+                    <div style={{ fontSize: 10, color: FUP_C.teal, fontWeight: 700, textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}>🔄 Visitas sincronizadas</div>
+                    {fupsSync.map(f => (
+                      <div key={f.id} style={{ background: "#0A0F14", borderRadius: 8, padding: "7px 10px", marginBottom: 4, borderLeft: `2px solid ${FUP_C.teal}` }}>
+                        <span style={{ fontSize: 11, color: FUP_C.textMuted }}>{f.data} · {f.tipo}</span>
+                        {f.obs && <div style={{ fontSize: 12, color: FUP_C.text, marginTop: 2 }}>{f.obs}</div>}
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {c.obs && <div style={{ padding: "5px 15px 10px", fontSize: 11, color: FUP_C.textMuted, fontStyle: "italic" }}>Obs: {c.obs}</div>}
               </div>
-              <button onClick={() => remover(c.id)} style={{ background: "rgba(239,68,68,0.1)", color: "#EF4444", border: "none", borderRadius: 6, padding: "4px 8px", fontSize: 12, cursor: "pointer", marginLeft: 10 }}>🗑</button>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
-      {modal && (
+      {/* Modal: Add contato */}
+      {contatoModal && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
           <div style={{ background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, border: `1px solid ${FUP_C.border}`, maxHeight: "90vh", overflowY: "auto" }}>
             <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Novo Contato — Metabólica Pantanal</div>
             {[["Nome completo","nome"],["CRM","crm"],["Cidade","cidade"]].map(([label, key]) => (
               <div key={key} style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>{label}</div>
-                <input value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} style={inp} />
+                <input value={contatoForm[key]} onChange={e => setContatoForm(p => ({ ...p, [key]: e.target.value }))} style={inp} />
               </div>
             ))}
-            {[
-              ["Conhece ESG?","conheceESG",["Conhece bem","Ouviu falar","Não conhecia"]],
-              ["Indicaria ESG?","indicariaESG",["Sim","Talvez","Não"]],
-              ["Aceita visita?","aceitaVisita",["Sim","Talvez","Não"]],
-            ].map(([label, key, opts]) => (
+            {[["Conhece ESG?","conheceESG",["Conhece bem","Ouviu falar","Não conhecia"]],["Indicaria ESG?","indicariaESG",["Sim","Talvez","Não"]],["Aceita visita?","aceitaVisita",["Sim","Talvez","Não"]]].map(([label, key, opts]) => (
               <div key={key} style={{ marginBottom: 10 }}>
                 <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>{label}</div>
-                <select value={form[key]} onChange={e => setForm(p => ({ ...p, [key]: e.target.value }))} style={inp}>
+                <select value={contatoForm[key]} onChange={e => setContatoForm(p => ({ ...p, [key]: e.target.value }))} style={inp}>
                   {opts.map(o => <option key={o}>{o}</option>)}
                 </select>
               </div>
             ))}
             <div style={{ marginBottom: 16 }}>
               <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>Observações</div>
-              <textarea value={form.obs} onChange={e => setForm(p => ({ ...p, obs: e.target.value }))} rows={2} style={{ ...inp, resize: "vertical" }} />
+              <textarea value={contatoForm.obs} onChange={e => setContatoForm(p => ({ ...p, obs: e.target.value }))} rows={2} style={{ ...inp, resize: "vertical" }} />
             </div>
             <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-              <button onClick={() => setModal(false)} style={{ background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" }}>Cancelar</button>
-              <button onClick={salvar} disabled={!form.nome} style={{ background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer", opacity: form.nome ? 1 : 0.5 }}>Salvar</button>
+              <button onClick={() => setContatoModal(false)} style={{ background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={salvarContato} disabled={!contatoForm.nome} style={{ background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer", opacity: contatoForm.nome ? 1 : 0.5 }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Add FUP */}
+      {fupModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
+          <div style={{ background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 420, border: `1px solid ${FUP_C.border}` }}>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Registrar Follow-up</div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>Etapa SLA</div>
+              <select value={fupForm.sla} onChange={e => setFupForm(p => ({ ...p, sla: e.target.value }))} style={inp}>
+                {SLA_STEPS.map(s => <option key={s.key} value={s.key}>{s.key} — {s.label}</option>)}
+              </select>
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>Data</div>
+              <input type="date" value={fupForm.data} onChange={e => setFupForm(p => ({ ...p, data: e.target.value }))} style={inp} />
+            </div>
+            <div style={{ marginBottom: 10 }}>
+              <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>Tipo</div>
+              <select value={fupForm.tipo} onChange={e => setFupForm(p => ({ ...p, tipo: e.target.value }))} style={inp}>
+                {["WhatsApp","Contato telefônico","E-mail","Visita presencial","Reunião online"].map(o => <option key={o}>{o}</option>)}
+              </select>
+            </div>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>Observações</div>
+              <textarea value={fupForm.obs} onChange={e => setFupForm(p => ({ ...p, obs: e.target.value }))} rows={3} style={{ ...inp, resize: "vertical" }} />
+            </div>
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+              <button onClick={() => setFupModal(null)} style={{ background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={salvarFup} style={{ background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer" }}>Salvar</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Resumo */}
+      {resumoModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.75)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 1000, padding: 16 }}>
+          <div style={{ background: "#1A2535", borderRadius: 14, padding: 24, width: "100%", maxWidth: 440, border: `1px solid ${FUP_C.border}`, maxHeight: "90vh", overflowY: "auto" }}>
+            <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 16 }}>Resumo do Congresso</div>
+            {[["Data (YYYY-MM-DD)","data"],["Local / cidade","local"],["Speaker","speaker"],["Auditório","auditorio"],["Engajamento (Alto/Médio/Baixo)","engajamento"],["Caso ao vivo","casoAoVivo"],["Obs","obs"]].map(([label, key]) => (
+              <div key={key} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 11, color: FUP_C.textMuted, marginBottom: 4 }}>{label}</div>
+                <input value={resumoForm[key] || ""} onChange={e => setResumoForm(p => ({ ...p, [key]: e.target.value }))} style={inp} />
+              </div>
+            ))}
+            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", marginTop: 6 }}>
+              <button onClick={() => setResumoModal(false)} style={{ background: "rgba(255,255,255,0.07)", color: FUP_C.text, border: "none", borderRadius: 8, padding: "8px 16px", cursor: "pointer" }}>Cancelar</button>
+              <button onClick={salvarResumo} style={{ background: FUP_C.teal, color: "#fff", border: "none", borderRadius: 8, padding: "8px 20px", fontWeight: 600, cursor: "pointer" }}>Salvar</button>
             </div>
           </div>
         </div>
