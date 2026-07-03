@@ -798,6 +798,9 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : (visita.leao_plus_abordado || ""),
     leao_plus_status: visita.leao_plus_status || "",
+    pilar_glp1_esg: !!visita.pilar_glp1_esg,
+    pilar_ancoragem: !!visita.pilar_ancoragem,
+    pilar_crm: !!visita.pilar_crm,
     acao_prevista: visita.acao_prevista || "",
     obs: visita.obs || "",
   });
@@ -813,7 +816,9 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     proc_realizados_esg: visita.proc_realizados_esg ?? "", baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
-    leao_plus_status: visita.leao_plus_status || "", acao_prevista: visita.acao_prevista || "", obs: visita.obs || "",
+    leao_plus_status: visita.leao_plus_status || "",
+    pilar_glp1_esg: !!visita.pilar_glp1_esg, pilar_ancoragem: !!visita.pilar_ancoragem, pilar_crm: !!visita.pilar_crm,
+    acao_prevista: visita.acao_prevista || "", obs: visita.obs || "",
   }); };
   const salvar = async () => {
     setSalvando(true);
@@ -837,6 +842,9 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
       leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : (form.leao_plus_abordado || null),
       leao_plus_status: form.leao_plus_status || null,
+      pilar_glp1_esg: !!form.pilar_glp1_esg,
+      pilar_ancoragem: !!form.pilar_ancoragem,
+      pilar_crm: !!form.pilar_crm,
       acao_prevista: form.acao_prevista || null,
       obs: form.obs || null,
     };
@@ -926,6 +934,23 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
               <option value="adocao_ativa">✅ Adoção ativa — usa com pacientes</option>
             </select>
           </div>
+          <div className="form-group">
+            <label className="form-label">🎯 3 Pilares ESG — Checklist da Visita</label>
+            <div style={{display:"flex",flexDirection:"column",gap:6,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:10}}>
+              <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,cursor:"pointer"}}>
+                <input type="checkbox" checked={form.pilar_glp1_esg} onChange={e=>set("pilar_glp1_esg",e.target.checked)}/>
+                Trabalhou reativação GLP-1 → ESG (pacientes em platô/descontinuados)
+              </label>
+              <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,cursor:"pointer"}}>
+                <input type="checkbox" checked={form.pilar_ancoragem} onChange={e=>set("pilar_ancoragem",e.target.checked)}/>
+                Reforçou ancoragem de ESG em toda consulta
+              </label>
+              <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,cursor:"pointer"}}>
+                <input type="checkbox" checked={form.pilar_crm} onChange={e=>set("pilar_crm",e.target.checked)}/>
+                Verificou/trabalhou o CRM (base parada, pacientes sem contato)
+              </label>
+            </div>
+          </div>
         </div>
 
         <div style={{marginBottom:8}}>
@@ -1011,6 +1036,9 @@ function Visitas() {
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
       leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : (form.leao_plus_abordado || null),
       leao_plus_status: form.leao_plus_status || null,
+      pilar_glp1_esg: !!form.pilar_glp1_esg,
+      pilar_ancoragem: !!form.pilar_ancoragem,
+      pilar_crm: !!form.pilar_crm,
     };
     const { error } = await supabaseClient.from("visitas").insert([payload]);
     if (error) { alert("Erro ao salvar: " + error.message); return; }
@@ -1134,6 +1162,9 @@ function VisitaModal({ medicos, onSave, onClose }) {
     proc_realizados_esg: "",
     leao_plus_abordado: "",
     leao_plus_status: "",
+    pilar_glp1_esg: false,
+    pilar_ancoragem: false,
+    pilar_crm: false,
   });
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
   return (
@@ -1266,6 +1297,23 @@ function VisitaModal({ medicos, onSave, onClose }) {
               <option value="em_avaliacao">Em avaliação — médico está considerando</option>
               <option value="adocao_ativa">✅ Adoção ativa — usa com pacientes</option>
             </select>
+          </div>
+          <div className="form-group form-full" style={{borderTop:"1px solid var(--border)",paddingTop:12,marginTop:4}}>
+            <label className="form-label">🎯 3 Pilares ESG — Checklist da Visita</label>
+            <div style={{display:"flex",flexDirection:"column",gap:6,background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:10}}>
+              <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,cursor:"pointer"}}>
+                <input type="checkbox" checked={form.pilar_glp1_esg} onChange={e=>set("pilar_glp1_esg",e.target.checked)}/>
+                Trabalhou reativação GLP-1 → ESG (pacientes em platô/descontinuados)
+              </label>
+              <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,cursor:"pointer"}}>
+                <input type="checkbox" checked={form.pilar_ancoragem} onChange={e=>set("pilar_ancoragem",e.target.checked)}/>
+                Reforçou ancoragem de ESG em toda consulta
+              </label>
+              <label style={{display:"flex",alignItems:"center",gap:8,fontSize:12.5,cursor:"pointer"}}>
+                <input type="checkbox" checked={form.pilar_crm} onChange={e=>set("pilar_crm",e.target.checked)}/>
+                Verificou/trabalhou o CRM (base parada, pacientes sem contato)
+              </label>
+            </div>
           </div>
           <div className="form-group form-full">
             <label className="form-label">Suporte Marketing?</label>
@@ -2208,7 +2256,106 @@ const nomesBatem = (a, b) => {
   const spb = sb.split(" ").slice(0,2).join(" ");
   return spa === spb && spa.length > 4;
 };
-// ─── VISITA EXPANDÍVEL ────────────────────────────────────────────────────
+// ─── SCORE DE SAÚDE DA CONTA (versão global, reaproveitada pelo Plano de Conta) ──
+// Espelha a lógica de calcScore() dentro de PhysicianHealthScore. Mantida separada
+// e autocontida para não alterar o comportamento já validado da aba Saúde da Conta.
+function calcHealthScoreGlobal(medico, visitas, calcGeoScoreFn, fupData) {
+  const now = new Date();
+  const cutoff90 = new Date(now); cutoff90.setDate(now.getDate() - 90);
+  const cutoffPrev = new Date(now); cutoffPrev.setDate(now.getDate() - 180);
+
+  const visMed = visitas.filter(v => nomesBatem(v.medico_nome, medico.nome));
+  const vis90  = visMed.filter(v => new Date(v.data_contato) >= cutoff90);
+  const visPrev = visMed.filter(v => new Date(v.data_contato) >= cutoffPrev && new Date(v.data_contato) < cutoff90);
+
+  const esgAtual  = vis90.reduce((s, v) => s + (Number(v.proc_realizados_esg) || 0), 0);
+  const esgAnterior = visPrev.reduce((s, v) => s + (Number(v.proc_realizados_esg) || 0), 0);
+
+  const scoreEsg = Math.min(100, esgAtual * 10);
+  let scoreTrend = 50;
+  if (esgAnterior > 0) {
+    const delta = (esgAtual - esgAnterior) / esgAnterior;
+    scoreTrend = delta >= 0.1 ? 90 : delta >= -0.1 ? 60 : 20;
+  } else if (esgAtual > 0) {
+    scoreTrend = 70;
+  }
+  const dimProc = esgAtual === 0 ? 0 : Math.round((scoreEsg * 0.8 + scoreTrend * 0.2));
+
+  const visitas90Count = vis90.length;
+  const diasUltimaVisita = visMed.length > 0
+    ? Math.floor((now - new Date([...visMed].sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato))[0].data_contato)) / 86400000)
+    : 999;
+
+  const tier = String(medico.tier || "");
+  const CADENCIA = {
+    "ST": { min: 3, ideal: 4, max: Infinity },
+    "1":  { min: 2, ideal: 3, max: 4 },
+    "2":  { min: 1, ideal: 2, max: 3 },
+    "3":  { min: 1, ideal: 2, max: 3 },
+    "4":  { min: 1, ideal: 1, max: 2 },
+    "5":  { min: 1, ideal: 1, max: 2 },
+  };
+  const cad = CADENCIA[tier] || { min: 1, ideal: 2, max: 3 };
+  const v = visitas90Count;
+
+  let dimEng;
+  if (v === 0) { dimEng = 0; }
+  else if (tier === "ST") { dimEng = v >= cad.ideal ? 100 : Math.round((v / cad.ideal) * 80); }
+  else if (v < cad.min) { dimEng = Math.round((v / cad.min) * 60); }
+  else if (v <= cad.ideal) { dimEng = Math.round(70 + ((v - cad.min) / (cad.ideal - cad.min)) * 30); }
+  else { dimEng = 100; }
+
+  const overVisiting = cad.max !== Infinity && v > cad.max;
+  const subVisita = v < cad.min && v > 0;
+
+  const geoResult = calcGeoScoreFn ? calcGeoScoreFn(medico.nome) : null;
+  let dimGeo, geoSemDados = false;
+  if (geoResult && !geoResult.semRegistros) { dimGeo = geoResult.pct; }
+  else if (medico.geo_score != null) { dimGeo = Math.round((medico.geo_score / 3) * 100); }
+  else { dimGeo = null; geoSemDados = true; }
+
+  const isProctor = !!medico.is_proctor;
+  const vis3 = visMed.slice(0, 3);
+  const leaoAtivo = vis3.filter(v2 => v2.leao_plus_abordado === "adocao_ativa").length;
+  const leaoEvol  = vis3.filter(v2 => v2.leao_plus_abordado === "em_avaliacao").length;
+  const scoreLeao = vis3.length === 0 ? 0 : leaoAtivo >= 2 ? 100 : leaoAtivo === 1 ? 70 : leaoEvol >= 1 ? 35 : 0;
+  const temEvento = fupData ? (
+    (fupData.cursoBariatricos?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
+    (fupData.cursoEndoscopistas?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
+    (fupData.imersaoMarketing?.medicos||[]).some(m2 => nomesBatem(m2.nome, medico.nome)) ||
+    (fupData.aulasReferidores?.eventos||[]).some(e => nomesBatem(e.medico, medico.nome)) ||
+    (fupData.esgDay||[]).some(e => nomesBatem(e.medico, medico.nome) || nomesBatem(e.clinica, medico.nome))
+  ) : false;
+  const scoreEvento = temEvento ? 100 : 0;
+  const dimAdocao = Math.round((isProctor ? 100 : 0) * 0.50 + scoreLeao * 0.30 + scoreEvento * 0.20);
+
+  const _proc = isNaN(dimProc) ? 0 : dimProc;
+  const _eng  = isNaN(dimEng)  ? 0 : dimEng;
+  const _geo  = isNaN(dimGeo)  ? 0 : (dimGeo || 0);
+  const _adoc = isNaN(dimAdocao) ? 0 : dimAdocao;
+  const total = esgAtual === 0 ? 0 : (geoSemDados
+    ? Math.round(_proc * 0.50 + _eng * 0.35 + _adoc * 0.15)
+    : Math.round(_proc * 0.40 + _eng * 0.30 + _geo  * 0.20 + _adoc * 0.10));
+
+  // Últimos 3 registros do checklist de 3 pilares (mais recentes primeiro)
+  const vis3Pilares = [...visMed].sort((a,b) => new Date(b.data_contato)-new Date(a.data_contato)).slice(0,3);
+  const pilares = {
+    glp1_esg:   vis3Pilares.some(v2 => v2.pilar_glp1_esg),
+    ancoragem:  vis3Pilares.some(v2 => v2.pilar_ancoragem),
+    crm:        vis3Pilares.some(v2 => v2.pilar_crm),
+    ultimaData: vis3Pilares[0]?.data_contato || null,
+  };
+
+  return {
+    total,
+    dims: { procedimentos: dimProc, engajamento: dimEng, digital: dimGeo, adocao: dimAdocao },
+    raw: { esgAtual, esgAnterior, visitas90Count, diasUltimaVisita, tier,
+           cadMin: cad.min, cadIdeal: cad.ideal, cadMax: cad.max === Infinity ? "∞" : cad.max,
+           overVisiting, subVisita, geoSemDados },
+    pilares,
+  };
+}
+
 function VisitaExpandivel({ v }) {
   const [expandido, setExpandido] = React.useState(false);
   const temConteudo = v.obs || v.acao_prevista || v.proc_marcados_esg || v.proc_realizados_esg;
@@ -4606,6 +4753,207 @@ async function fetchGeoTrack(table, order = null) {
   }
 }
 
+// ─── PLANO DE CONTA — Segmentação, STEP, SLA, Pilares e KPIs por médico ────
+const PLANO_C = {
+  navy: "#0A3D4A", teal: "#00879E", tealLight: "#5FB8C9",
+  gold: "#C9A84C", amber: "#F0A500",
+  green: "#00C896", warn: "#F5A623", red: "#E8445A",
+  surface: "var(--surface)", surface2: "var(--surface2)",
+  border: "var(--border)", muted: "var(--muted)", text: "var(--text)",
+};
+
+function classificarConta(score) {
+  const t = score.total, eng = score.dims.engajamento;
+  if (t >= 70) return "pronta";
+  if (eng < 50) return "estruturacao";
+  if (t >= 40) return "medio_prazo";
+  return "baixo_potencial";
+}
+const CLASSIF_INFO = {
+  pronta:          { label: "Pronta para ativação",        color: PLANO_C.green, acao: "Executar Tração e Escala imediatamente." },
+  estruturacao:    { label: "Dependente de estruturação",  color: PLANO_C.teal,  acao: "Priorizar diagnóstico dos 3 pilares e cobertura de visitas." },
+  medio_prazo:     { label: "Oportunidade de médio prazo", color: PLANO_C.gold,  acao: "Acompanhamento leve, reavaliar em 1 trimestre." },
+  baixo_potencial: { label: "Baixo potencial atual",       color: PLANO_C.muted, acao: "Manter relacionamento, sem investimento pesado." },
+};
+
+function faseStep(score) {
+  if (score.raw.visitas90Count === 0 || score.dims.engajamento < 40) return "segmentacao";
+  if (score.raw.esgAtual === 0 || score.total < 55) return "tracao";
+  if (score.total < 85) return "escala";
+  return "perpetuacao";
+}
+const STEP_INFO = {
+  segmentacao:  { n: "1", label: "Segmentação",  foco: "Diagnosticar a conta: cobertura de visitas e situação real dos 3 pilares." },
+  tracao:       { n: "2", label: "Tração",       foco: "Ativar os 3 pilares — sobretudo reativação GLP-1 → ESG na base." },
+  escala:       { n: "3", label: "Escala",       foco: "Ampliar o que já funciona: referenciadores e conversão." },
+  perpetuacao:  { n: "4", label: "Perpetuação",  foco: "Manter cadência e revisar a conta trimestralmente." },
+};
+
+function PlanoDeConta() {
+  const { data: medicos, loading: loadMed } = useSupabase("perfil_medico");
+  const { data: todasVisitas, loading: loadVis } = useSupabase("visitas");
+  const [fupData, setFupData] = React.useState(null);
+  const [filterFase, setFilterFase] = React.useState("all");
+  const [filterClass, setFilterClass] = React.useState("all");
+  const [search, setSearch] = React.useState("");
+  const [expandido, setExpandido] = React.useState(null);
+
+  React.useEffect(() => {
+    if (supabaseClient) {
+      supabaseClient.from("fup_projetos").select("data").eq("id","shared").single()
+        .then(({ data }) => { if (data?.data) setFupData(data.data); });
+    }
+  }, []);
+
+  const contas = React.useMemo(() => {
+    if (!medicos || !todasVisitas) return [];
+    return medicos.map(m => {
+      const score = calcHealthScoreGlobal(m, todasVisitas, null, fupData);
+      const classif = classificarConta(score);
+      const fase = faseStep(score);
+      const acoes = [];
+      if (score.raw.subVisita) acoes.push(`Cobertura abaixo do SLA — ${score.raw.visitas90Count} visita(s) para Tier ${score.raw.tier || "—"} (mín ${score.raw.cadMin})`);
+      if (score.raw.overVisiting) acoes.push(`Over-visiting — ${score.raw.visitas90Count} visitas (máx ${score.raw.cadMax})`);
+      if (!score.pilares.glp1_esg) acoes.push("Pilar 1 pendente: trabalhar reativação GLP-1 → ESG na próxima visita");
+      if (!score.pilares.ancoragem) acoes.push("Pilar 2 pendente: reforçar ancoragem de ESG em consulta");
+      if (!score.pilares.crm) acoes.push("Pilar 3 pendente: verificar CRM / base parada");
+      if (score.raw.diasUltimaVisita > 45) acoes.push(`Sem visita há ${score.raw.diasUltimaVisita} dias`);
+      return { medico: m, score, classif, fase, acoes };
+    }).sort((a,b) => a.score.total - b.score.total); // piores primeiro = prioridade
+  }, [medicos, todasVisitas, fupData]);
+
+  const filtradas = contas.filter(c => {
+    if (filterFase !== "all" && c.fase !== filterFase) return false;
+    if (filterClass !== "all" && c.classif !== filterClass) return false;
+    if (search && !c.medico.nome?.toLowerCase().includes(search.toLowerCase())) return false;
+    return true;
+  });
+
+  // KPIs agregados
+  const kpi = React.useMemo(() => {
+    const total = contas.length || 1;
+    const porFase = { segmentacao:0, tracao:0, escala:0, perpetuacao:0 };
+    const porClass = { pronta:0, estruturacao:0, medio_prazo:0, baixo_potencial:0 };
+    let dentroSla = 0, pilaresOk = 0;
+    contas.forEach(c => {
+      porFase[c.fase]++; porClass[c.classif]++;
+      if (!c.score.raw.subVisita && !c.score.raw.overVisiting) dentroSla++;
+      if (c.score.pilares.glp1_esg && c.score.pilares.ancoragem && c.score.pilares.crm) pilaresOk++;
+    });
+    return { total: contas.length, porFase, porClass,
+      pctSla: Math.round(dentroSla/total*100), pctPilares: Math.round(pilaresOk/total*100) };
+  }, [contas]);
+
+  if (loadMed || loadVis) return <div style={{padding:40,textAlign:"center",color:PLANO_C.muted}}>Carregando plano de conta...</div>;
+
+  return (
+    <div style={{padding:"20px 4px"}}>
+      <div style={{marginBottom:18}}>
+        <div style={{fontSize:20,fontWeight:700,color:PLANO_C.text}}>🗺 Plano de Conta</div>
+        <div style={{fontSize:12.5,color:PLANO_C.muted,marginTop:2}}>Segmentação, jornada STEP, SLA e pilares ESG por médico — priorizado pelos que precisam de atenção primeiro</div>
+      </div>
+
+      {/* KPIs agregados */}
+      <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}}>
+        {Object.entries(STEP_INFO).map(([k,info]) => (
+          <div key={k} style={{background:PLANO_C.surface,border:`1px solid ${PLANO_C.border}`,borderRadius:10,padding:"12px 14px"}}>
+            <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase",letterSpacing:.5}}>{info.n} · {info.label}</div>
+            <div style={{fontSize:24,fontWeight:700,color:PLANO_C.teal,marginTop:2}}>{kpi.porFase?.[k] ?? 0}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:20}}>
+        <div style={{background:PLANO_C.surface,border:`1px solid ${PLANO_C.border}`,borderRadius:10,padding:"12px 14px"}}>
+          <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase"}}>% de contas dentro do SLA de cobertura</div>
+          <div style={{fontSize:24,fontWeight:700,color:kpi.pctSla>=70?PLANO_C.green:PLANO_C.warn}}>{kpi.pctSla}%</div>
+        </div>
+        <div style={{background:PLANO_C.surface,border:`1px solid ${PLANO_C.border}`,borderRadius:10,padding:"12px 14px"}}>
+          <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase"}}>% com os 3 pilares trabalhados recentemente</div>
+          <div style={{fontSize:24,fontWeight:700,color:kpi.pctPilares>=70?PLANO_C.green:PLANO_C.warn}}>{kpi.pctPilares}%</div>
+        </div>
+      </div>
+
+      {/* Filtros */}
+      <div style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:16}}>
+        <input className="form-input" placeholder="Buscar médico..." value={search} onChange={e=>setSearch(e.target.value)} style={{maxWidth:220}}/>
+        <select className="form-select" value={filterFase} onChange={e=>setFilterFase(e.target.value)} style={{maxWidth:200}}>
+          <option value="all">Todas as fases STEP</option>
+          {Object.entries(STEP_INFO).map(([k,info]) => <option key={k} value={k}>{info.n} · {info.label}</option>)}
+        </select>
+        <select className="form-select" value={filterClass} onChange={e=>setFilterClass(e.target.value)} style={{maxWidth:220}}>
+          <option value="all">Todas as classificações</option>
+          {Object.entries(CLASSIF_INFO).map(([k,info]) => <option key={k} value={k}>{info.label}</option>)}
+        </select>
+      </div>
+
+      {/* Lista de contas */}
+      <div style={{display:"flex",flexDirection:"column",gap:10}}>
+        {filtradas.map(c => {
+          const isOpen = expandido === c.medico.id;
+          const stepInfo = STEP_INFO[c.fase];
+          const classInfo = CLASSIF_INFO[c.classif];
+          return (
+            <div key={c.medico.id} style={{background:PLANO_C.surface,border:`1px solid ${PLANO_C.border}`,borderRadius:10,overflow:"hidden"}}>
+              <div onClick={()=>setExpandido(isOpen?null:c.medico.id)} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 16px",cursor:"pointer"}}>
+                <div style={{width:34,height:34,borderRadius:8,background:classInfo.color+"22",color:classInfo.color,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:13,flexShrink:0}}>
+                  {c.score.total}
+                </div>
+                <div style={{flex:1,minWidth:0}}>
+                  <div style={{fontWeight:600,fontSize:13.5,color:PLANO_C.text,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{c.medico.nome}</div>
+                  <div style={{fontSize:11,color:PLANO_C.muted}}>Tier {c.medico.tier || "—"} · {c.acoes.length} ação(ões) pendente(s)</div>
+                </div>
+                <div style={{fontSize:10,fontWeight:700,color:PLANO_C.teal,background:PLANO_C.teal+"18",borderRadius:20,padding:"4px 10px",whiteSpace:"nowrap"}}>
+                  {stepInfo.n} · {stepInfo.label}
+                </div>
+                <div style={{fontSize:10,fontWeight:600,color:classInfo.color,background:classInfo.color+"18",borderRadius:20,padding:"4px 10px",whiteSpace:"nowrap",display:"none"}} className="hide-sm">
+                  {classInfo.label}
+                </div>
+                <div style={{color:PLANO_C.muted,fontSize:12}}>{isOpen ? "▲" : "▼"}</div>
+              </div>
+              {isOpen && (
+                <div style={{padding:"0 16px 16px",borderTop:`1px solid ${PLANO_C.border}`}}>
+                  <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:16,marginTop:14}}>
+                    <div>
+                      <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase",marginBottom:6}}>Classificação</div>
+                      <div style={{fontSize:13,fontWeight:600,color:classInfo.color,marginBottom:2}}>{classInfo.label}</div>
+                      <div style={{fontSize:11.5,color:PLANO_C.muted}}>{classInfo.acao}</div>
+                      <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase",margin:"12px 0 6px"}}>Foco da fase — {stepInfo.label}</div>
+                      <div style={{fontSize:11.5,color:PLANO_C.muted}}>{stepInfo.foco}</div>
+                      <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase",margin:"12px 0 6px"}}>SLA de cobertura (Tier {c.score.raw.tier||"—"})</div>
+                      <div style={{fontSize:11.5,color: c.score.raw.subVisita||c.score.raw.overVisiting ? PLANO_C.warn : PLANO_C.green}}>
+                        {c.score.raw.visitas90Count} visita(s) em 90d — mín {c.score.raw.cadMin}, ideal {c.score.raw.cadIdeal}, máx {c.score.raw.cadMax}
+                        {c.score.raw.subVisita && " — sub-cobertura"}
+                        {c.score.raw.overVisiting && " — over-visiting"}
+                      </div>
+                    </div>
+                    <div>
+                      <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase",marginBottom:6}}>3 Pilares ESG (últimas 3 visitas)</div>
+                      {[["glp1_esg","GLP-1 → ESG"],["ancoragem","Ancoragem na consulta"],["crm","CRM / base parada"]].map(([k,lbl]) => (
+                        <div key={k} style={{display:"flex",alignItems:"center",gap:8,fontSize:12,marginBottom:6}}>
+                          <span style={{color: c.score.pilares[k] ? PLANO_C.green : PLANO_C.red}}>{c.score.pilares[k] ? "✅" : "⬜"}</span>
+                          <span style={{color:PLANO_C.text}}>{lbl}</span>
+                        </div>
+                      ))}
+                      <div style={{fontSize:10,color:PLANO_C.muted,textTransform:"uppercase",margin:"12px 0 6px"}}>Ações prioritárias</div>
+                      {c.acoes.length === 0
+                        ? <div style={{fontSize:11.5,color:PLANO_C.green}}>✅ Nenhuma ação pendente no momento</div>
+                        : c.acoes.map((a,i) => <div key={i} style={{fontSize:11.5,color:PLANO_C.text,marginBottom:4}}>• {a}</div>)
+                      }
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+        {filtradas.length === 0 && (
+          <div style={{textAlign:"center",padding:40,color:PLANO_C.muted}}>Nenhuma conta encontrada com esses filtros.</div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function PhysicianHealthScore() {
   const { data: medicos, loading: loadMed } = useSupabase("perfil_medico");
   const { data: todasVisitas, loading: loadVis } = useSupabase("visitas");
@@ -5433,6 +5781,7 @@ const TABS = [
   { id:"fup", label:"FUP Projetos", icon:"📌" },
   { id:"feedbacks", label:"Feedbacks IA", icon:"💬" },
   { id:"phs", label:"Saúde da Conta", icon:"💚" },
+  { id:"plano", label:"Plano de Conta", icon:"🗺" },
 ];
 // ════════════════════════════════════════════════════════════════
 // FUP PROJETOS — ESG Intelligence Hub
@@ -8132,6 +8481,7 @@ function App() {
         {tab === "biblioteca"  && <Biblioteca />}
         {tab === "briefingIA"  && <BriefingIA />}
         {tab === "phs"        && <PhysicianHealthScore />}
+        {tab === "plano"      && <PlanoDeConta />}
       </main>
     </div>
   );
