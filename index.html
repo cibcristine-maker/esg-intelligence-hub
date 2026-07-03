@@ -6578,7 +6578,10 @@ function AulasReferidoresProject({ data, onChange }) {
                       <tbody>
                         {(ev.referidores||[]).map((r) => (
                           <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, fontWeight: 600 }}>{r.medico || "—"}</td>
+                            <td style={{ padding: "8px 10px", color: FUP_C.text, fontWeight: 600 }}>
+                              {r.medico || "—"}
+                              {r.obs && <div style={{ color: FUP_C.textMuted, fontWeight: 400, fontSize: 10.5, fontStyle: "italic", marginTop: 2 }}>{"💬 " + r.obs}</div>}
+                            </td>
                             <td style={{ padding: "8px 10px", color: FUP_C.textMuted }}>{r.especialidade || "—"}</td>
                             <td style={{ padding: "8px 10px" }}><FupPill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
                             <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{+r.indicacoesM1||0}</td>
