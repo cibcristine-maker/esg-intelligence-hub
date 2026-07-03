@@ -4795,6 +4795,65 @@ const STEP_INFO = {
   perpetuacao:  { n: "4", label: "Perpetuação",  foco: "Manter cadência e revisar a conta trimestralmente." },
 };
 
+function PlanoInfoBox() {
+  const [aberto, setAberto] = React.useState(false);
+  const fases = [
+    { n:"1", label:"Segmentação", criterio:"Zero visitas nos últimos 90 dias, ou cobertura de visitas abaixo de 40 pontos.",
+      explica:"Ainda não temos cobertura suficiente pra saber onde a conta está de verdade. Precisa ser diagnosticada antes de qualquer ação — o Account nem sabe a real situação dos 3 pilares porque não está indo lá com frequência mínima." },
+    { n:"2", label:"Tração", criterio:"Zero ESG realizado em 90 dias, ou score total abaixo de 55.",
+      explica:"Já tem alguma cobertura de visita, mas ainda não gera resultado consistente. É a fase de 'plantar' e destravar os primeiros procedimentos — onde o trabalho dos 3 pilares importa mais." },
+    { n:"3", label:"Escala", criterio:"Score total entre 55 e 85.",
+      explica:"Já gera ESG de forma razoável e tem cobertura adequada. Agora é sobre ampliar o que já funciona: mais referenciadores, mais consistência, mais volume — não criar do zero." },
+    { n:"4", label:"Perpetuação", criterio:"Score total 85 ou mais.",
+      explica:"Conta madura e estável — procedimentos consistentes, boa cobertura, boa adoção do ecossistema. O trabalho aqui é manter, não crescer agressivamente: cadência adequada e revisão periódica." },
+  ];
+  const classes = [
+    { label:"Pronta para ativação", criterio:"Score total ≥ 70.", cor:PLANO_C.green },
+    { label:"Dependente de estruturação", criterio:"Score < 70 e cobertura de visitas < 50.", cor:PLANO_C.teal },
+    { label:"Oportunidade de médio prazo", criterio:"Score entre 40 e 70, com cobertura razoável.", cor:PLANO_C.gold },
+    { label:"Baixo potencial atual", criterio:"Score total < 40.", cor:PLANO_C.muted },
+  ];
+  return (
+    <div style={{background:PLANO_C.surface,border:`1px solid ${PLANO_C.border}`,borderRadius:10,marginBottom:18,overflow:"hidden"}}>
+      <div onClick={()=>setAberto(!aberto)} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"12px 16px",cursor:"pointer"}}>
+        <div style={{fontSize:13,fontWeight:600,color:PLANO_C.text}}>ℹ️ Como a fase e a classificação de cada conta são calculadas</div>
+        <div style={{color:PLANO_C.muted,fontSize:12}}>{aberto ? "▲ fechar" : "▼ ver explicação"}</div>
+      </div>
+      {aberto && (
+        <div style={{padding:"0 16px 18px"}}>
+          <div style={{fontSize:11.5,color:PLANO_C.muted,marginBottom:14,lineHeight:1.5}}>
+            Tudo abaixo é calculado automaticamente a partir do mesmo score de 4 dimensões já usado na Saúde da Conta (Procedimentos, Cobertura de Visitas, GEO, Adoção) — não é um cálculo novo e paralelo, é uma leitura diferente do mesmo dado, focada em "em que momento da jornada esse médico está".
+          </div>
+
+          <div style={{fontSize:11,fontWeight:700,color:PLANO_C.teal,textTransform:"uppercase",marginBottom:8}}>Fases STEP</div>
+          <div style={{display:"flex",flexDirection:"column",gap:10,marginBottom:18}}>
+            {fases.map(f => (
+              <div key={f.n} style={{display:"flex",gap:12}}>
+                <div style={{width:26,height:26,borderRadius:6,background:PLANO_C.teal+"20",color:PLANO_C.teal,display:"flex",alignItems:"center",justifyContent:"center",fontWeight:700,fontSize:12,flexShrink:0}}>{f.n}</div>
+                <div>
+                  <div style={{fontSize:12.5,fontWeight:600,color:PLANO_C.text}}>{f.label}</div>
+                  <div style={{fontSize:11,color:PLANO_C.gold,marginTop:1}}>Critério: {f.criterio}</div>
+                  <div style={{fontSize:11.5,color:PLANO_C.muted,marginTop:2}}>{f.explica}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{fontSize:11,fontWeight:700,color:PLANO_C.teal,textTransform:"uppercase",marginBottom:8}}>Classificação da conta</div>
+          <div style={{display:"flex",flexDirection:"column",gap:8}}>
+            {classes.map(c => (
+              <div key={c.label} style={{display:"flex",gap:10,alignItems:"baseline"}}>
+                <div style={{width:8,height:8,borderRadius:"50%",background:c.cor,flexShrink:0}}/>
+                <div style={{fontSize:12,fontWeight:600,color:PLANO_C.text}}>{c.label}</div>
+                <div style={{fontSize:11,color:PLANO_C.muted}}>— {c.criterio}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 function PlanoDeConta() {
   const { data: medicos, loading: loadMed } = useSupabase("perfil_medico");
   const { data: todasVisitas, loading: loadVis } = useSupabase("visitas");
@@ -4858,6 +4917,8 @@ function PlanoDeConta() {
         <div style={{fontSize:20,fontWeight:700,color:PLANO_C.text}}>🗺 Plano de Conta</div>
         <div style={{fontSize:12.5,color:PLANO_C.muted,marginTop:2}}>Segmentação, jornada STEP, SLA e pilares ESG por médico — priorizado pelos que precisam de atenção primeiro</div>
       </div>
+
+      <PlanoInfoBox />
 
       {/* KPIs agregados */}
       <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:18}}>
