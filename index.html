@@ -1028,7 +1028,7 @@ function Visitas() {
       suporte_marketing: form.suporte_marketing === "Sim",
       acao_mkt: form.acao_mkt || null,
       obs: form.obs || null,
-      mes: form.mes || "JUNHO 26",
+      mes: form.mes || mesAtualLabel(),
       fios_esg_estoque: ["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? form.fios_esg_estoque : (form.fios_esg_estoque ? Number(form.fios_esg_estoque) : null),
       proc_marcados_esg: form.proc_marcados_esg ? Number(form.proc_marcados_esg) : null,
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
@@ -1154,7 +1154,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
     acao_mkt: "",
     acao_prevista: "",
     obs: "",
-    mes: "JUNHO 26",
+    mes: mesAtualLabel(),
     fios_esg_estoque: "",
     proc_marcados_esg: "",
     baloes_estoque: "",
@@ -2234,6 +2234,12 @@ const normalizar = (s) => s ? s.toLowerCase().normalize("NFD").replace(/[\u0300-
 const simplificar = (s) => s.replace(/([a-z])\1+/g,"$1");
 // Normaliza variações comuns: anna→ana, etc
 const normalizarVariacoes = (s) => s.replace(/\banna\b/g,"ana").replace(/\bwulf\b/g,"wolf").replace(/\bwilson\b/g,"vilson");
+// ─── Mês atual calculado dinamicamente (evita ficar preso num mês hardcoded) ──
+function mesAtualLabel() {
+  const nomes = ["JANEIRO","FEVEREIRO","MARÇO","ABRIL","MAIO","JUNHO","JULHO","AGOSTO","SETEMBRO","OUTUBRO","NOVEMBRO","DEZEMBRO"];
+  const d = new Date();
+  return `${nomes[d.getMonth()]} ${String(d.getFullYear()).slice(-2)}`;
+}
 const nomesBatem = (a, b) => {
   if (!a || !b) return false;
   const na = normalizarVariacoes(normalizar(a));
@@ -3700,7 +3706,7 @@ function Metas() {
   const { data: medicoTps } = useSupabase("medico_tps");
   const [metas, setMetas] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [mes, setMes] = useState("JUNHO 26");
+  const [mes, setMes] = useState(mesAtualLabel());
   const [editing, setEditing] = useState(null);
   const [toast, setToast] = useState(null);
   const fetchMetas = useCallback(async () => {
