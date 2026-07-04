@@ -7618,6 +7618,8 @@ function ImersaoMarketingProject({ data, onChange }) {
             {medicos.map((m) => {
               const mAcoes = acoes.filter((a) => a.medicoId === m.id);
               const last = mAcoes[mAcoes.length - 1];
+              const totalProc = mAcoes.reduce((s,a) => s + (+a.procedimentosGerados || 0), 0);
+              const totalVisitasSync = mAcoes.filter(a => a.syncedFromVisitas).length;
               return (
                 <div key={m.id} style={{ background: FUP_C.card, border: `1px solid ${FUP_C.border}`, borderRadius: 12, padding: 20 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -7629,13 +7631,33 @@ function ImersaoMarketingProject({ data, onChange }) {
                         {m.instagram && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>📸 @{m.instagram}</span>}
                         {last?.geoScore && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>GEO: <b style={{ color: FUP_C.yellow }}>{last.geoScore}/10</b></span>}
                         {last?.leadsOrganicos && <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Leads: <b style={{ color: FUP_C.teal }}>{last.leadsOrganicos}</b></span>}
+                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Visitas (Aba Visitas): <b style={{ color: FUP_C.blue }}>{totalVisitasSync}</b></span>
+                        <span style={{ color: FUP_C.textMuted, fontSize: 12 }}>Procedimentos (total): <b style={{ color: FUP_C.green }}>{totalProc}</b></span>
                       </div>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
                       <FupBtn size="sm" variant="danger" onClick={() => updateM(medicos.filter((x) => x.id !== m.id))}>✕</FupBtn>
                       <FupBtn size="sm" onClick={() => setFupModal(m.id)} style={{ background: FUP_C.yellow, color: "#000", border: "none" }}>+ FUP</FupBtn>
+                      {mAcoes.length > 0 && (
+                        <FupBtn size="sm" onClick={() => setExpandedImersao(expandedImersao === m.id ? null : m.id)} style={{ background: "transparent", border: `1px solid ${FUP_C.border}` }}>
+                          {expandedImersao === m.id ? "▲ Ocultar" : `▼ Ver ${mAcoes.length} registro(s)`}
+                        </FupBtn>
+                      )}
                     </div>
                   </div>
+                  {expandedImersao === m.id && (
+                    <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${FUP_C.border}`, display: "flex", flexDirection: "column", gap: 8 }}>
+                      {[...mAcoes].sort((a,b) => new Date(b.data)-new Date(a.data)).map((a) => (
+                        <div key={a.id} style={{ display: "flex", gap: 10, alignItems: "baseline", fontSize: 12 }}>
+                          <span style={{ color: FUP_C.textMuted, minWidth: 80 }}>{a.data ? new Date(a.data).toLocaleDateString("pt-BR") : "—"}</span>
+                          <span style={{ color: FUP_C.textMuted }}>{a.tipo || "—"}</span>
+                          {a.syncedFromVisitas && <span style={{ color: FUP_C.blue, fontSize: 10, border: `1px solid ${FUP_C.blue}`, borderRadius: 4, padding: "1px 5px" }}>Aba Visitas</span>}
+                          {(+a.procedimentosGerados > 0) && <span style={{ color: FUP_C.green }}>Procedimentos: <b>{a.procedimentosGerados}</b></span>}
+                          <span style={{ color: FUP_C.text, flex: 1 }}>{a.obs}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               );
             })}
