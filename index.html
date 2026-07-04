@@ -6578,10 +6578,7 @@ function AulasReferidoresProject({ data, onChange }) {
                       <tbody>
                         {(ev.referidores||[]).map((r) => (
                           <tr key={r.id} style={{ borderBottom: `1px solid ${FUP_C.border}` }}>
-                            <td style={{ padding: "8px 10px", color: FUP_C.text, fontWeight: 600 }}>
-                              {r.medico || "—"}
-                              {r.obs && <div style={{ color: FUP_C.textMuted, fontWeight: 400, fontSize: 10.5, fontStyle: "italic", marginTop: 2 }}>{"💬 " + r.obs}</div>}
-                            </td>
+                            <td style={{ padding: "8px 10px", color: FUP_C.text, fontWeight: 600 }}>{r.medico || "—"}</td>
                             <td style={{ padding: "8px 10px", color: FUP_C.textMuted }}>{r.especialidade || "—"}</td>
                             <td style={{ padding: "8px 10px" }}><FupPill label={r.possuiCRM} color={r.possuiCRM === "Sim" ? "verde" : "vermelho"} /></td>
                             <td style={{ padding: "8px 10px", color: FUP_C.text, textAlign: "center" }}>{+r.indicacoesM1||0}</td>
@@ -7871,6 +7868,7 @@ function FupProjetos() {
     data: v.data_contato || new Date().toISOString().slice(0,10),
     tipo: v.canal || "Visita presencial",
     obs: "[Visitas] " + (v.obs || "—") + (v.responsavel ? " · " + v.responsavel : ""),
+    procedimentosGerados: Number(v.proc_realizados_esg) || 0,
     syncedFromVisitas: true,
     visitaId: v.id,
   });
@@ -7961,7 +7959,7 @@ function FupProjetos() {
     if (!isConfigured || !supabaseClient) return;
     supabaseClient
       .from("visitas")
-      .select("id,medico_nome,data_contato,canal,obs,responsavel")
+      .select("id,medico_nome,data_contato,canal,obs,responsavel,proc_realizados_esg")
       .order("data_contato", { ascending: true })
       .then(({ data: todas }) => {
         if (!todas || todas.length === 0) return;
@@ -7981,7 +7979,7 @@ function FupProjetos() {
       if (!isConfigured || !supabaseClient) return;
       const { data: recentes } = await supabaseClient
         .from("visitas")
-        .select("id,medico_nome,data_contato,canal,obs,responsavel")
+        .select("id,medico_nome,data_contato,canal,obs,responsavel,proc_realizados_esg")
         .order("created_at", { ascending: false })
         .limit(1);
       if (!recentes || recentes.length === 0) return;
