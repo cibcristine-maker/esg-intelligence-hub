@@ -794,6 +794,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     fios_esg_estoque: visita.fios_esg_estoque ?? "",
     proc_marcados_esg: visita.proc_marcados_esg ?? "",
     proc_realizados_esg: visita.proc_realizados_esg ?? "",
+    origem_esg_realizados: visita.origem_esg_realizados || { geo: "", referidor: "", esgday: "", embaixador: "", organico: "", outro: "" },
     baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : (visita.leao_plus_abordado || ""),
@@ -813,7 +814,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     especialidade: visita.especialidade || "", suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
     acao_mkt: visita.acao_mkt || "", valor_esperado: visita.valor_esperado || "",
     fios_esg_estoque: visita.fios_esg_estoque ?? "", proc_marcados_esg: visita.proc_marcados_esg ?? "",
-    proc_realizados_esg: visita.proc_realizados_esg ?? "", baloes_estoque: visita.baloes_estoque ?? "",
+    proc_realizados_esg: visita.proc_realizados_esg ?? "", origem_esg_realizados: visita.origem_esg_realizados || { geo: "", referidor: "", esgday: "", embaixador: "", organico: "", outro: "" }, baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
     leao_plus_status: visita.leao_plus_status || "",
@@ -838,6 +839,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       fios_esg_estoque: ["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? form.fios_esg_estoque : (form.fios_esg_estoque !== "" ? Number(form.fios_esg_estoque) : null),
       proc_marcados_esg: form.proc_marcados_esg !== "" ? Number(form.proc_marcados_esg) : null,
       proc_realizados_esg: form.proc_realizados_esg !== "" ? Number(form.proc_realizados_esg) : null,
+      origem_esg_realizados: form.proc_realizados_esg && Number(form.proc_realizados_esg) > 0 ? form.origem_esg_realizados : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque !== "" ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao !== "" ? Number(form.proc_marcados_balao) : null,
       leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : (form.leao_plus_abordado || null),
@@ -912,6 +914,51 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           </div>
           {inp("ESGs Agendados (total até agora no mês)", "proc_marcados_esg", "number")}
           {inp("ESGs Realizados (total até agora no mês)", "proc_realizados_esg", "number")}
+
+          {Number(form.proc_realizados_esg) > 0 && (() => {
+            const origemSoma = ["geo","referidor","esgday","embaixador","organico","outro"]
+              .reduce((s, k) => s + (Number(form.origem_esg_realizados?.[k]) || 0), 0);
+            const totalRealizados = Number(form.proc_realizados_esg) || 0;
+            const bateConta = origemSoma === totalRealizados;
+            const origemFields = [
+              { key: "geo", label: "GEO (IAs)" },
+              { key: "referidor", label: "Referidor" },
+              { key: "esgday", label: "ESG Day" },
+              { key: "embaixador", label: "Embaixador" },
+              { key: "organico", label: "Orgânico/Direto" },
+              { key: "outro", label: "Outro" },
+            ];
+            return (
+              <div style={{padding:"10px 12px", background:"var(--surface2)", borderRadius:8,
+                border: `1px solid ${bateConta ? "rgba(20,184,166,0.35)" : "rgba(239,68,68,0.4)"}`}}>
+                <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8}}>
+                  <label style={{fontSize:11,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>
+                    De onde vieram esses {totalRealizados} paciente{totalRealizados > 1 ? "s" : ""}?
+                  </label>
+                  <span style={{fontSize:11, fontWeight:700, color: bateConta ? "var(--teal)" : "var(--danger)"}}>
+                    {origemSoma} / {totalRealizados}
+                  </span>
+                </div>
+                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8}}>
+                  {origemFields.map(f => (
+                    <div key={f.key}>
+                      <label style={{fontSize:10.5, color:"var(--text-muted)", display:"block", marginBottom:2}}>{f.label}</label>
+                      <input className="form-input" type="number" min="0" placeholder="0"
+                        value={form.origem_esg_realizados?.[f.key] || ""}
+                        onChange={e => set("origem_esg_realizados", {...form.origem_esg_realizados, [f.key]: e.target.value})}
+                        style={{padding:"4px 8px", fontSize:12}} />
+                    </div>
+                  ))}
+                </div>
+                {!bateConta && (
+                  <div style={{fontSize:10.5, color:"var(--danger)", marginTop:6}}>
+                    ⚠ A soma por origem precisa ser igual ao total de Realizados ({totalRealizados}).
+                  </div>
+                )}
+              </div>
+            );
+          })()}
+
           <div style={{display:"flex",flexDirection:"column",gap:4}}>
             <label style={{fontSize:11,color:"var(--muted)",fontWeight:600,textTransform:"uppercase",letterSpacing:"0.05em"}}>Balões Estoque</label>
             <div style={{display:"flex",gap:6}}>
@@ -1032,6 +1079,7 @@ function Visitas() {
       fios_esg_estoque: ["Não informado","Aguardando informação"].includes(form.fios_esg_estoque) ? form.fios_esg_estoque : (form.fios_esg_estoque ? Number(form.fios_esg_estoque) : null),
       proc_marcados_esg: form.proc_marcados_esg ? Number(form.proc_marcados_esg) : null,
       proc_realizados_esg: form.proc_realizados_esg ? Number(form.proc_realizados_esg) : null,
+      origem_esg_realizados: form.proc_realizados_esg && Number(form.proc_realizados_esg) > 0 ? form.origem_esg_realizados : null,
       baloes_estoque: ["Não informado","Aguardando informação"].includes(form.baloes_estoque) ? form.baloes_estoque : (form.baloes_estoque ? Number(form.baloes_estoque) : null),
       proc_marcados_balao: form.proc_marcados_balao ? Number(form.proc_marcados_balao) : null,
       leao_plus_abordado: form.leao_plus_abordado === "Sim" ? true : form.leao_plus_abordado === "Não" ? false : (form.leao_plus_abordado || null),
@@ -1160,6 +1208,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
     baloes_estoque: "",
     proc_marcados_balao: "",
     proc_realizados_esg: "",
+    origem_esg_realizados: { geo: "", referidor: "", esgday: "", embaixador: "", organico: "", outro: "" },
     leao_plus_abordado: "",
     leao_plus_status: "",
     pilar_glp1_esg: false,
@@ -1262,6 +1311,51 @@ function VisitaModal({ medicos, onSave, onClose }) {
                     style={{borderColor: form.referidor !== "Sim" && form.proc_realizados_esg === "" ? "rgba(239,68,68,0.5)" : ""}} />
                 </div>
               </div>
+
+              {/* ── Detalhamento de origem — só aparece se houver realizados ── */}
+              {Number(form.proc_realizados_esg) > 0 && (() => {
+                const origemSoma = ["geo","referidor","esgday","embaixador","organico","outro"]
+                  .reduce((s, k) => s + (Number(form.origem_esg_realizados[k]) || 0), 0);
+                const totalRealizados = Number(form.proc_realizados_esg) || 0;
+                const bateConta = origemSoma === totalRealizados;
+                const origemFields = [
+                  { key: "geo", label: "GEO (IAs)" },
+                  { key: "referidor", label: "Referidor" },
+                  { key: "esgday", label: "ESG Day" },
+                  { key: "embaixador", label: "Embaixador" },
+                  { key: "organico", label: "Orgânico/Direto" },
+                  { key: "outro", label: "Outro" },
+                ];
+                return (
+                  <div style={{marginTop:10, padding:"10px 12px", background:"var(--surface2)", borderRadius:8,
+                    border: `1px solid ${bateConta ? "rgba(20,184,166,0.35)" : "rgba(239,68,68,0.4)"}`}}>
+                    <div style={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:8}}>
+                      <label className="form-label" style={{margin:0, fontSize:12}}>
+                        🎯 De onde vieram esses {totalRealizados} paciente{totalRealizados > 1 ? "s" : ""}?
+                      </label>
+                      <span style={{fontSize:11, fontWeight:700, color: bateConta ? "var(--teal)" : "var(--danger)"}}>
+                        {origemSoma} / {totalRealizados}
+                      </span>
+                    </div>
+                    <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8}}>
+                      {origemFields.map(f => (
+                        <div key={f.key}>
+                          <label style={{fontSize:10.5, color:"var(--text-muted)", display:"block", marginBottom:2}}>{f.label}</label>
+                          <input className="form-input" type="number" min="0" placeholder="0"
+                            value={form.origem_esg_realizados[f.key]}
+                            onChange={e => set("origem_esg_realizados", {...form.origem_esg_realizados, [f.key]: e.target.value})}
+                            style={{padding:"4px 8px", fontSize:12}} />
+                        </div>
+                      ))}
+                    </div>
+                    {!bateConta && (
+                      <div style={{fontSize:10.5, color:"var(--danger)", marginTop:6}}>
+                        ⚠ A soma por origem precisa ser igual ao total de Realizados ({totalRealizados}).
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
           <div className="form-group">
