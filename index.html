@@ -1919,15 +1919,11 @@ function Inteligencia() {
   }, []);
   const [filterMesIntel, setFilterMesIntel] = useState("");
   const [filterTierIntel, setFilterTierIntel] = useState("");
-  if (loading) return <div className="loading"><div className="spinner"/>Carregando...</div>;
-  const mesesIntel = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
-    const ordem = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
-    return ordem.indexOf(a) - ordem.indexOf(b);
-  });
-  const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
+  const [showOrigemPerf, setShowOrigemPerf] = useState(true);
 
   // ── Performance por Origem: o que está trazendo mais resultado ─────────
   const origemPerf = React.useMemo(() => {
+    const viBase = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
     const labels = {
       geo: "GEO (IAs)", referidor: "Referidor", esgday: "ESG Day",
       embaixador: "Embaixador", metaads: "Meta Ads", googleads: "Google Ads",
@@ -1942,7 +1938,7 @@ function Inteligencia() {
     Object.keys(labels).forEach(k => totals[k] = 0);
     let totalComOrigem = 0, totalSemOrigem = 0, totalGeral = 0;
 
-    vi.forEach(v => {
+    viBase.forEach(v => {
       const realizados = Number(v.proc_realizados_esg) || 0;
       if (realizados <= 0) return;
       totalGeral += realizados;
@@ -1975,10 +1971,14 @@ function Inteligencia() {
     const piorAtivo = rows.length > 1 ? rows[rows.length - 1] : null;
 
     return { rows, totalComOrigem, totalSemOrigem, totalGeral, melhor, piorAtivo };
-  }, [vi]);
+  }, [visitas, filterMesIntel]);
 
-  const [showOrigemPerf, setShowOrigemPerf] = React.useState(true);
-
+  if (loading) return <div className="loading"><div className="spinner"/>Carregando...</div>;
+  const mesesIntel = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => {
+    const ordem = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+    return ordem.indexOf(a) - ordem.indexOf(b);
+  });
+  const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
   // Janela de 4 meses para análise de cobertura presencial
   const MESES_ORDEM_INTEL = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
   const getMeses4 = () => {
