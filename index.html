@@ -5425,6 +5425,30 @@ function PhysicianHealthScore() {
   const totalUnder = visitEfficiencyByTier.reduce((s, t) => s + t.under, 0);
   const totalIdeal = visitEfficiencyByTier.reduce((s, t) => s + t.ideal, 0);
 
+  // ── Alerta de Inatividade — cruza dias sem visita com intervalo esperado por Tier ──
+  const inactivityAlerts = React.useMemo(() => {
+    return scoredMedicos.map(m => {
+      const raw = m._score?.raw;
+      if (!raw) return null;
+      const dias = raw.diasUltimaVisita;
+      const cadIdeal = raw.cadIdeal || 2;
+      // Intervalo esperado entre visitas = 90 dias / cadência ideal no período
+      const intervaloEsperado = Math.round(90 / cadIdeal);
+      const atrasoRatio = dias === 999 ? Infinity : dias / intervaloEsperado;
+      let nivel = null;
+      if (dias === 999) nivel = "nunca"; // sem nenhuma visita registrada
+      else if (atrasoRatio >= 2) nivel = "critico"; // 2x+ o intervalo esperado
+      else if (atrasoRatio >= 1.3) nivel = "atencao"; // 30%+ acima do esperado
+      if (!nivel) return null;
+      return { nome: m.nome, tier: raw.tier || "—", dias, intervaloEsperado, nivel };
+    }).filter(Boolean).sort((a, b) => (b.dias === 999 ? 9999 : b.dias) - (a.dias === 999 ? 9999 : a.dias));
+  }, [scoredMedicos]);
+
+  const [showInactivityDetail, setShowInactivityDetail] = React.useState(false);
+  const countCritico = inactivityAlerts.filter(a => a.nivel === "critico").length;
+  const countNunca = inactivityAlerts.filter(a => a.nivel === "nunca").length;
+  const countAtencao = inactivityAlerts.filter(a => a.nivel === "atencao").length;
+
   // ── Playbooks ─────────────────────────────────────────────────────────
 
 
@@ -5643,6 +5667,51 @@ function PhysicianHealthScore() {
               );
             })}
           </div>
+        </div>
+
+        {/* ─── PAINEL: ALERTA DE INATIVIDADE ─────────────────────────────── */}
+        <div style={{ background: PC.navyMid, borderRadius:12, padding:"16px 18px",
+          border:`1px solid ${(countCritico + countNunca) > 0 ? PC.red+"55" : PC.navyLt}`, marginBottom:16 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer" }}
+            onClick={() => setShowInactivityDetail(!showInactivityDetail)}>
+            <div style={{ fontSize:12, fontWeight:800, color: PC.text, letterSpacing:0.3 }}>
+              ⏱ Alerta de Inatividade — dias sem visita vs. intervalo esperado pelo Tier
+            </div>
+            <div style={{ display:"flex", gap:14, fontSize:10.5, alignItems:"center" }}>
+              <span style={{ color: PC.red }}>■ Sem visita registrada: <b>{countNunca}</b></span>
+              <span style={{ color: PC.red }}>■ Crítico (2x+ atraso): <b>{countCritico}</b></span>
+              <span style={{ color: PC.amber }}>■ Atenção: <b>{countAtencao}</b></span>
+              <span style={{ color: PC.slate, fontSize:9 }}>{showInactivityDetail ? "▲ ocultar" : "▼ ver lista"}</span>
+            </div>
+          </div>
+          {showInactivityDetail && (
+            <div style={{ marginTop:14, borderTop:`1px solid ${PC.navyLt}`, paddingTop:12 }}>
+              {inactivityAlerts.length === 0 ? (
+                <div style={{ fontSize:11, color: PC.slate, textAlign:"center", padding:"10px 0" }}>
+                  Nenhum médico com atraso significativo. Cobertura em dia.
+                </div>
+              ) : (
+                <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:8 }}>
+                  {inactivityAlerts.map((a, i) => (
+                    <div key={i} style={{ display:"flex", justifyContent:"space-between", alignItems:"center",
+                      background: PC.navy, borderRadius:6, padding:"7px 10px",
+                      border:`1px solid ${a.nivel === "nunca" || a.nivel === "critico" ? PC.red+"44" : PC.amber+"44"}` }}>
+                      <div>
+                        <div style={{ fontSize:10.5, fontWeight:700, color: PC.text }}>{a.nome}</div>
+                        <div style={{ fontSize:9, color: PC.slate }}>Tier {a.tier} · esperado a cada {a.intervaloEsperado}d</div>
+                      </div>
+                      <div style={{ textAlign:"right" }}>
+                        <div style={{ fontSize:12, fontWeight:800,
+                          color: a.nivel === "nunca" || a.nivel === "critico" ? PC.red : PC.amber }}>
+                          {a.dias === 999 ? "sem registro" : `${a.dias}d`}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, alignItems:"start" }}>
