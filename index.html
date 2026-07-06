@@ -794,7 +794,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     fios_esg_estoque: visita.fios_esg_estoque ?? "",
     proc_marcados_esg: visita.proc_marcados_esg ?? "",
     proc_realizados_esg: visita.proc_realizados_esg ?? "",
-    origem_esg_realizados: visita.origem_esg_realizados || { geo: "", referidor: "", esgday: "", embaixador: "", organico: "", outro: "" },
+    origem_esg_realizados: visita.origem_esg_realizados || { geo: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", outro: "" },
     baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : (visita.leao_plus_abordado || ""),
@@ -814,7 +814,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     especialidade: visita.especialidade || "", suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
     acao_mkt: visita.acao_mkt || "", valor_esperado: visita.valor_esperado || "",
     fios_esg_estoque: visita.fios_esg_estoque ?? "", proc_marcados_esg: visita.proc_marcados_esg ?? "",
-    proc_realizados_esg: visita.proc_realizados_esg ?? "", origem_esg_realizados: visita.origem_esg_realizados || { geo: "", referidor: "", esgday: "", embaixador: "", organico: "", outro: "" }, baloes_estoque: visita.baloes_estoque ?? "",
+    proc_realizados_esg: visita.proc_realizados_esg ?? "", origem_esg_realizados: visita.origem_esg_realizados || { geo: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", outro: "" }, baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
     leao_plus_status: visita.leao_plus_status || "",
@@ -925,6 +925,8 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
               { key: "referidor", label: "Referidor" },
               { key: "esgday", label: "ESG Day" },
               { key: "embaixador", label: "Embaixador" },
+              { key: "metaads", label: "Meta Ads" },
+              { key: "googleads", label: "Google Ads" },
               { key: "organico", label: "Orgânico/Direto" },
               { key: "outro", label: "Outro" },
             ];
@@ -939,7 +941,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
                     {origemSoma} / {totalRealizados}
                   </span>
                 </div>
-                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8}}>
+                <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:8}}>
                   {origemFields.map(f => (
                     <div key={f.key}>
                       <label style={{fontSize:10.5, color:"var(--text-muted)", display:"block", marginBottom:2}}>{f.label}</label>
@@ -1059,6 +1061,7 @@ function Visitas() {
         && (!filterResp || v.responsavel === filterResp)
         && (!filterMes || v.mes === filterMes);
     });
+
   const handleSave = async (form) => {
     if (!isConfigured) return;
     const payload = {
@@ -1208,7 +1211,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
     baloes_estoque: "",
     proc_marcados_balao: "",
     proc_realizados_esg: "",
-    origem_esg_realizados: { geo: "", referidor: "", esgday: "", embaixador: "", organico: "", outro: "" },
+    origem_esg_realizados: { geo: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", outro: "" },
     leao_plus_abordado: "",
     leao_plus_status: "",
     pilar_glp1_esg: false,
@@ -1323,6 +1326,8 @@ function VisitaModal({ medicos, onSave, onClose }) {
                   { key: "referidor", label: "Referidor" },
                   { key: "esgday", label: "ESG Day" },
                   { key: "embaixador", label: "Embaixador" },
+                  { key: "metaads", label: "Meta Ads" },
+                  { key: "googleads", label: "Google Ads" },
                   { key: "organico", label: "Orgânico/Direto" },
                   { key: "outro", label: "Outro" },
                 ];
@@ -1337,7 +1342,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
                         {origemSoma} / {totalRealizados}
                       </span>
                     </div>
-                    <div style={{display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:8}}>
+                    <div style={{display:"grid", gridTemplateColumns:"1fr 1fr", gap:8}}>
                       {origemFields.map(f => (
                         <div key={f.key}>
                           <label style={{fontSize:10.5, color:"var(--text-muted)", display:"block", marginBottom:2}}>{f.label}</label>
@@ -1920,6 +1925,60 @@ function Inteligencia() {
     return ordem.indexOf(a) - ordem.indexOf(b);
   });
   const vi = filterMesIntel ? visitas.filter(v => v.mes === filterMesIntel) : visitas;
+
+  // ── Performance por Origem: o que está trazendo mais resultado ─────────
+  const origemPerf = React.useMemo(() => {
+    const labels = {
+      geo: "GEO (IAs)", referidor: "Referidor", esgday: "ESG Day",
+      embaixador: "Embaixador", metaads: "Meta Ads", googleads: "Google Ads",
+      organico: "Orgânico/Direto", outro: "Outro",
+    };
+    const colors = {
+      geo: "#00879E", referidor: "#C9A84C", esgday: "#1DBF73",
+      embaixador: "#A855F7", metaads: "#1877F2", googleads: "#EA4335",
+      organico: "#5A8A9A", outro: "#4A6580",
+    };
+    const totals = {};
+    Object.keys(labels).forEach(k => totals[k] = 0);
+    let totalComOrigem = 0, totalSemOrigem = 0, totalGeral = 0;
+
+    vi.forEach(v => {
+      const realizados = Number(v.proc_realizados_esg) || 0;
+      if (realizados <= 0) return;
+      totalGeral += realizados;
+      if (v.origem_esg_realizados && typeof v.origem_esg_realizados === "object") {
+        let somaEsta = 0;
+        Object.keys(totals).forEach(k => {
+          const n = Number(v.origem_esg_realizados[k]) || 0;
+          totals[k] += n;
+          somaEsta += n;
+        });
+        if (somaEsta > 0) totalComOrigem += somaEsta;
+        else totalSemOrigem += realizados;
+      } else {
+        totalSemOrigem += realizados;
+      }
+    });
+
+    const rows = Object.keys(totals)
+      .map(k => ({
+        key: k,
+        label: labels[k],
+        color: colors[k],
+        value: totals[k],
+        pct: totalComOrigem > 0 ? Math.round((totals[k] / totalComOrigem) * 100) : 0,
+      }))
+      .filter(r => r.value > 0)
+      .sort((a, b) => b.value - a.value);
+
+    const melhor = rows[0] || null;
+    const piorAtivo = rows.length > 1 ? rows[rows.length - 1] : null;
+
+    return { rows, totalComOrigem, totalSemOrigem, totalGeral, melhor, piorAtivo };
+  }, [vi]);
+
+  const [showOrigemPerf, setShowOrigemPerf] = React.useState(true);
+
   // Janela de 4 meses para análise de cobertura presencial
   const MESES_ORDEM_INTEL = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
   const getMeses4 = () => {
@@ -2035,6 +2094,74 @@ function Inteligencia() {
           🔄 Atualizar
         </button>
       </div>
+
+      {/* ─── PAINEL: PERFORMANCE POR ORIGEM — O QUE ESTÁ FUNCIONANDO ─────── */}
+      {origemPerf.totalGeral > 0 && (
+        <div style={{ background:"var(--surface)", borderRadius:12, padding:"18px 20px",
+          border:"1px solid var(--border)", marginBottom:16 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", cursor:"pointer" }}
+            onClick={() => setShowOrigemPerf(!showOrigemPerf)}>
+            <div>
+              <div style={{ fontSize:14, fontWeight:800, color:"var(--text)" }}>
+                🎯 Performance por Origem
+              </div>
+              <div style={{ fontSize:11, color:"var(--muted)", marginTop:2 }}>
+                ESGs realizados · de onde vêm os pacientes que estão convertendo
+              </div>
+            </div>
+            <div style={{ display:"flex", gap:16, alignItems:"center" }}>
+              {origemPerf.melhor && (
+                <div style={{ textAlign:"right" }}>
+                  <div style={{ fontSize:9.5, color:"var(--muted)", textTransform:"uppercase", letterSpacing:"0.04em" }}>Líder atual</div>
+                  <div style={{ fontSize:13, fontWeight:800, color: origemPerf.melhor.color }}>
+                    {origemPerf.melhor.label} · {origemPerf.melhor.pct}%
+                  </div>
+                </div>
+              )}
+              <span style={{ color:"var(--muted)", fontSize:10 }}>{showOrigemPerf ? "▲" : "▼"}</span>
+            </div>
+          </div>
+
+          {showOrigemPerf && (
+            <div style={{ marginTop:16, borderTop:"1px solid var(--border)", paddingTop:16 }}>
+              <div style={{ display:"flex", flexDirection:"column", gap:12 }}>
+                {origemPerf.rows.map((r, i) => (
+                  <div key={r.key}>
+                    <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:5 }}>
+                      <div style={{ display:"flex", alignItems:"center", gap:8 }}>
+                        {i === 0 && <span style={{ fontSize:13 }}>🏆</span>}
+                        <span style={{ fontSize:13, fontWeight:700, color:"var(--text)" }}>{r.label}</span>
+                      </div>
+                      <span style={{ fontSize:13, fontWeight:800, color: r.color }}>
+                        {r.value} <span style={{ color:"var(--muted)", fontWeight:400, fontSize:11 }}>proc. · {r.pct}%</span>
+                      </span>
+                    </div>
+                    <div style={{ background:"var(--bg)", borderRadius:5, height:10, overflow:"hidden" }}>
+                      <div style={{ width:`${r.pct}%`, height:10, borderRadius:5, background:r.color, transition:"width 0.4s" }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {origemPerf.rows.length >= 2 && (
+                <div style={{ marginTop:16, padding:"10px 14px", background:"var(--bg)", borderRadius:8,
+                  border:"1px solid var(--border)", fontSize:11.5, color:"var(--text)" }}>
+                  💡 <b style={{ color: origemPerf.melhor.color }}>{origemPerf.melhor.label}</b> é o canal com mais conversões registradas
+                  ({origemPerf.melhor.value} de {origemPerf.totalComOrigem}). Isso não significa necessariamente o mais eficiente por
+                  esforço/custo — cruze com o volume de ações de cada motor para leitura completa.
+                </div>
+              )}
+
+              {origemPerf.totalSemOrigem > 0 && (
+                <div style={{ marginTop:10, fontSize:10.5, color:"var(--muted)", fontStyle:"italic" }}>
+                  ⚠ {origemPerf.totalSemOrigem} procedimento{origemPerf.totalSemOrigem > 1 ? "s" : ""} sem origem informada
+                  (não entram no percentual acima) — provavelmente registros anteriores a esta funcionalidade ou preenchimento incompleto.
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
       <div style={{display:"flex",gap:6,flexWrap:"wrap",marginBottom:14}}>
         <button onClick={() => setFilterMesIntel("")} style={{padding:"5px 14px",borderRadius:20,border:"1px solid var(--border)",background:!filterMesIntel?"var(--teal)":"var(--surface2)",color:!filterMesIntel?"#0a0e1a":"var(--muted)",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Todos</button>
         {mesesIntel.map(m => (
