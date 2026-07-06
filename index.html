@@ -5404,6 +5404,27 @@ function PhysicianHealthScore() {
     ? Math.round(validScores.reduce((s, m) => s + m._score.total, 0) / validScores.length)
     : 0;
 
+  // ── Eficiência de Visitas por Tier (Over/Under Visiting) ────────────────
+  const visitEfficiencyByTier = React.useMemo(() => {
+    const tiers = {};
+    scoredMedicos.forEach(m => {
+      const raw = m._score?.raw;
+      if (!raw) return;
+      const t = raw.tier || "—";
+      if (!tiers[t]) tiers[t] = { tier: t, over: 0, under: 0, ideal: 0, total: 0, cadMin: raw.cadMin, cadIdeal: raw.cadIdeal, cadMax: raw.cadMax };
+      tiers[t].total++;
+      if (raw.overVisiting) tiers[t].over++;
+      else if (raw.subVisita) tiers[t].under++;
+      else tiers[t].ideal++;
+    });
+    const order = ["ST", "1", "2", "3", "4", "5", "—"];
+    return Object.values(tiers).sort((a, b) => order.indexOf(a.tier) - order.indexOf(b.tier));
+  }, [scoredMedicos]);
+
+  const totalOver = visitEfficiencyByTier.reduce((s, t) => s + t.over, 0);
+  const totalUnder = visitEfficiencyByTier.reduce((s, t) => s + t.under, 0);
+  const totalIdeal = visitEfficiencyByTier.reduce((s, t) => s + t.ideal, 0);
+
   // ── Playbooks ─────────────────────────────────────────────────────────
 
 
@@ -5578,6 +5599,52 @@ function PhysicianHealthScore() {
 
       ) : (
         /* ─── PORTFOLIO VIEW ─────────────────────────────────────────────── */
+        <div>
+
+        {/* ─── PAINEL: EFICIÊNCIA DE VISITAS POR TIER ──────────────────── */}
+        <div style={{ background: PC.navyMid, borderRadius:12, padding:"16px 18px",
+          border:`1px solid ${PC.navyLt}`, marginBottom:16 }}>
+          <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:12 }}>
+            <div style={{ fontSize:12, fontWeight:800, color: PC.text, letterSpacing:0.3 }}>
+              📊 Eficiência de Visitas — Over vs. Under Visiting por Tier
+            </div>
+            <div style={{ display:"flex", gap:14, fontSize:10.5 }}>
+              <span style={{ color: PC.red }}>■ Over-visiting: <b>{totalOver}</b></span>
+              <span style={{ color: PC.green }}>■ Cadência ideal: <b>{totalIdeal}</b></span>
+              <span style={{ color: PC.amber }}>■ Sub-cobertura: <b>{totalUnder}</b></span>
+            </div>
+          </div>
+          <div style={{ display:"grid", gridTemplateColumns:`repeat(${visitEfficiencyByTier.length}, 1fr)`, gap:10 }}>
+            {visitEfficiencyByTier.map(t => {
+              const pctOver = t.total ? Math.round((t.over/t.total)*100) : 0;
+              const pctIdeal = t.total ? Math.round((t.ideal/t.total)*100) : 0;
+              const pctUnder = t.total ? Math.round((t.under/t.total)*100) : 0;
+              return (
+                <div key={t.tier} style={{ background: PC.navy, borderRadius:8, padding:"10px 12px", border:`1px solid ${PC.navyLt}` }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", alignItems:"baseline", marginBottom:6 }}>
+                    <span style={{ fontSize:12, fontWeight:800, color: PC.text }}>Tier {t.tier}</span>
+                    <span style={{ fontSize:9, color: PC.slate }}>{t.total} médico{t.total !== 1 ? "s" : ""}</span>
+                  </div>
+                  <div style={{ fontSize:8.5, color: PC.slate, marginBottom:8 }}>
+                    Cadência: {t.cadMin}–{t.cadMax === "∞" ? "∞" : t.cadMax} visitas/90d (ideal {t.cadIdeal})
+                  </div>
+                  {/* Stacked bar */}
+                  <div style={{ display:"flex", height:8, borderRadius:4, overflow:"hidden", marginBottom:8 }}>
+                    {t.over > 0 && <div style={{ width:`${pctOver}%`, background: PC.red }} title={`Over-visiting: ${t.over}`} />}
+                    {t.ideal > 0 && <div style={{ width:`${pctIdeal}%`, background: PC.green }} title={`Ideal: ${t.ideal}`} />}
+                    {t.under > 0 && <div style={{ width:`${pctUnder}%`, background: PC.amber }} title={`Sub-cobertura: ${t.under}`} />}
+                  </div>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:9.5 }}>
+                    <span style={{ color: PC.red, fontWeight:700 }}>{t.over}</span>
+                    <span style={{ color: PC.green, fontWeight:700 }}>{t.ideal}</span>
+                    <span style={{ color: PC.amber, fontWeight:700 }}>{t.under}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div style={{ display:"grid", gridTemplateColumns:"300px 1fr", gap:16, alignItems:"start" }}>
 
           {/* Sidebar */}
@@ -5827,6 +5894,7 @@ function PhysicianHealthScore() {
               <div style={{ fontSize:12, marginTop:6 }}>para ver o health score detalhado</div>
             </div>
           )}
+        </div>
         </div>
       )}
     </div>
