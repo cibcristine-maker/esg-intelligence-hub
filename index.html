@@ -1490,11 +1490,11 @@ function ChecklistMaturidade({ medicoId, medicoNome }) {
   ];
 
   const STORAGE_KEY = `checklist_maturidade_${medicoId}`;
-  const [data, setData] = React.useState(() => {
+  const [data, setData] = useState(() => {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; }
   });
-  const [expanded, setExpanded] = React.useState(false);
-  const [saving, setSaving] = React.useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [saving, setSaving] = useState(false);
 
   // Reload when medicoId changes
   React.useEffect(() => {
