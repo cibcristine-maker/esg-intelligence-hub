@@ -1469,6 +1469,127 @@ function VisitaModal({ medicos, onSave, onClose }) {
   );
 }
 // ─── MÉDICOS ────────────────────────────────────────────────────────────────
+
+function ChecklistMaturidade({ medicoId, medicoNome }) {
+  const PILARES = [
+    { key: "estrategia", label: "Estratégia", icon: "🎯", verif: "Diagnóstico definido e plano da conta documentado" },
+    { key: "aquisicao",  label: "Aquisição",  icon: "📡", verif: "GEO ativo e referenciadores priorizados" },
+    { key: "retencao",   label: "Retenção",   icon: "🔄", verif: "CRM estruturado e pacientes segmentados" },
+    { key: "ancoragem",  label: "Ancoragem",  icon: "⚓", verif: "ESG apresentado durante a jornada clínica" },
+    { key: "esg_day",    label: "ESG Day",    icon: "📅", verif: "Evento planejado e base elegível selecionada" },
+    { key: "conversao",  label: "Conversão",  icon: "💡", verif: "Protocolo consulta, treinamento time comercial e financeiro padronizado" },
+    { key: "pos_proc",   label: "Pós-procedimento", icon: "✅", verif: "Régua de acompanhamento ativa" },
+    { key: "kpis",       label: "KPIs",       icon: "📊", verif: "Dashboard atualizado e revisado mensalmente" },
+  ];
+
+  const STATUS_OPTS = [
+    { val: "",              label: "—",            color: "var(--muted)" },
+    { val: "nao_iniciado",  label: "Não iniciado", color: "rgba(239,68,68,0.8)" },
+    { val: "em_andamento",  label: "Em andamento", color: "rgba(245,158,11,0.9)" },
+    { val: "concluido",     label: "Concluído",    color: "var(--success)" },
+  ];
+
+  const STORAGE_KEY = `checklist_maturidade_${medicoId}`;
+  const [data, setData] = React.useState(() => {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); } catch { return {}; }
+  });
+  const [expanded, setExpanded] = React.useState(false);
+  const [saving, setSaving] = React.useState(false);
+
+  // Reload when medicoId changes
+  React.useEffect(() => {
+    try { setData(JSON.parse(localStorage.getItem(`checklist_maturidade_${medicoId}`) || "{}")); } catch { setData({}); }
+  }, [medicoId]);
+
+  function save(newData) {
+    localStorage.setItem(`checklist_maturidade_${medicoId}`, JSON.stringify(newData));
+    setData(newData);
+    // Also save to Supabase as JSON in a dedicated field
+    setSaving(true);
+    supabaseClient.from("perfil_medico")
+      .update({ checklist_maturidade: JSON.stringify(newData) })
+      .eq("id", medicoId)
+      .then(() => setTimeout(() => setSaving(false), 800))
+      .catch(() => setSaving(false));
+  }
+
+  function setStatus(key, val) {
+    const novo = { ...data, [key]: { ...data[key], status: val } };
+    save(novo);
+  }
+
+  function setAcao(key, val) {
+    const novo = { ...data, [key]: { ...data[key], acao: val } };
+    save(novo);
+  }
+
+  const concluidos = PILARES.filter(p => data[p.key]?.status === "concluido").length;
+  const emAndamento = PILARES.filter(p => data[p.key]?.status === "em_andamento").length;
+  const pct = Math.round((concluidos / PILARES.length) * 100);
+
+  const corBarra = pct >= 75 ? "var(--success)" : pct >= 40 ? "rgba(245,158,11,0.9)" : "rgba(239,68,68,0.7)";
+
+  return (
+    <div style={{background:"rgba(20,184,166,0.04)",border:"1px solid rgba(20,184,166,0.2)",borderRadius:12,padding:"12px 14px",marginBottom:8}}>
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:8,cursor:"pointer"}} onClick={() => setExpanded(e => !e)}>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <span style={{fontSize:14}}>📋</span>
+          <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",textTransform:"uppercase",letterSpacing:"0.06em"}}>Maturidade da Conta</div>
+          {saving && <span style={{fontSize:9,color:"var(--muted)"}}>salvando...</span>}
+        </div>
+        <div style={{display:"flex",alignItems:"center",gap:8}}>
+          <div style={{fontSize:10,color:"var(--muted)"}}>{concluidos}/{PILARES.length} pilares</div>
+          <div style={{width:60,height:6,background:"var(--surface2)",borderRadius:3,overflow:"hidden"}}>
+            <div style={{height:"100%",width:`${pct}%`,background:corBarra,borderRadius:3,transition:"width 0.3s"}}></div>
+          </div>
+          <span style={{fontSize:10,fontWeight:700,color:corBarra}}>{pct}%</span>
+          <span style={{fontSize:12,color:"var(--muted)",marginLeft:4}}>{expanded ? "▲" : "▼"}</span>
+        </div>
+      </div>
+
+      {expanded && (
+        <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:4}}>
+          {PILARES.map(pilar => {
+            const st = data[pilar.key]?.status || "";
+            const acao = data[pilar.key]?.acao || "";
+            const stOpt = STATUS_OPTS.find(s => s.val === st) || STATUS_OPTS[0];
+            return (
+              <div key={pilar.key} style={{background:"var(--surface2)",borderRadius:8,padding:"8px 10px",border:`1px solid ${st === "concluido" ? "rgba(16,185,129,0.3)" : st === "em_andamento" ? "rgba(245,158,11,0.25)" : "var(--border)"}`}}>
+                <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:acao || true ? 5 : 0}}>
+                  <span style={{fontSize:13}}>{pilar.icon}</span>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:12,fontWeight:700,color:"var(--text)"}}>{pilar.label}</div>
+                    <div style={{fontSize:10,color:"var(--muted)",lineHeight:1.3}}>{pilar.verif}</div>
+                  </div>
+                  <select
+                    value={st}
+                    onChange={e => setStatus(pilar.key, e.target.value)}
+                    style={{flex:"0 0 auto",background:"var(--surface)",border:`1px solid ${stOpt.color}`,borderRadius:6,color:stOpt.color,fontSize:10,fontWeight:700,padding:"4px 6px",fontFamily:"inherit",cursor:"pointer",outline:"none"}}
+                  >
+                    {STATUS_OPTS.map(s => <option key={s.val} value={s.val}>{s.label}</option>)}
+                  </select>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Próxima ação..."
+                  value={acao}
+                  onChange={e => setAcao(pilar.key, e.target.value)}
+                  style={{width:"100%",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:6,color:"var(--text)",fontSize:11,padding:"5px 8px",fontFamily:"inherit",outline:"none",boxSizing:"border-box"}}
+                />
+              </div>
+            );
+          })}
+          <div style={{display:"flex",gap:8,marginTop:2,fontSize:9,color:"var(--muted)"}}>
+            <span style={{color:"rgba(16,185,129,0.8)"}}>● Concluído: {concluidos}</span>
+            <span style={{color:"rgba(245,158,11,0.8)"}}>● Em andamento: {emAndamento}</span>
+            <span style={{color:"rgba(239,68,68,0.7)"}}>● Não iniciado: {PILARES.filter(p => data[p.key]?.status === "nao_iniciado").length}</span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Medicos() {
   const { data: medicos, loading, refresh } = useSupabase("perfil_medico");
   const [search, setSearch] = useState("");
@@ -3603,6 +3724,7 @@ Responda APENAS com JSON válido, sem markdown:
                   style={{width:"100%",background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:8,padding:"10px 12px",color:"var(--text)",fontSize:13,resize:"vertical",minHeight:70,fontFamily:"inherit",boxSizing:"border-box",outline:"none"}}
                 />
               </div>
+              {selectedMedico && <ChecklistMaturidade medicoId={selectedMedico.id} medicoNome={selectedMedico.nome} />}
               {selectedMedico && visitasMedico.some(v => v.proc_marcados_esg || v.proc_realizados_esg) && (() => {
                 const ORDEM_MESES = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
                 const SHORT = {"JANEIRO 26":"JAN","FEVEREIRO 26":"FEV","MARÇO 26":"MAR","ABRIL 26":"ABR","MAIO 26":"MAI","JUNHO 26":"JUN","JULHO 26":"JUL","AGOSTO 26":"AGO","SETEMBRO 26":"SET","OUTUBRO 26":"OUT","NOVEMBRO 26":"NOV","DEZEMBRO 26":"DEZ"};
