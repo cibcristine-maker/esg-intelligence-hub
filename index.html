@@ -1540,9 +1540,11 @@ function ChecklistMaturidade({ medicoId, medicoNome }) {
 
   const concluidos = PILARES.filter(p => data[p.key]?.status === "concluido").length;
   const emAndamento = PILARES.filter(p => data[p.key]?.status === "em_andamento").length;
-  const pct = Math.round((concluidos / PILARES.length) * 100);
+  const naoIniciado = PILARES.filter(p => data[p.key]?.status === "nao_iniciado").length;
+  const preenchidos = concluidos + emAndamento;
+  const pct = Math.round(((concluidos + emAndamento * 0.5) / PILARES.length) * 100);
 
-  const corBarra = pct >= 75 ? "var(--success)" : pct >= 40 ? "rgba(245,158,11,0.9)" : "rgba(239,68,68,0.7)";
+  const corBarra = concluidos >= 6 ? "var(--success)" : preenchidos >= 4 ? "rgba(245,158,11,0.9)" : preenchidos > 0 ? "rgba(20,184,166,0.8)" : "rgba(239,68,68,0.7)";
 
   return (
     <div style={{background:"rgba(20,184,166,0.04)",border:"1px solid rgba(20,184,166,0.2)",borderRadius:12,padding:"12px 14px",marginBottom:8}}>
@@ -1553,7 +1555,7 @@ function ChecklistMaturidade({ medicoId, medicoNome }) {
           {saving && <span style={{fontSize:9,color:"var(--muted)"}}>salvando...</span>}
         </div>
         <div style={{display:"flex",alignItems:"center",gap:8}}>
-          <div style={{fontSize:10,color:"var(--muted)"}}>{concluidos}/{PILARES.length} pilares</div>
+          <div style={{fontSize:10,color:"var(--muted)"}}>{concluidos} concluídos · {emAndamento} em andamento</div>
           <div style={{width:60,height:6,background:"var(--surface2)",borderRadius:3,overflow:"hidden"}}>
             <div style={{height:"100%",width:`${pct}%`,background:corBarra,borderRadius:3,transition:"width 0.3s"}}></div>
           </div>
