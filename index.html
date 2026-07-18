@@ -850,6 +850,16 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       acao_prevista: form.acao_prevista || null,
       obs: form.obs || null,
     };
+    // Validação origem do lead
+    if (form.referidor !== "Sim" && Number(form.proc_realizados_esg) > 0) {
+      const origemSoma = ["geo","ancoragem","crm","referidor","esgday","embaixador","metaads","googleads","organico","outro"]
+        .reduce((s, k) => s + (Number(form.origem_esg_realizados?.[k]) || 0), 0);
+      if (origemSoma === 0) {
+        setSalvando(false);
+        alert("⚠ Origem do lead é obrigatória quando há ESGs realizados.\n\nIndique de onde vieram os pacientes (GEO, CRM, Referidor, etc.).");
+        return;
+      }
+    }
     const { error } = await supabaseClient.from("visitas").update(payload).eq("id", visita.id);
     setSalvando(false);
     if (!error) { setEditando(false); if (onUpdate) onUpdate(); }
@@ -1460,6 +1470,11 @@ function VisitaModal({ medicos, onSave, onClose }) {
             if (form.referidor !== "Sim" && !form.leao_plus_abordado) return alert("⚠ Leap Plus é obrigatório para médicos não referidores.");
             if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
             if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
+            if (form.referidor !== "Sim" && Number(form.proc_realizados_esg) > 0) {
+              const origemSoma = ["geo","ancoragem","crm","referidor","esgday","embaixador","metaads","googleads","organico","outro"]
+                .reduce((s, k) => s + (Number(form.origem_esg_realizados?.[k]) || 0), 0);
+              if (origemSoma === 0) return alert("⚠ Origem do lead é obrigatória quando há ESGs realizados.\n\nIndique de onde vieram os pacientes (GEO, CRM, Referidor, etc.).");
+            }
             onSave(form);
           }}>Salvar Visita</button>
           <button className="btn btn-ghost" onClick={onClose}>Cancelar</button>
