@@ -794,7 +794,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     fios_esg_estoque: visita.fios_esg_estoque ?? "",
     proc_marcados_esg: visita.proc_marcados_esg ?? "",
     proc_realizados_esg: visita.proc_realizados_esg ?? "",
-    origem_esg_realizados: visita.origem_esg_realizados || { geo: "", ancoragem: "", crm: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", outro: "" },
+    origem_esg_realizados: visita.origem_esg_realizados || { geo: "", ancoragem: "", crm: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", convenio: "", outro: "" },
     baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : (visita.leao_plus_abordado || ""),
@@ -814,7 +814,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     especialidade: visita.especialidade || "", suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
     acao_mkt: visita.acao_mkt || "", valor_esperado: visita.valor_esperado || "",
     fios_esg_estoque: visita.fios_esg_estoque ?? "", proc_marcados_esg: visita.proc_marcados_esg ?? "",
-    proc_realizados_esg: visita.proc_realizados_esg ?? "", origem_esg_realizados: visita.origem_esg_realizados || { geo: "", ancoragem: "", crm: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", outro: "" }, baloes_estoque: visita.baloes_estoque ?? "",
+    proc_realizados_esg: visita.proc_realizados_esg ?? "", origem_esg_realizados: visita.origem_esg_realizados || { geo: "", ancoragem: "", crm: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", convenio: "", outro: "" }, baloes_estoque: visita.baloes_estoque ?? "",
     proc_marcados_balao: visita.proc_marcados_balao ?? "",
     leao_plus_abordado: visita.leao_plus_abordado === true ? "Sim" : visita.leao_plus_abordado === false ? "Não" : "",
     leao_plus_status: visita.leao_plus_status || "",
@@ -852,7 +852,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     };
     // Validação origem do lead
     if (form.referidor !== "Sim" && Number(form.proc_realizados_esg) > 0) {
-      const origemSoma = ["geo","ancoragem","crm","referidor","esgday","embaixador","metaads","googleads","organico","outro"]
+      const origemSoma = ["geo","ancoragem","crm","referidor","esgday","embaixador","metaads","googleads","organico","convenio","outro"]
         .reduce((s, k) => s + (Number(form.origem_esg_realizados?.[k]) || 0), 0);
       if (origemSoma === 0) {
         setSalvando(false);
@@ -926,7 +926,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
           {inp("ESGs Realizados (total até agora no mês)", "proc_realizados_esg", "number")}
 
           {Number(form.proc_realizados_esg) > 0 && (() => {
-            const origemSoma = ["geo","referidor","esgday","embaixador","organico","outro"]
+            const origemSoma = ["geo","referidor","esgday","embaixador","organico","convenio","outro"]
               .reduce((s, k) => s + (Number(form.origem_esg_realizados?.[k]) || 0), 0);
             const totalRealizados = Number(form.proc_realizados_esg) || 0;
             const bateConta = origemSoma === totalRealizados;
@@ -939,7 +939,8 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
               { key: "embaixador", label: "Embaixador" },
               { key: "metaads", label: "Meta Ads" },
               { key: "googleads", label: "Google Ads" },
-              { key: "organico", label: "Orgânico/Direto" },
+              { key: "organico", label: "Boca a Boca" },
+              { key: "convenio", label: "Convênio" },
               { key: "outro", label: "Outro" },
             ];
             return (
@@ -1223,7 +1224,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
     baloes_estoque: "",
     proc_marcados_balao: "",
     proc_realizados_esg: "",
-    origem_esg_realizados: { geo: "", ancoragem: "", crm: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", outro: "" },
+    origem_esg_realizados: { geo: "", ancoragem: "", crm: "", referidor: "", esgday: "", embaixador: "", metaads: "", googleads: "", organico: "", convenio: "", outro: "" },
     leao_plus_abordado: "",
     leao_plus_status: "",
     pilar_glp1_esg: false,
@@ -1329,7 +1330,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
 
               {/* ── Detalhamento de origem — só aparece se houver realizados ── */}
               {Number(form.proc_realizados_esg) > 0 && (() => {
-                const origemSoma = ["geo","referidor","esgday","embaixador","organico","outro"]
+                const origemSoma = ["geo","referidor","esgday","embaixador","organico","convenio","outro"]
                   .reduce((s, k) => s + (Number(form.origem_esg_realizados[k]) || 0), 0);
                 const totalRealizados = Number(form.proc_realizados_esg) || 0;
                 const bateConta = origemSoma === totalRealizados;
@@ -1342,7 +1343,8 @@ function VisitaModal({ medicos, onSave, onClose }) {
                   { key: "embaixador", label: "Embaixador" },
                   { key: "metaads", label: "Meta Ads" },
                   { key: "googleads", label: "Google Ads" },
-                  { key: "organico", label: "Orgânico/Direto" },
+                  { key: "organico", label: "Boca a Boca" },
+              { key: "convenio", label: "Convênio" },
                   { key: "outro", label: "Outro" },
                 ];
                 return (
@@ -1471,7 +1473,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
             if (!form.obs?.trim()) return alert("⚠ Observações é obrigatório.\n\nEsse campo alimenta o Briefing IA — quanto mais detalhado, melhor o briefing gerado para a próxima visita.");
             if (!form.acao_prevista?.trim()) return alert("⚠ Ação Prevista é obrigatória.\n\nEsse campo orienta o Briefing IA para o próximo contato com este médico.");
             if (form.referidor !== "Sim" && Number(form.proc_realizados_esg) > 0) {
-              const origemSoma = ["geo","ancoragem","crm","referidor","esgday","embaixador","metaads","googleads","organico","outro"]
+              const origemSoma = ["geo","ancoragem","crm","referidor","esgday","embaixador","metaads","googleads","organico","convenio","outro"]
                 .reduce((s, k) => s + (Number(form.origem_esg_realizados?.[k]) || 0), 0);
               if (origemSoma === 0) return alert("⚠ Origem do lead é obrigatória quando há ESGs realizados.\n\nIndique de onde vieram os pacientes (GEO, CRM, Referidor, etc.).");
             }
@@ -2070,13 +2072,13 @@ function Inteligencia() {
       geo: "GEO (IAs)", ancoragem: "Ancoragem", crm: "CRM/Reativação",
       referidor: "Referidor", esgday: "ESG Day",
       embaixador: "Embaixador", metaads: "Meta Ads", googleads: "Google Ads",
-      organico: "Orgânico/Direto", outro: "Outro",
+      organico: "Boca a Boca", convenio: "Convênio", outro: "Outro",
     };
     const colors = {
       geo: "#00879E", ancoragem: "#F57C00", crm: "#14B8A6",
       referidor: "#C9A84C", esgday: "#1DBF73",
       embaixador: "#A855F7", metaads: "#1877F2", googleads: "#EA4335",
-      organico: "#5A8A9A", outro: "#4A6580",
+      organico: "#5A8A9A", convenio: "#7B5EA7", outro: "#4A6580",
     };
     const totals = {};
     Object.keys(labels).forEach(k => totals[k] = 0);
