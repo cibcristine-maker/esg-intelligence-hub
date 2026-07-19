@@ -3675,7 +3675,7 @@ Responda APENAS com JSON válido, sem markdown:
                 <div style={{marginBottom:16}}>
                   <div className="card-title">Perfil de Segmentação</div>
                   <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(130px,1fr))",gap:6,marginBottom:8}}>
-                    {[["Perfil",segmentacao.perfil_medico],["Estágio BSCI",segmentacao.estagio_bsci],["Potencial 12m",segmentacao.potencial_expansao],["Driver",segmentacao.driver_decisao],["Adoção Tech",segmentacao.perfil_adocao],["Barreira",segmentacao.barreira_ampliar],["Fios Estoque",ultimaVisita?.fios_esg_estoque||segmentacao.estoque_pacientes],["ESG Marcados",ultimaVisita?.proc_marcados_esg||segmentacao.procedimentos_marcados]].map(([label,val]) => (
+                    {[["Perfil",segmentacao.perfil_medico],["Estágio BSCI",segmentacao.estagio_bsci],["Potencial 12m",segmentacao.potencial_expansao],["Driver",segmentacao.driver_decisao],["Adoção Tech",segmentacao.perfil_adocao],["Barreira",segmentacao.barreira_ampliar],].map(([label,val]) => (
                       <div key={label} style={{background:"var(--bg)",border:"1px solid var(--border)",borderRadius:8,padding:"7px 10px"}}>
                         <div style={{fontSize:10,color:"var(--muted)",marginBottom:2}}>{label}</div>
                         <div style={{fontSize:12,fontWeight:600}}>{val||"—"}</div>
