@@ -613,14 +613,25 @@ function EvolucaoProcedimentos({ visitas, medicos }) {
   const [mesB, setMesB] = useState(mesesDisp[mesesDisp.length - 1] || "");
   const [expandido, setExpandido] = useState(false);
 
-  // Build snapshot per doctor per month (last visit of that month wins)
+  // Resolve nome canônico via medicos cadastrados, ou normaliza se não achar
+  function nomeCanon(nome) {
+    if (!nome) return "";
+    const found = medicos.find(m => nomesBatem(m.nome, nome));
+    return found ? found.nome : nome;
+  }
+
+  // Build snapshot per doctor per month using canonical names
+  // Last visit by date wins for each canonical doctor
   function snapshotMes(mes) {
-    const map = {};
-    [...visitas].filter(v => v.mes === mes && v.medico_nome)
+    const map = {}; // canonName -> { val, data }
+    [...visitas]
+      .filter(v => v.mes === mes && v.medico_nome)
       .sort((a,b) => new Date(a.data_contato) - new Date(b.data_contato))
       .forEach(v => {
+        const canon = nomeCanon(v.medico_nome);
         const val = Number(v.proc_realizados_esg) || 0;
-        map[v.medico_nome] = val;
+        // Merge: if already exists, keep latest (sorted asc so last wins)
+        map[canon] = val;
       });
     return map;
   }
@@ -628,7 +639,7 @@ function EvolucaoProcedimentos({ visitas, medicos }) {
   const snapA = mesA ? snapshotMes(mesA) : {};
   const snapB = mesB ? snapshotMes(mesB) : {};
 
-  // Total geral por mês
+  // Total geral por mês (deduplicado por nome canônico)
   const totalPorMes = ORDEM_MESES.map(mes => ({
     mes,
     total: Object.values(snapshotMes(mes)).reduce((s,v) => s+v, 0)
@@ -638,16 +649,17 @@ function EvolucaoProcedimentos({ visitas, medicos }) {
   const totalB = Object.values(snapB).reduce((s,v) => s+v, 0);
   const diffTotal = totalB - totalA;
 
-  // Per doctor evolution
+  // Per doctor evolution — union of canonical names from both months
   const todosNomes = [...new Set([...Object.keys(snapA), ...Object.keys(snapB)])];
   const evolucao = todosNomes.map(nome => {
-    const a = snapA[nome] || 0;
-    const b = snapB[nome] || 0;
+    const a = snapA[nome] ?? 0;
+    const b = snapB[nome] ?? 0;
     return { nome, a, b, diff: b - a };
   }).filter(e => e.a > 0 || e.b > 0).sort((x,y) => y.diff - x.diff);
 
-  const maiores = evolucao.filter(e => e.diff > 0).slice(0,5);
-  const menores = evolucao.filter(e => e.diff < 0).sort((x,y) => x.diff - y.diff).slice(0,5);
+  // Only show true evolutions (had data in A and changed, or new in B)
+  const maiores = evolucao.filter(e => e.diff > 0 && e.a > 0).slice(0,5);
+  const menores = evolucao.filter(e => e.diff < 0 && e.a > 0).sort((x,y) => x.diff - y.diff).slice(0,5);
   const maxBar = Math.max(...totalPorMes.map(m => m.total), 1);
 
   return (
