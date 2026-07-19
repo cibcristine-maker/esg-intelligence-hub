@@ -3497,7 +3497,7 @@ ${contextoExtra ? "\n\nCONTEXTO ADICIONAL: " + contextoExtra : ""}
 TOM OBRIGATÓRIO: pragmático, gentil e consultivo. PROIBIDO linguagem de energia, entusiasmo exagerado ou elogios efusivos (ex: "que energia!", "fantástico!", "incrível!"). Aberturas devem soar como parceiro estratégico retomando algo concreto.
 Seja CONCISO — máximo 2 frases por campo. Responda APENAS com JSON válido sem markdown:
 {"resposta_account":"OBRIGATÓRIO se houver CONTEXTO ADICIONAL. SE menciona GEO/relatório/visibilidade: use dados do DIAGNÓSTICO GEO neste prompt — score, concorrentes, gap, oportunidade. Sem diagnóstico GEO: explique paciente pós-GLP-1 pesquisa em IA, janela 2026-2028. Nunca fale de agenda ou datas. Sem contexto, null.",
-  "resumo_situacao":"perfil do médico e contexto para primeira abordagem","objetivo_visita":"objetivo claro para primeiro contato","tp_recomendado":"TP mais adequado e por quê","abertura_sugerida":"frase de abertura PRAGMÁTICA e gentil — sem entusiasmo exagerado, sem exclamações de energia ou elogio efusivo. Tom profissional e consultivo, como um parceiro estratégico que vem com informação relevante. Ex: comece pelo contexto ou pela retomada de algo concreto da última visita","argumento_principal":"argumento personalizado ao perfil","material_recomendado":["material 1","material 2"],"sinais_de_avanco":["sinal 1","sinal 2"],"retomada":null,"pilares_estrategicos":"em 2-3 frases como ESG pós-GLP-1 + ancoragem + base de dados se aplicam a ESTE médico nesta visita específica","pilares_estrategicos":"2-3 frases aplicando ESG pós-GLP-1 + ancoragem + base de dados a este médico","alerta":"ponto de atenção ou null","proximos_tps":["TP desta visita","TP seguinte"],"acao_marketing":"ação digital baseada no perfil ou null"}`;
+  "resumo_situacao":"perfil do médico e contexto para primeira abordagem","objetivo_visita":"objetivo claro para primeiro contato","abertura_sugerida":"frase de abertura PRAGMÁTICA e gentil — sem entusiasmo exagerado, sem exclamações de energia ou elogio efusivo. Tom profissional e consultivo, como um parceiro estratégico que vem com informação relevante. Ex: comece pelo contexto ou pela retomada de algo concreto da última visita","argumento_principal":"argumento personalizado ao perfil","material_recomendado":["material 1","material 2"],"sinais_de_avanco":["sinal 1","sinal 2"],"retomada":null,"pilares_estrategicos":"em 2-3 frases como ESG pós-GLP-1 + ancoragem + base de dados se aplicam a ESTE médico nesta visita específica","pilares_estrategicos":"2-3 frases aplicando ESG pós-GLP-1 + ancoragem + base de dados a este médico","alerta":"ponto de atenção ou null","proximos_tps":["TP desta visita","TP seguinte"],"acao_marketing":"ação digital baseada no perfil ou null"}`;
     const prompt = ehNovoMedico ? promptPrimeiraAbordagem : `Você é especialista sênior em estratégia comercial médica da divisão Endobariatrica (ESG - Sleeve Endoscópico e BIB - Balão Intragástrico).
 CONCEITOS ESTRATÉGICOS OBRIGATÓRIOS — incluir em TODO briefing, independente do médico:
 A. ESG COMO PRÓXIMO PASSO LÓGICO: Para pacientes em platô ou insucesso pós-GLP-1, ESG é a evolução natural do tratamento. Posicionar como complemento, nunca como concorrência ao GLP-1.
@@ -3555,7 +3555,6 @@ Responda APENAS com JSON válido, sem markdown:
   "resposta_account": "OBRIGATÓRIO quando houver CONTEXTO ADICIONAL. Não repita a pergunta. SE menciona GEO, relatório, visibilidade, IAs, ChatGPT, Gemini: use os dados do DIAGNOSTICO GEO REAL DO MEDICO presentes neste prompt — cite score atual, quem aparece no lugar dele, gap crítico e oportunidade. Se não há diagnóstico GEO: diga que ainda não foi gerado e explique que pacientes pós-GLP-1 pesquisam nas IAs, janela 2026-2028. NUNCA mencione agenda, datas ou eventos neste campo. Sem contexto adicional, null.",
   "resumo_situacao": "2-3 frases sobre o momento atual cruzando visitas + segmentação",
   "objetivo_visita": "objetivo claro para a próxima visita",
-  "tp_recomendado": "qual TP trabalhar e por quê conectando com driver de decisão",
   "abertura_sugerida": "frase de abertura natural baseada no histórico — NUNCA coloque o nome do representante (não sabemos quem vai visitar). Escreva na primeira pessoa sem identificação: ex: 'Dr. X, tudo bem? Queria retomar...' — jamais 'aqui é o [nome]'",
   "argumento_principal": "argumento personalizado usando pontos fortes, barreira e driver",
   "material_recomendado": ["material 1", "material 2", "material 3"],
@@ -3919,8 +3918,7 @@ Responda APENAS com JSON válido, sem markdown:
                   {[
                     ["📍 Situação Atual", briefing.resumo_situacao, null],
                     ["🎯 Objetivo", briefing.objetivo_visita, "var(--gold)"],
-                    ["💬 TP Recomendado", briefing.tp_recomendado, null],
-                    ["⚡ Abertura Sugerida", briefing.abertura_sugerida ? `"${briefing.abertura_sugerida}"` : null, null],
+                                        ["⚡ Abertura Sugerida", briefing.abertura_sugerida ? `"${briefing.abertura_sugerida}"` : null, null],
                     ["🧠 Argumento Principal", briefing.argumento_principal, null],
                   ].map(([label, val, color]) => val ? (
                     <div key={label} style={{background:"var(--surface2)",border:"1px solid var(--border)",borderRadius:10,padding:"12px 14px",marginBottom:10}}>
