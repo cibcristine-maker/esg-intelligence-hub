@@ -604,6 +604,124 @@ function EsgAgendadosMes() {
   );
 }
 
+
+function EvolucaoProcedimentos({ visitas, medicos }) {
+  const ORDEM_MESES = ["JANEIRO 26","FEVEREIRO 26","MARÇO 26","ABRIL 26","MAIO 26","JUNHO 26","JULHO 26","AGOSTO 26","SETEMBRO 26","OUTUBRO 26","NOVEMBRO 26","DEZEMBRO 26"];
+  const mesesDisp = [...new Set(visitas.map(v => v.mes).filter(Boolean))].sort((a,b) => ORDEM_MESES.indexOf(a) - ORDEM_MESES.indexOf(b));
+
+  const [mesA, setMesA] = useState(mesesDisp[mesesDisp.length - 2] || "");
+  const [mesB, setMesB] = useState(mesesDisp[mesesDisp.length - 1] || "");
+  const [expandido, setExpandido] = useState(false);
+
+  // Build snapshot per doctor per month (last visit of that month wins)
+  function snapshotMes(mes) {
+    const map = {};
+    [...visitas].filter(v => v.mes === mes && v.medico_nome)
+      .sort((a,b) => new Date(a.data_contato) - new Date(b.data_contato))
+      .forEach(v => {
+        const val = Number(v.proc_realizados_esg) || 0;
+        map[v.medico_nome] = val;
+      });
+    return map;
+  }
+
+  const snapA = mesA ? snapshotMes(mesA) : {};
+  const snapB = mesB ? snapshotMes(mesB) : {};
+
+  // Total geral por mês
+  const totalPorMes = ORDEM_MESES.map(mes => ({
+    mes,
+    total: Object.values(snapshotMes(mes)).reduce((s,v) => s+v, 0)
+  })).filter(m => mesesDisp.includes(m.mes));
+
+  const totalA = Object.values(snapA).reduce((s,v) => s+v, 0);
+  const totalB = Object.values(snapB).reduce((s,v) => s+v, 0);
+  const diffTotal = totalB - totalA;
+
+  // Per doctor evolution
+  const todosNomes = [...new Set([...Object.keys(snapA), ...Object.keys(snapB)])];
+  const evolucao = todosNomes.map(nome => {
+    const a = snapA[nome] || 0;
+    const b = snapB[nome] || 0;
+    return { nome, a, b, diff: b - a };
+  }).filter(e => e.a > 0 || e.b > 0).sort((x,y) => y.diff - x.diff);
+
+  const maiores = evolucao.filter(e => e.diff > 0).slice(0,5);
+  const menores = evolucao.filter(e => e.diff < 0).sort((x,y) => x.diff - y.diff).slice(0,5);
+  const maxBar = Math.max(...totalPorMes.map(m => m.total), 1);
+
+  return (
+    <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"14px 16px",marginBottom:16}}>
+      {/* Header */}
+      <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:12}}>
+        <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase"}}>📈 Evolução de Procedimentos</div>
+        <button onClick={() => setExpandido(e => !e)} style={{background:"none",border:"1px solid var(--border)",borderRadius:6,color:"var(--muted)",fontSize:11,padding:"3px 10px",cursor:"pointer",fontFamily:"inherit"}}>
+          {expandido ? "Fechar" : "Ver ranking ↗"}
+        </button>
+      </div>
+
+      {/* Gráfico de barras por mês */}
+      <div style={{display:"flex",gap:6,alignItems:"flex-end",overflowX:"auto",paddingBottom:6,marginBottom:12}}>
+        {totalPorMes.map(m => {
+          const h = Math.max(Math.round((m.total/maxBar)*60), 2);
+          const isA = m.mes === mesA;
+          const isB = m.mes === mesB;
+          return (
+            <div key={m.mes} style={{flex:"0 0 auto",textAlign:"center",minWidth:38}}>
+              <div style={{fontSize:10,fontFamily:"DM Mono",color: isB ? "var(--teal)" : isA ? "var(--gold)" : "var(--muted)",fontWeight: (isA||isB)?700:400,marginBottom:2}}>{m.total||""}</div>
+              <div style={{height:h,background: isB?"var(--teal)": isA?"var(--gold)":"var(--surface2)",borderRadius:"3px 3px 0 0",border:`1px solid ${isB?"var(--teal)":isA?"var(--gold)":"var(--border)"}`}}></div>
+              <div style={{fontSize:9,color: (isA||isB)?"var(--text)":"var(--muted)",marginTop:4,fontWeight:(isA||isB)?700:400}}>{m.mes.split(" ")[0].slice(0,3)}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Seletor de período */}
+      <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap"}}>
+        <div style={{fontSize:10,color:"var(--muted)"}}>Comparar:</div>
+        <select value={mesA} onChange={e => setMesA(e.target.value)} style={{background:"var(--surface2)",border:"1px solid var(--gold)",borderRadius:6,color:"var(--gold)",fontSize:11,fontWeight:700,padding:"4px 8px",fontFamily:"inherit",cursor:"pointer"}}>
+          <option value="">— mês A</option>
+          {mesesDisp.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        <div style={{fontSize:12,color:"var(--muted)"}}>→</div>
+        <select value={mesB} onChange={e => setMesB(e.target.value)} style={{background:"var(--surface2)",border:"1px solid var(--teal)",borderRadius:6,color:"var(--teal)",fontSize:11,fontWeight:700,padding:"4px 8px",fontFamily:"inherit",cursor:"pointer"}}>
+          <option value="">— mês B</option>
+          {mesesDisp.map(m => <option key={m} value={m}>{m}</option>)}
+        </select>
+        {mesA && mesB && (
+          <div style={{marginLeft:"auto",fontSize:12,fontWeight:700,color: diffTotal > 0 ? "var(--success)" : diffTotal < 0 ? "var(--danger)" : "var(--muted)"}}>
+            {diffTotal > 0 ? "↑" : diffTotal < 0 ? "↓" : "="} {Math.abs(diffTotal)} proc. ({totalA} → {totalB})
+          </div>
+        )}
+      </div>
+
+      {/* Ranking expandido */}
+      {expandido && mesA && mesB && (
+        <div style={{marginTop:14,display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
+          <div>
+            <div style={{fontSize:10,fontWeight:700,color:"var(--success)",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:8}}>↑ Maiores evoluções</div>
+            {maiores.length === 0 ? <div style={{fontSize:11,color:"var(--muted)"}}>Nenhuma evolução</div> : maiores.map(e => (
+              <div key={e.nome} style={{background:"rgba(16,185,129,0.07)",border:"1px solid rgba(16,185,129,0.2)",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
+                <div style={{fontSize:11,fontWeight:700,color:"var(--text)",marginBottom:2}}>{e.nome.split(" ").slice(0,2).join(" ")}</div>
+                <div style={{fontSize:12,fontFamily:"DM Mono",color:"var(--success)",fontWeight:700}}>{e.a} → {e.b} <span style={{fontSize:10}}>(+{e.diff})</span></div>
+              </div>
+            ))}
+          </div>
+          <div>
+            <div style={{fontSize:10,fontWeight:700,color:"var(--danger)",textTransform:"uppercase",letterSpacing:"0.05em",marginBottom:8}}>↓ Maiores involuções</div>
+            {menores.length === 0 ? <div style={{fontSize:11,color:"var(--muted)"}}>Nenhuma involução</div> : menores.map(e => (
+              <div key={e.nome} style={{background:"rgba(239,68,68,0.07)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:8,padding:"7px 10px",marginBottom:6}}>
+                <div style={{fontSize:11,fontWeight:700,color:"var(--text)",marginBottom:2}}>{e.nome.split(" ").slice(0,2).join(" ")}</div>
+                <div style={{fontSize:12,fontFamily:"DM Mono",color:"var(--danger)",fontWeight:700}}>{e.a} → {e.b} <span style={{fontSize:10}}>({e.diff})</span></div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Dashboard() {
   const { data: visitas, loading, refresh: refreshIntel } = useSupabase("visitas");
   const { data: medicos } = useSupabase("perfil_medico");
@@ -689,6 +807,7 @@ function Dashboard() {
             </div>
           </div>
           <EsgAgendadosMes />
+          <EvolucaoProcedimentos visitas={visitas} medicos={medicos} />
           <div style={{background:"var(--surface)",border:"1px solid var(--border)",borderRadius:12,padding:"14px 16px",marginBottom:16}}>
             <div style={{fontSize:11,fontWeight:700,color:"var(--teal)",letterSpacing:"0.06em",textTransform:"uppercase",marginBottom:10}}>📋 Parâmetros de Sucesso</div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10}}>
