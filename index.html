@@ -912,6 +912,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
     data_contato: visita.data_contato || "",
     responsavel: visita.responsavel || "",
     medico_nome: visita.medico_nome || "",
+    responsavel_clinica: visita.responsavel_clinica || "",
     canal: visita.canal || "",
     ultimo_tp: visita.ultimo_tp || "",
     probabilidade: visita.probabilidade || "",
@@ -938,7 +939,8 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
   const set = (k, v) => setForm(f => ({...f, [k]: v}));
   const cancelar = () => { setEditando(false); setForm({
     data_contato: visita.data_contato || "", responsavel: visita.responsavel || "",
-    medico_nome: visita.medico_nome || "", canal: visita.canal || "",
+    medico_nome: visita.medico_nome || "",
+    responsavel_clinica: visita.responsavel_clinica || "", canal: visita.canal || "",
     ultimo_tp: visita.ultimo_tp || "", probabilidade: visita.probabilidade || "",
     mes: visita.mes || "", referidor: visita.referidor ? "Sim" : "Não",
     especialidade: visita.especialidade || "", suporte_marketing: visita.suporte_marketing ? "Sim" : "Não",
@@ -957,6 +959,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
       data_contato: form.data_contato || null,
       responsavel: form.responsavel || null,
       medico_nome: form.medico_nome || null,
+      responsavel_clinica: form.responsavel_clinica || null,
       canal: form.canal || null,
       ultimo_tp: form.ultimo_tp || null,
       probabilidade: form.probabilidade || null,
@@ -1030,6 +1033,7 @@ function VisitaDetalheModal({ visita, onClose, onDelete, onUpdate }) {
 
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"0 16px"}}>
           {inp("Médico", "medico_nome")}
+          {inp("Responsável Clínica", "responsavel_clinica")}
           {inp("Data", "data_contato", "date")}
           {inp("Responsável", "responsavel", "text", RESP)}
           {inp("Canal", "canal", "text", CANAIS)}
@@ -1210,6 +1214,7 @@ function Visitas() {
       data_contato: form.data_contato || null,
       responsavel: form.responsavel || null,
       medico_nome: form.medico_nome || null,
+      responsavel_clinica: form.responsavel_clinica || null,
       referidor: form.referidor === "Sim",
       especialidade: form.especialidade || null,
       canal: form.canal || null,
@@ -1337,6 +1342,7 @@ function VisitaModal({ medicos, onSave, onClose }) {
     data_contato: new Date().toISOString().slice(0,10),
     responsavel: "",
     medico_nome: "",
+    responsavel_clinica: "",
     referidor: "Não",
     especialidade: "",
     canal: "",
@@ -1392,6 +1398,15 @@ function VisitaModal({ medicos, onSave, onClose }) {
             <datalist id="medicos-list">
               {medicos.map(m => <option key={m.id} value={m.nome} />)}
             </datalist>
+          </div>
+          <div className="form-group">
+            <label className="form-label">Responsável Clínica <span style={{fontSize:10,color:"var(--muted)",fontWeight:400}}>(opcional)</span></label>
+            <input
+              className="form-input"
+              value={form.responsavel_clinica || ""}
+              onChange={e => set("responsavel_clinica", e.target.value)}
+              placeholder="Nome do responsável pela clínica"
+            />
           </div>
           <div className="form-group">
             <label className="form-label">Canal</label>
