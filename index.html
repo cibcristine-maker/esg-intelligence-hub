@@ -826,13 +826,14 @@ function Dashboard() {
                       await fetchData();
                     }
                     return (
-                      <div key={i} style={{background: concluido ? "rgba(16,185,129,0.06)" : "var(--surface2)", border:`1px solid ${concluido ? "rgba(16,185,129,0.3)" : "var(--border)"}`, borderRadius:8, padding:"10px 12px", marginBottom:8, opacity: concluido ? 0.7 : 1}}>
+                      <div key={i} onClick={e => e.stopPropagation()} style={{background: concluido ? "rgba(16,185,129,0.06)" : "var(--surface2)", border:`1px solid ${concluido ? "rgba(16,185,129,0.3)" : "var(--border)"}`, borderRadius:8, padding:"10px 12px", marginBottom:8, opacity: concluido ? 0.7 : 1}}>
                         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:4}}>
                           <div style={{display:"flex",alignItems:"center",gap:8}}>
                             <input
                               type="checkbox"
                               checked={concluido}
-                              onChange={toggleConcluido}
+                              onChange={e => { e.stopPropagation(); toggleConcluido(); }}
+                              onClick={e => e.stopPropagation()}
                               style={{width:16,height:16,cursor:"pointer",accentColor:"var(--teal)"}}
                             />
                             <div style={{fontSize:12,fontWeight:700,color: concluido ? "var(--muted)" : "var(--text)",textDecoration: concluido ? "line-through" : "none"}}>{v.medico_nome || "—"}</div>
