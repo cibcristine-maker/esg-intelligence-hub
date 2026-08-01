@@ -777,24 +777,32 @@ function Dashboard() {
     }).length
   }));
   const leaoPrioridade = { adocao_ativa: 3, em_avaliacao: 2, desconhece: 1, nao_abordado: 0 };
-  const leaoPorMedico = {};
-  vf.forEach(v => {
+  const vfLeao = vf.filter(v => !v.referidor);
+  const leaoVisitados = {};
+  vfLeao.forEach(v => {
     const nomeRaw = (v.medico_nome || "").trim();
-    const status = v.leao_plus_abordado;
-    if (!nomeRaw || !status || !(status in leaoPrioridade)) return;
+    if (!nomeRaw) return;
     const medicoRef = medicos.find(md => nomesBatem(md.nome, nomeRaw));
     const chave = medicoRef ? medicoRef.nome : nomeRaw;
-    const atual = leaoPorMedico[chave];
-    if (atual === undefined || leaoPrioridade[status] > leaoPrioridade[atual]) {
-      leaoPorMedico[chave] = status;
+    if (!(chave in leaoVisitados)) leaoVisitados[chave] = null;
+    const status = v.leao_plus_abordado;
+    if (status && status in leaoPrioridade) {
+      if (leaoVisitados[chave] === null || leaoPrioridade[status] > leaoPrioridade[leaoVisitados[chave]]) {
+        leaoVisitados[chave] = status;
+      }
     }
   });
-  const leaoStatusList = Object.values(leaoPorMedico);
-  const leaoAbordadosTotal = leaoStatusList.filter(s => s !== "nao_abordado").length;
-  const leaoAdocaoAtiva = leaoStatusList.filter(s => s === "adocao_ativa").length;
-  const leaoEmAvaliacao = leaoStatusList.filter(s => s === "em_avaliacao").length;
-  const leaoDesconhecia = leaoStatusList.filter(s => s === "desconhece").length;
-  const leaoNaoAbordado = leaoStatusList.filter(s => s === "nao_abordado").length;
+  const leaoValues = Object.values(leaoVisitados);
+  const leaoTotalVisitados = leaoValues.length;
+  const leaoAdocaoAtiva = leaoValues.filter(s => s === "adocao_ativa").length;
+  const leaoEmAvaliacao = leaoValues.filter(s => s === "em_avaliacao").length;
+  const leaoDesconhecia = leaoValues.filter(s => s === "desconhece").length;
+  const leaoNaoAbordado = leaoValues.filter(s => !s || s === "nao_abordado").length;
+  const leaoAbordadosTotal = leaoAdocaoAtiva + leaoEmAvaliacao + leaoDesconhecia;
+  const leaoNaoAbordadosNomes = Object.entries(leaoVisitados)
+    .filter(([, s]) => !s || s === "nao_abordado")
+    .map(([nome]) => nome)
+    .sort((a,b) => a.localeCompare(b));
   return (
     <div>
       <div className="section-header">
@@ -972,7 +980,7 @@ function Dashboard() {
             <div className="card-title">💛 Leap Plus — Médicos Abordados</div>
             <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:14}}>
               <div style={{fontSize:32,fontWeight:800,color:"#f59e0b",fontFamily:"DM Mono"}}>{leaoAbordadosTotal}</div>
-              <div style={{fontSize:12,color:"var(--muted)"}}>médicos com Leap Plus abordado{filterMesDash ? ` em ${filterMesDash}` : ""} (de {Object.keys(leaoPorMedico).length} com status registrado)</div>
+              <div style={{fontSize:12,color:"var(--muted)"}}>médicos com Leap Plus abordado{filterMesDash ? ` em ${filterMesDash}` : ""} (de {leaoTotalVisitados} visitados, excluindo referidores)</div>
             </div>
             {[
               { label: "✅ Adoção ativa", value: leaoAdocaoAtiva, color: "#10b981" },
@@ -987,12 +995,27 @@ function Dashboard() {
                 </div>
                 <div className="progress-wrap">
                   <div className="progress-bar" style={{
-                    width: leaoStatusList.length ? `${(item.value/leaoStatusList.length)*100}%` : "0%",
+                    width: leaoTotalVisitados ? `${(item.value/leaoTotalVisitados)*100}%` : "0%",
                     background: item.color
                   }} />
                 </div>
               </div>
             ))}
+            {leaoNaoAbordadosNomes.length > 0 && (
+              <div style={{marginTop:16,paddingTop:14,borderTop:"1px solid var(--border)"}}>
+                <div style={{fontSize:10,fontWeight:700,color:"var(--muted)",textTransform:"uppercase",marginBottom:8}}>
+                  Sem abordagem{filterMesDash ? ` em ${filterMesDash}` : ""} ({leaoNaoAbordadosNomes.length})
+                </div>
+                <div style={{display:"flex", flexWrap:"wrap", gap:6}}>
+                  {leaoNaoAbordadosNomes.map(nome => (
+                    <span key={nome} style={{
+                      background:"var(--surface2)", border:"1px solid var(--border)",
+                      borderRadius:6, padding:"4px 10px", fontSize:11, color:"var(--text)"
+                    }}>{nome}</span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </>
       )}
