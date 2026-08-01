@@ -776,6 +776,23 @@ function Dashboard() {
       return String(m?.tier) === String(t);
     }).length
   }));
+  const leaoPrioridade = { adocao_ativa: 3, em_avaliacao: 2, desconhece: 1, nao_abordado: 0 };
+  const leaoPorMedico = {};
+  vf.forEach(v => {
+    const nome = (v.medico_nome || "").trim();
+    const status = v.leao_plus_abordado;
+    if (!nome || !status || !(status in leaoPrioridade)) return;
+    const atual = leaoPorMedico[nome];
+    if (atual === undefined || leaoPrioridade[status] > leaoPrioridade[atual]) {
+      leaoPorMedico[nome] = status;
+    }
+  });
+  const leaoStatusList = Object.values(leaoPorMedico);
+  const leaoAbordadosTotal = leaoStatusList.filter(s => s !== "nao_abordado").length;
+  const leaoAdocaoAtiva = leaoStatusList.filter(s => s === "adocao_ativa").length;
+  const leaoEmAvaliacao = leaoStatusList.filter(s => s === "em_avaliacao").length;
+  const leaoDesconhecia = leaoStatusList.filter(s => s === "desconhece").length;
+  const leaoNaoAbordado = leaoStatusList.filter(s => s === "nao_abordado").length;
   return (
     <div>
       <div className="section-header">
@@ -948,6 +965,32 @@ function Dashboard() {
                 </div>
               ))}
             </div>
+          </div>
+          <div className="card" style={{marginTop:12}}>
+            <div className="card-title">💛 Leap Plus — Médicos Abordados</div>
+            <div style={{display:"flex",alignItems:"baseline",gap:8,marginBottom:14}}>
+              <div style={{fontSize:32,fontWeight:800,color:"#f59e0b",fontFamily:"DM Mono"}}>{leaoAbordadosTotal}</div>
+              <div style={{fontSize:12,color:"var(--muted)"}}>médicos com Leap Plus abordado{filterMesDash ? ` em ${filterMesDash}` : ""} (de {Object.keys(leaoPorMedico).length} com status registrado)</div>
+            </div>
+            {[
+              { label: "✅ Adoção ativa", value: leaoAdocaoAtiva, color: "#10b981" },
+              { label: "🟡 Em avaliação", value: leaoEmAvaliacao, color: "#f59e0b" },
+              { label: "👋 Apresentado — desconhecia", value: leaoDesconhecia, color: "#60a5fa" },
+              { label: "— Não abordado", value: leaoNaoAbordado, color: "var(--muted)" },
+            ].map(item => (
+              <div key={item.label} style={{marginBottom:10}}>
+                <div style={{display:"flex",justifyContent:"space-between",fontSize:12,marginBottom:4}}>
+                  <span>{item.label}</span>
+                  <span style={{fontFamily:"DM Mono",color:item.color,fontWeight:700}}>{item.value}</span>
+                </div>
+                <div className="progress-wrap">
+                  <div className="progress-bar" style={{
+                    width: leaoStatusList.length ? `${(item.value/leaoStatusList.length)*100}%` : "0%",
+                    background: item.color
+                  }} />
+                </div>
+              </div>
+            ))}
           </div>
         </>
       )}
