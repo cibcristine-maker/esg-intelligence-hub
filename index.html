@@ -779,12 +779,14 @@ function Dashboard() {
   const leaoPrioridade = { adocao_ativa: 3, em_avaliacao: 2, desconhece: 1, nao_abordado: 0 };
   const leaoPorMedico = {};
   vf.forEach(v => {
-    const nome = (v.medico_nome || "").trim();
+    const nomeRaw = (v.medico_nome || "").trim();
     const status = v.leao_plus_abordado;
-    if (!nome || !status || !(status in leaoPrioridade)) return;
-    const atual = leaoPorMedico[nome];
+    if (!nomeRaw || !status || !(status in leaoPrioridade)) return;
+    const medicoRef = medicos.find(md => nomesBatem(md.nome, nomeRaw));
+    const chave = medicoRef ? medicoRef.nome : nomeRaw;
+    const atual = leaoPorMedico[chave];
     if (atual === undefined || leaoPrioridade[status] > leaoPrioridade[atual]) {
-      leaoPorMedico[nome] = status;
+      leaoPorMedico[chave] = status;
     }
   });
   const leaoStatusList = Object.values(leaoPorMedico);
