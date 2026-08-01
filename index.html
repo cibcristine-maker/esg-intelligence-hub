@@ -777,13 +777,26 @@ function Dashboard() {
     }).length
   }));
   const leaoPrioridade = { adocao_ativa: 3, em_avaliacao: 2, desconhece: 1, nao_abordado: 0 };
-  const vfLeao = vf.filter(v => !v.referidor);
+  const chaveMedico = (nomeRaw) => {
+    const medicoRef = medicos.find(md => nomesBatem(md.nome, nomeRaw));
+    return medicoRef ? medicoRef.nome : nomeRaw;
+  };
+  const referidorSet = new Set();
+  visitas.forEach(v => {
+    if (v.referidor) {
+      const nomeRaw = (v.medico_nome || "").trim();
+      if (nomeRaw) referidorSet.add(chaveMedico(nomeRaw));
+    }
+  });
+  const vfLeao = vf.filter(v => {
+    const nomeRaw = (v.medico_nome || "").trim();
+    return nomeRaw && !referidorSet.has(chaveMedico(nomeRaw));
+  });
   const leaoVisitados = {};
   vfLeao.forEach(v => {
     const nomeRaw = (v.medico_nome || "").trim();
     if (!nomeRaw) return;
-    const medicoRef = medicos.find(md => nomesBatem(md.nome, nomeRaw));
-    const chave = medicoRef ? medicoRef.nome : nomeRaw;
+    const chave = chaveMedico(nomeRaw);
     if (!(chave in leaoVisitados)) leaoVisitados[chave] = null;
     const status = v.leao_plus_abordado;
     if (status && status in leaoPrioridade) {
